@@ -1,6 +1,5 @@
 'use client';
-import React from 'react';
-import { usePathname } from 'next/navigation';
+import NavbarLink from './links/NavbarLink';
 
 interface NavbarProps {
   routes?: string[];
@@ -13,8 +12,6 @@ interface NavItem {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ routes = [], onNavigate }) => {
-  const pathname = usePathname();
-
   // Default navigation items if routes not provided
   const defaultNavItems: NavItem[] = [
     { path: '/', label: 'Start' },
@@ -52,27 +49,16 @@ const Navbar: React.FC<NavbarProps> = ({ routes = [], onNavigate }) => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-red-800 shadow-sm">
-      <div className="flex justify-end items-center h-16 px-4 sm:px-6 lg:px-8">
-        <div className="flex space-x-8">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md shadow-sm">
+      <div className="flex justify-end items-center px-9 py-4">
+        <div className="flex space-x-6">
           {navItems.map((item, index) => (
-            <a
+            <NavbarLink
               key={item.path}
-              href={item.path} // SEO-friendly href attribute
+              href={item.path}
+              label={item.label}
               onClick={(e) => handleNavigation(item.path, index, e)}
-              className={`
-                relative px-4 py-2 text-white font-medium text-lg
-                transition-all duration-200 ease-in-out
-                hover:text-red-100 cursor-pointer
-                ${
-                  pathname === item.path
-                    ? 'border-b-2 border-white'
-                    : 'border-b-2 border-transparent hover:border-red-200'
-                }
-              `}
-            >
-              {item.label}
-            </a>
+            />
           ))}
         </div>
       </div>

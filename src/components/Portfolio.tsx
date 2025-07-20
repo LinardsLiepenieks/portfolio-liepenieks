@@ -1,7 +1,7 @@
 'use client';
 import { useRef } from 'react';
 import ScrollContainer from './scroll-container/ScrollContainer';
-import Navbar from './ui/NavBar';
+import Navbar from './ui/Navbar';
 import {
   Section1,
   Section2,
