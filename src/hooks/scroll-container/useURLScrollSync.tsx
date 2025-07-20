@@ -1,18 +1,11 @@
 /**
  * Custom hook that synchronizes scroll sections with browser URL and history.
- *
- * Handles URL updates when sections change, manages browser back/forward
- * navigation, and initializes the correct section based on the current URL.
- * Uses the HTML5 History API to maintain proper browser navigation without
- * page reloads, supporting both smooth and instant scroll behaviors.
- *
- * @param routes - Array of route paths corresponding to each section
- * @param onSectionChange - Callback when URL indicates a section change
- * @param onPopState - Callback for browser back/forward navigation
+ * Now includes loading screen control to prevent loading during scroll navigation.
  */
 
 import { useEffect, useCallback } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { useLoading } from '@/contexts/LoadingProvider';
 
 interface UseURLScrollSyncProps {
   routes: string[];
@@ -30,17 +23,22 @@ export const useURLScrollSync = ({
 }: UseURLScrollSyncProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { setDisableLoading } = useLoading(); // Get the disable loading function
 
-  // Update URL using History API
+  // Update URL using History API (called during scroll)
   const updateURL = useCallback(
     (sectionIndex: number) => {
       const newURL = routes[sectionIndex];
-      const state = { sectionIndex };
+      const state = { sectionIndex, fromScroll: true }; // Mark as scroll-initiated
 
-      console.log(`Updating URL to ${newURL} with state:`, state);
+      console.log(`Updating URL to ${newURL} via scroll - disabling loading`);
+
+      // Disable loading before URL change
+      setDisableLoading(true);
+
       window.history.pushState(state, '', newURL);
     },
-    [routes]
+    [routes, setDisableLoading]
   );
 
   // Initialize current section based on URL
@@ -52,13 +50,26 @@ export const useURLScrollSync = ({
         searchParams.get('instant') === 'true' ? 'instant' : 'smooth';
 
       onSectionChange(routeIndex, scrollBehavior);
+
+      // Re-enable loading after section change is complete
+      // Small delay to ensure the scroll/navigation is fully processed
+      setTimeout(() => {
+        console.log('Section change complete - re-enabling loading');
+        setDisableLoading(false);
+      }, 100);
     }
-  }, [pathname, routes, searchParams, onSectionChange]);
+  }, [pathname, routes, searchParams, onSectionChange, setDisableLoading]);
 
   // Handle browser back/forward buttons
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       console.log('PopState event:', event.state);
+
+      // Check if this popstate is from scroll navigation
+      if (event.state?.fromScroll) {
+        console.log('PopState from scroll - disabling loading');
+        setDisableLoading(true);
+      }
 
       if (event.state && typeof event.state.sectionIndex === 'number') {
         const newSection = event.state.sectionIndex;
@@ -73,7 +84,10 @@ export const useURLScrollSync = ({
     if (typeof window !== 'undefined' && !window.history.state) {
       const initialSection = routes.indexOf(pathname);
       window.history.replaceState(
-        { sectionIndex: initialSection >= 0 ? initialSection : 0 },
+        {
+          sectionIndex: initialSection >= 0 ? initialSection : 0,
+          fromScroll: false, // Initial state is not from scroll
+        },
         '',
         pathname
       );
@@ -82,7 +96,7 @@ export const useURLScrollSync = ({
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [pathname, routes, onPopState]);
+  }, [pathname, routes, onPopState, setDisableLoading]);
 
   return { updateURL };
 };

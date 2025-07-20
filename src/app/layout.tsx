@@ -1,6 +1,6 @@
-import { LoadingProvider } from '@/contexts/LoadingContext';
-import LoadingScreen from '@/components/LoadingScreen';
 import './globals.css';
+import LoadingScreen from '@/components/LoadingScreen';
+import { LoadingProvider } from '@/contexts/LoadingProvider';
 
 export default function RootLayout({
   children,
@@ -10,8 +10,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body suppressHydrationWarning={true}>
+        {' '}
         <LoadingProvider>
-          <LoadingScreen />
+          {/* Loading screen will show on all navigation */}
+          <LoadingScreen message="Loading..." />
+
+          {/* Your app content */}
           {children}
         </LoadingProvider>
       </body>

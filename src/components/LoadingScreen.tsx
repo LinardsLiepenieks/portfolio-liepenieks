@@ -1,19 +1,40 @@
 'use client';
 
-import { useLoadingContext } from '@/contexts/LoadingContext';
+import { useEffect, useState } from 'react';
+import { useLoading } from '@/contexts/LoadingProvider';
 
-export default function LoadingScreen() {
-  const { isLoading } = useLoadingContext();
+interface LoadingScreenProps {
+  message?: string;
+}
 
-  if (!isLoading) return null;
+export default function LoadingScreen({
+  message = 'Loading...',
+}: LoadingScreenProps) {
+  const { isLoading } = useLoading();
+  const [shouldRender, setShouldRender] = useState(isLoading);
+
+  useEffect(() => {
+    if (isLoading) {
+      setShouldRender(true);
+    } else {
+      // Delay unmounting to allow fade-out animation to complete
+      const timer = setTimeout(() => setShouldRender(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
+
+  if (!shouldRender) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-      <div className="bg-white rounded-lg p-8 shadow-2xl">
-        <div className="flex items-center space-x-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <span className="text-lg font-medium text-gray-700">Loading...</span>
-        </div>
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-white transition-opacity duration-300 ${
+        isLoading ? 'opacity-100' : 'opacity-0'
+      }`}
+      style={{ backdropFilter: 'blur(4px)' }}
+    >
+      <div className="flex flex-col items-center space-y-4">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"></div>
+        <p className="text-gray-700 font-medium">{message}</p>
       </div>
     </div>
   );
