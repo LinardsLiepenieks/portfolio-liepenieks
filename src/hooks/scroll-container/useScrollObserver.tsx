@@ -27,7 +27,6 @@ interface UseScrollObserverProps {
   onSectionReached: (sectionIndex: number) => void;
   onTargetReached: () => void;
   onInitialLoadComplete: () => void;
-  endScrollNavigation?: () => void;
 }
 
 export const useScrollObserver = ({
@@ -39,7 +38,6 @@ export const useScrollObserver = ({
   onSectionReached,
   onTargetReached,
   onInitialLoadComplete,
-  endScrollNavigation,
 }: UseScrollObserverProps) => {
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -63,7 +61,6 @@ export const useScrollObserver = ({
                     onSectionReached(index);
                     onTargetReached();
                     onInitialLoadComplete();
-                    endScrollNavigation?.(); // End loading screen
                   }
                   // Ignore other sections during initial load
                   return;
@@ -75,7 +72,6 @@ export const useScrollObserver = ({
                     console.log(`User scroll: reached target section ${index}`);
                     onSectionReached(index);
                     onTargetReached();
-                    endScrollNavigation?.(); // End loading screen
                   }
                 }
                 // If not scrolling, update to any section that becomes fully visible
