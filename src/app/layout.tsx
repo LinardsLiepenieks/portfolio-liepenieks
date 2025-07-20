@@ -1,13 +1,6 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { LoadingProvider } from '@/contexts/LoadingContext';
+import LoadingScreen from '@/components/LoadingScreen';
 import './globals.css';
-
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: 'Linards Liepenieks - Portfolio',
-  description: 'Developer • Entrepreneur • Tech educator',
-};
 
 export default function RootLayout({
   children,
@@ -16,11 +9,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body
-        className={`${inter.className} antialiased`}
-        suppressHydrationWarning={true}
-      >
-        {children}
+      <body suppressHydrationWarning={true}>
+        <LoadingProvider>
+          <LoadingScreen />
+          {children}
+        </LoadingProvider>
       </body>
     </html>
   );

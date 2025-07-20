@@ -1,4 +1,4 @@
-import ScrollContainer from '@/components/ScrollContainer';
+import ScrollContainer from './scroll-container/ScrollContainer';
 import {
   Section1,
   Section2,
