@@ -1,12 +1,27 @@
+'use client';
 import React from 'react';
+import ThreeJSLogo from '../ThreeJSLogo';
+import MovingLinesBackground from '../MovingLinesBackground';
+import { usePathname } from 'next/navigation';
 
 const HeroSection = () => {
+  const pathname = usePathname();
+
   return (
     <section className="relative h-screen bg-red-600 overflow-hidden bg-[linear-gradient(135deg,#7F0C0C_0%,#A40000_49%,#761B1B_100%)]">
       {/* Background container for elements */}
-      <div className="absolute inset-0 flex items-center justify-center py-16">
+
+      <div className="absolute inset-0 flex items-center justify-center py-16 ">
+        <MovingLinesBackground
+          lineCount={25}
+          opacity={0.2}
+          className="z-0 w-full h-full"
+        />
+
         {/*LOGOL*/}
-        <div className="bg-blue-500 h-4/5 aspect-square">D</div>
+        <div className="h-4/5 w-full flex justify-center items-center aspect-square opacity-90">
+          <ThreeJSLogo></ThreeJSLogo>
+        </div>
       </div>
 
       {/* Main Content Container */}

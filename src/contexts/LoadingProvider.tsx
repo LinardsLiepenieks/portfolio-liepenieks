@@ -36,7 +36,6 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
   // Function to start loading with minimum duration enforcement
   const startLoading = () => {
     if (disableLoading) {
-      console.log('Loading disabled, skipping...');
       return;
     }
     setIsLoading(true);
@@ -99,7 +98,6 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
       return;
     }
 
-    console.log('Navigation detected to:', pathname);
     startLoading();
 
     // End loading after navigation completes

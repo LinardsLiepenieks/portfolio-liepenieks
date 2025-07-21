@@ -31,8 +31,6 @@ export const useURLScrollSync = ({
       const newURL = routes[sectionIndex];
       const state = { sectionIndex, fromScroll: true }; // Mark as scroll-initiated
 
-      console.log(`Updating URL to ${newURL} via scroll - disabling loading`);
-
       // Disable loading before URL change
       setDisableLoading(true);
 
@@ -54,7 +52,6 @@ export const useURLScrollSync = ({
       // Re-enable loading after section change is complete
       // Small delay to ensure the scroll/navigation is fully processed
       setTimeout(() => {
-        console.log('Section change complete - re-enabling loading');
         setDisableLoading(false);
       }, 100);
     }
@@ -63,17 +60,13 @@ export const useURLScrollSync = ({
   // Handle browser back/forward buttons
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
-      console.log('PopState event:', event.state);
-
       // Check if this popstate is from scroll navigation
       if (event.state?.fromScroll) {
-        console.log('PopState from scroll - disabling loading');
         setDisableLoading(true);
       }
 
       if (event.state && typeof event.state.sectionIndex === 'number') {
         const newSection = event.state.sectionIndex;
-        console.log(`Navigating to section ${newSection} via popstate`);
         onPopState(newSection);
       }
     };

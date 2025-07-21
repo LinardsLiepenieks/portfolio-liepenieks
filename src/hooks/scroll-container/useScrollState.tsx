@@ -49,7 +49,6 @@ export const useScrollState = (
   const scrollToSection = useCallback(
     (sectionIndex: number, behavior: 'smooth' | 'instant' = 'smooth') => {
       if (containerRef.current && !isScrolling) {
-        console.log(`User scrolling to section ${sectionIndex}`);
         setIsScrolling(true);
         setTargetSection(sectionIndex);
 
@@ -64,7 +63,6 @@ export const useScrollState = (
         // Fallback timeout in case intersection observer doesn't fire
         setTimeout(() => {
           if (isScrolling && !isInitialLoad) {
-            console.log('Fallback: Setting section via timeout');
             setCurrentSection(sectionIndex);
             updateURL(sectionIndex);
             setIsScrolling(false);
@@ -116,7 +114,6 @@ export const useScrollState = (
       if (isInitialLoad) {
         setTargetSection(sectionIndex);
         setIsScrolling(true);
-        console.log(`Initial load: targeting section ${sectionIndex}`);
       } else {
         setCurrentSection(sectionIndex);
       }

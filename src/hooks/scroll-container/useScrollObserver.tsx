@@ -55,9 +55,6 @@ export const useScrollObserver = ({
                 // If we're on initial load and scrolling to target, only update when we reach the target
                 if (isInitialLoad && isScrolling && targetSection !== null) {
                   if (index === targetSection) {
-                    console.log(
-                      `Initial load: reached target section ${index}`
-                    );
                     onSectionReached(index);
                     onTargetReached();
                     onInitialLoadComplete();
@@ -69,14 +66,12 @@ export const useScrollObserver = ({
                 // If we're scrolling and have a target, only update to the target section
                 if (isScrolling && targetSection !== null) {
                   if (index === targetSection && index !== currentSection) {
-                    console.log(`User scroll: reached target section ${index}`);
                     onSectionReached(index);
                     onTargetReached();
                   }
                 }
                 // If not scrolling, update to any section that becomes fully visible
                 else if (!isScrolling && currentSection !== index) {
-                  console.log(`Auto-update to section ${index}`);
                   onSectionReached(index);
                 }
               }
