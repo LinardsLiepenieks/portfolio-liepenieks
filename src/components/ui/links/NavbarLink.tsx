@@ -34,7 +34,7 @@ const NavbarLink: React.FC<NavbarLinkProps> = ({ href, label, onClick }) => {
           absolute bottom-0 h-px bg-white transition-all duration-300 ease-out
           ${
             isActive
-              ? 'left-2 right-2 w-[calc(100%-1rem)]' // Active state - full width, no animation
+              ? 'left-2 right-2 w-[calc(100%-1rem)]' // Active state - full width
               : 'left-1/2 w-0 group-hover:w-[calc(100%-1rem)] group-hover:left-2' // Hover state - animated from center
           }
         `}
