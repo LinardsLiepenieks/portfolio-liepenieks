@@ -59,7 +59,7 @@ const HeroSection = () => {
         </div>
 
         {/* Right Side */}
-        <div className="flex-1 flex flex-col items-end gap-20 px-4 justify-between py-[12%] pt-[13.6%] ">
+        <div className="flex-1 flex flex-col items-center gap-20 px-4 justify-center  relative top-8">
           <ul className="flex flex-col text-right gap-6">
             <li className="font-metropolis font-medium text-pf-3xl">
               <span className=" text-stone-100 px-2 py-2 drop-shadow-sharp-card">
