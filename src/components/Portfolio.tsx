@@ -9,6 +9,7 @@ import {
 } from '@/components/sections/DummySections';
 import HeroSection from './sections/HeroSection';
 import AboutSection from './sections/AboutSection';
+import ContactSection from './sections/ContactSection';
 
 export default function Portfolio() {
   const routes = ['/', '/about', '/contact'];
@@ -30,7 +31,7 @@ export default function Portfolio() {
       <ScrollContainer ref={scrollContainerRef} routes={routes}>
         <HeroSection></HeroSection>
         <AboutSection></AboutSection>
-        <Section3 />
+        <ContactSection></ContactSection>
       </ScrollContainer>
     </>
   );

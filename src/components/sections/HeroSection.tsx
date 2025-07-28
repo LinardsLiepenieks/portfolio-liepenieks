@@ -32,14 +32,14 @@ const HeroSection = () => {
           <ul className="flex flex-col gap-6 font-metropolis text-pf-5xl font-medium">
             <li>
               <HoverFollowCard maxMove={4} sensitivity={0.035} moveSpeed={0.35}>
-                <span className="bg-neutral-800 text-stone-100 px-2 py-2 drop-shadow-sharp-card">
+                <span className="bg-neutral-900 text-stone-100 px-2 py-2 drop-shadow-sharp-card">
                   Linards
                 </span>
               </HoverFollowCard>
             </li>
             <li>
               <HoverFollowCard maxMove={4} sensitivity={0.035} moveSpeed={0.35}>
-                <span className="bg-neutral-800 text-stone-100 px-2 py-2 drop-shadow-sharp-card">
+                <span className="bg-neutral-900 text-stone-100 px-2 py-2 drop-shadow-sharp-card">
                   Liepenieks
                 </span>
               </HoverFollowCard>
@@ -50,7 +50,7 @@ const HeroSection = () => {
               <li className="font-metropolis">Location: Finland, Turku</li>
               <li className="font-metropolis">Local time: 00:00</li>
               <li className="font-metropolis my-1">
-                <span className="px-4 py-2 bg-neutral-800 text-stone-100 font-medium drop-shadow-sharp-card cursor-pointer hover:bg-neutral-700 hover:scale-105 transition-all duration-300 border-l-2 border-emerald-500">
+                <span className="px-4 py-2 bg-neutral-900 text-stone-100 font-medium drop-shadow-sharp-card cursor-pointer hover:bg-neutral-800 hover:scale-105 transition-all duration-300 border-l-2 border-emerald-500">
                   Currently online
                 </span>
               </li>
@@ -81,7 +81,7 @@ const HeroSection = () => {
             maxMove={5}
             sensitivity={0.04}
             moveSpeed={0.4}
-            className="max-w-[640px] p-3 bg-neutral-800 text-stone-100 drop-shadow-sharp-card"
+            className="max-w-[640px] p-3 bg-neutral-900 text-stone-100 drop-shadow-sharp-card"
           >
             <span className="text-pf-base font-metropolis text-pf-lg">
               Finding beauty in elegant solutions and solving real world
@@ -93,7 +93,7 @@ const HeroSection = () => {
       </div>
 
       {/* Black Bottom Row */}
-      <div className="absolute bottom-0 left-0 right-0 h-16 bg-neutral-800 z-20">
+      <div className="absolute bottom-0 left-0 right-0 h-16 bg-neutral-900 z-20">
         {/* You can add content here if needed */}
       </div>
     </section>

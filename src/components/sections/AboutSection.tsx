@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Briefcase, GraduationCap, Lightbulb } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import SpotlightButton from '../ui/button/SpotlightButton';
 
 const AboutSection = () => {
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
@@ -10,12 +11,6 @@ const AboutSection = () => {
     null
   );
   const router = useRouter();
-
-  const buttons = [
-    { icon: Briefcase, name: 'Experience', id: 'experience' },
-    { icon: GraduationCap, name: 'Education', id: 'education' },
-    { icon: Lightbulb, name: 'Projects', id: 'projects' },
-  ];
 
   const clearCurrentInterval = () => {
     if (currentInterval) {
@@ -57,33 +52,27 @@ const AboutSection = () => {
     }
   };
 
-  const handleMouseEnter = (button: {
-    icon: any;
-    name: string;
-    id: string;
-  }) => {
-    setHoveredButton(button.id);
-    animateText(button.name, true);
+  const handleMouseEnter = (name: string, id: string) => {
+    setHoveredButton(id);
+    animateText(name, true);
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = (name: string) => {
     if (hoveredButton && displayText) {
-      const currentButton = buttons.find((b) => b.id === hoveredButton);
-      if (currentButton) {
-        animateText(currentButton.name, false);
-      }
+      animateText(name, false);
     }
     setHoveredButton(null);
   };
+
   const handleButtonClick = (buttonId: string) => {
     router.push(`/${buttonId}?returnTo=1`);
   };
 
   return (
-    <section className="relative h-screen bg-neutral-800 overflow-hidden font-metropolis justify-center flex">
+    <section className="relative h-screen bg-neutral-900 overflow-hidden font-metropolis justify-center flex">
       <div className="h-full flex flex-col px-8 md:px-20 w-full">
         {/* Title Section - Fixed position from top */}
-        <div className="mt-40 mb-32   -top-4 left-0">
+        <div className="mt-40 mb-32 -top-4 left-0">
           <div className="flex items-end gap-2">
             <h2 className="text-pf-xl font-extralight font-metropolis text-white tracking-wide">
               About:
@@ -99,35 +88,30 @@ const AboutSection = () => {
 
         {/* Buttons Section - Always centered vertically */}
         <div className="flex items-center pt-4 relative justify-center w-full">
-          <div className="flex gap-12 md:gap-32 ">
-            {buttons.map((button) => {
-              const IconComponent = button.icon;
-              return (
-                <button
-                  key={button.id}
-                  className="group relative flex flex-col items-center justify-center w-48 h-48 overflow-hidden rounded-full border-2 border-transparent cursor-pointer"
-                  onMouseEnter={() => handleMouseEnter(button)}
-                  onMouseLeave={handleMouseLeave}
-                  onClick={() => handleButtonClick(button.id)}
-                >
-                  {/* White circular background that grows from center */}
-                  <div className="absolute inset-0 rounded-full bg-white scale-0 group-hover:scale-100 transition-transform duration-300 ease-out origin-center z-0"></div>
+          <div className="flex gap-12 md:gap-32">
+            <SpotlightButton
+              icon={Briefcase}
+              text="Experience"
+              onMouseEnter={() => handleMouseEnter('Experience', 'experience')}
+              onMouseLeave={() => handleMouseLeave('Experience')}
+              onClick={() => handleButtonClick('experience')}
+            />
 
-                  {/* Icon with color inversion on hover */}
-                  <div className="relative z-10 mb-2">
-                    <IconComponent
-                      size={116}
-                      className="text-white group-hover:text-black transition-colors duration-150"
-                    />
-                  </div>
+            <SpotlightButton
+              icon={GraduationCap}
+              text="Education"
+              onMouseEnter={() => handleMouseEnter('Education', 'education')}
+              onMouseLeave={() => handleMouseLeave('Education')}
+              onClick={() => handleButtonClick('education')}
+            />
 
-                  {/* Name with color inversion - always visible */}
-                  <span className="relative z-10 text-white group-hover:text-black text-pg-base font-semibold transition-colors duration-150">
-                    {button.name}
-                  </span>
-                </button>
-              );
-            })}
+            <SpotlightButton
+              icon={Lightbulb}
+              text="Projects"
+              onMouseEnter={() => handleMouseEnter('Projects', 'projects')}
+              onMouseLeave={() => handleMouseLeave('Projects')}
+              onClick={() => handleButtonClick('projects')}
+            />
           </div>
         </div>
       </div>
