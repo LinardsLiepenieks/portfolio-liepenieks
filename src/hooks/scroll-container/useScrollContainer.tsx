@@ -5,6 +5,8 @@ interface UseScrollContainerProps {
   updateURL: (sectionIndex: number) => void;
 }
 
+const DEBUG = false; // Set to true for development debugging
+
 export const useScrollContainer = ({
   totalSections,
   updateURL,
@@ -15,16 +17,23 @@ export const useScrollContainer = ({
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const lastThrottleTimeRef = useRef(0);
 
-  const THROTTLE_WAIT = 900; // ms
+  // Delta pattern analysis tracking
+  const lastDeltaRef = useRef(0);
+  const lastDirectionRef = useRef(0);
+  const lastEventTimeRef = useRef(0);
+
+  const THROTTLE_WAIT = 400; // ms - reduced for better responsiveness
+  const MOMENTUM_THROTTLE = 1800; // ms - extended throttle for momentum
   const MIN_DELTA = 4; // minimum deltaY to consider
+  const MIN_TIME_GAP = 1500; // ms - minimum time gap to consider intentional
 
   const scrollToSection = useCallback(
     (sectionIndex: number) => {
-      console.log('🚀 Scrolling to section:', sectionIndex);
+      DEBUG && console.log('🚀 Scrolling to section:', sectionIndex);
       const targetElement = sectionRefs.current[sectionIndex];
       if (targetElement) {
         isScrollingRef.current = true;
-        console.log('✅ Set isScrolling = true');
+        DEBUG && console.log('✅ Set isScrolling = true');
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         setCurrentSection(sectionIndex);
         updateURL(sectionIndex);
@@ -58,13 +67,15 @@ export const useScrollContainer = ({
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-            console.log(
-              '👁️ Observer: Section in view - only resetting isScrolling flag'
-            );
+            DEBUG &&
+              console.log(
+                '👁️ Observer: Section in view - only resetting isScrolling flag'
+              );
             // Only reset the scrolling flag, NOT the throttle
             // Let throttle expire naturally to prevent momentum events from triggering new scrolls
             isScrollingRef.current = false;
-            console.log('✅ Set isScrolling = false (throttle still active)');
+            DEBUG &&
+              console.log('✅ Set isScrolling = false (throttle still active)');
           }
         });
       },
@@ -82,49 +93,94 @@ export const useScrollContainer = ({
     const throttledWheelHandler = (e: WheelEvent) => {
       e.preventDefault();
 
-      console.log('🖱️ Wheel event:', {
-        deltaY: e.deltaY,
-        absDelta: Math.abs(e.deltaY),
-        minDelta: MIN_DELTA,
-        isScrolling: isScrollingRef.current,
-        lastThrottle: lastThrottleTimeRef.current,
-        now: Date.now(),
-        timeDiff: Date.now() - lastThrottleTimeRef.current,
-        throttleWait: THROTTLE_WAIT,
-      });
+      const now = Date.now();
+      const currentDelta = Math.abs(e.deltaY);
+      const currentDirection = Math.sign(e.deltaY);
+      const timeSinceLastEvent = now - lastEventTimeRef.current;
+
+      // Delta pattern analysis for momentum detection
+      // A scroll is momentum (not intentional) if ALL of these conditions are true:
+      const isTimeTooQuick = timeSinceLastEvent < MIN_TIME_GAP;
+      const isSameDirection =
+        lastDirectionRef.current !== 0 &&
+        currentDirection === lastDirectionRef.current;
+      const isDeltaNotIncreasing = currentDelta <= lastDeltaRef.current; // Allow equal or decreasing
+
+      const isMomentumScroll =
+        isTimeTooQuick && isSameDirection && isDeltaNotIncreasing;
+      const isIntentionalScroll = !isMomentumScroll;
+
+      // Update tracking values
+      lastDeltaRef.current = currentDelta;
+      lastDirectionRef.current = currentDirection;
+      lastEventTimeRef.current = now;
+
+      if (DEBUG) {
+        console.log('🖱️ Wheel event:', {
+          deltaY: e.deltaY,
+          absDelta: currentDelta,
+          minDelta: MIN_DELTA,
+          timeSinceLastEvent,
+          isTimeTooQuick,
+          isSameDirection,
+          isDeltaNotIncreasing,
+          isIntentionalScroll,
+          isMomentumScroll,
+          effectiveThrottle: isMomentumScroll
+            ? MOMENTUM_THROTTLE
+            : THROTTLE_WAIT,
+          isScrolling: isScrollingRef.current,
+          lastThrottle: lastThrottleTimeRef.current,
+          timeDiff: now - lastThrottleTimeRef.current,
+        });
+      }
 
       // Dismiss wheel events with very small delta values (touchpad noise)
-      if (Math.abs(e.deltaY) < MIN_DELTA) {
-        console.log('❌ Dismissed: Delta too small');
+      if (currentDelta < MIN_DELTA) {
+        DEBUG && console.log('❌ Dismissed: Delta too small');
         return;
       }
 
       // If currently scrolling, ignore
       if (isScrollingRef.current) {
-        console.log('❌ Dismissed: Currently scrolling');
+        DEBUG && console.log('❌ Dismissed: Currently scrolling');
         return;
       }
 
-      // Throttle: check if enough time has passed since last action
-      const now = Date.now();
-      if (now - lastThrottleTimeRef.current < THROTTLE_WAIT) {
-        console.log('❌ Dismissed: Throttled - momentum blocked');
+      // Dynamic throttle based on momentum detection
+      const effectiveThrottle = isMomentumScroll
+        ? MOMENTUM_THROTTLE
+        : THROTTLE_WAIT;
+
+      if (now - lastThrottleTimeRef.current < effectiveThrottle) {
+        DEBUG &&
+          console.log(
+            `❌ Dismissed: Throttled - ${
+              isMomentumScroll ? 'momentum (1800ms)' : 'normal (600ms)'
+            } blocked`
+          );
         return;
       }
 
       const direction = e.deltaY > 0 ? 1 : -1;
       const nextSection = currentSection + direction;
 
-      console.log('📍 Current section:', currentSection, 'Next:', nextSection);
+      DEBUG &&
+        console.log(
+          '📍 Current section:',
+          currentSection,
+          'Next:',
+          nextSection
+        );
 
       // Check bounds
       if (nextSection >= 0 && nextSection < totalSections) {
-        console.log('✅ Valid scroll, executing');
+        DEBUG && console.log('✅ Valid scroll, executing');
         scrollToSection(nextSection);
         lastThrottleTimeRef.current = now;
-        console.log('⏰ Set throttle time to:', now);
+        DEBUG && console.log('⏰ Set throttle time to:', now);
       } else {
-        console.log('❌ Dismissed: Out of bounds');
+        DEBUG && console.log('❌ Dismissed: Out of bounds');
       }
     };
 
