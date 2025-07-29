@@ -1,10 +1,8 @@
 'use client';
 
 import { ReactNode, forwardRef, useImperativeHandle } from 'react';
-import { useScrollState } from '@/hooks/scroll-container/useScrollState';
+import { useScrollContainer } from '@/hooks/scroll-container/useScrollContainer';
 import { useURLScrollSync } from '@/hooks/scroll-container/useURLScrollSync';
-import { useScrollObserver } from '@/hooks/scroll-container/useScrollObserver';
-import { useScrollNavigation } from '@/hooks/scroll-container/useScrollNavigation';
 import { ScrollIndicators } from './ScrollIndicators';
 
 interface ScrollContainerProps {
@@ -21,24 +19,22 @@ const ScrollContainer = forwardRef<ScrollContainerRef, ScrollContainerProps>(
     // Initialize URL sync first to get the updateURL function
     const { updateURL } = useURLScrollSync({
       routes,
-      onSectionChange: () => {}, // We'll update this below
-      onPopState: () => {}, // We'll update this below
+      onSectionChange: () => {},
+      onPopState: () => {},
     });
 
-    // Initialize scroll state with the updateURL function
+    // Use unified scroll container hook
     const {
       currentSection,
-      isScrolling,
-      targetSection,
-      isInitialLoad,
       containerRef,
+      sectionRefs,
       scrollToSection,
-      handleSectionReached,
-      handleTargetReached,
-      handleInitialLoadComplete,
       handlePopStateNavigation,
       handleURLSectionChange,
-    } = useScrollState(children.length, updateURL);
+    } = useScrollContainer({
+      totalSections: children.length,
+      updateURL,
+    });
 
     // Expose scrollToSection method through ref
     useImperativeHandle(ref, () => ({
@@ -50,26 +46,6 @@ const ScrollContainer = forwardRef<ScrollContainerRef, ScrollContainerProps>(
       routes,
       onSectionChange: handleURLSectionChange,
       onPopState: handlePopStateNavigation,
-    });
-
-    // Initialize scroll observer
-    const { sectionRefs } = useScrollObserver({
-      currentSection,
-      isScrolling,
-      targetSection,
-      isInitialLoad,
-      containerRef,
-      onSectionReached: handleSectionReached,
-      onTargetReached: handleTargetReached,
-      onInitialLoadComplete: handleInitialLoadComplete,
-    });
-
-    // Initialize scroll navigation
-    useScrollNavigation({
-      currentSection,
-      isScrolling,
-      totalSections: children.length,
-      onScrollToSection: scrollToSection,
     });
 
     return (
