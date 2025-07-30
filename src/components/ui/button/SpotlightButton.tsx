@@ -8,6 +8,7 @@ interface SpotlightButtonProps {
   };
   text: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
+  hideText?: boolean;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -18,6 +19,7 @@ const SpotlightButton: React.FC<SpotlightButtonProps> = ({
   icon,
   text,
   size = 'lg',
+  hideText = false,
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -25,8 +27,8 @@ const SpotlightButton: React.FC<SpotlightButtonProps> = ({
 }) => {
   // Size variants for container
   const sizeClasses = {
-    sm: 'w-24 h-24',
-    md: 'w-32 h-32',
+    sm: 'w-12 h-12',
+    md: 'w-20 h-20',
     lg: 'w-48 h-48',
     xl: 'w-64 h-64',
     xxl: 'w-64 h-64',
@@ -42,6 +44,9 @@ const SpotlightButton: React.FC<SpotlightButtonProps> = ({
     xxl: 'xxl', // 64px icons for xl button
     xxxl: 'xxxl', // 64px icons for xl button
   } as const;
+
+  // Determine if text should be shown
+  const shouldShowText = !hideText && size !== 'sm';
 
   return (
     <button
@@ -63,8 +68,8 @@ const SpotlightButton: React.FC<SpotlightButtonProps> = ({
         />
       </div>
 
-      {/* Text with color inversion - only shown for md, lg, and xl */}
-      {size !== 'sm' && (
+      {/* Text with color inversion - controlled by hideText parameter and size */}
+      {shouldShowText && (
         <span className="relative z-10 text-white group-hover:text-black text-pf-base font-semibold transition-colors duration-150 mt-2 text-center">
           {text}
         </span>

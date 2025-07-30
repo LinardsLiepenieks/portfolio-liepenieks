@@ -3,8 +3,9 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { IoArrowBack } from 'react-icons/io5';
 import ReturnButton from '@/components/ui/button/ReturnButton';
+import ExperienceItem from '@/components/experience/ExperienceItem';
 
-export default function DetailsPage() {
+export default function ExperiencePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const returnSection = parseInt(searchParams.get('returnTo') || '0');
@@ -20,9 +21,9 @@ export default function DetailsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-900 text-white">
+    <section className="min-h-screen bg-neutral-900 text-white py-8 flex flex-col w-full">
       {/* Header Row with Back Arrow */}
-      <div className="flex items-center p-6">
+      <div className="flex items-center pb-6 px-8">
         <ReturnButton
           icon={{
             type: 'react-icons',
@@ -35,21 +36,24 @@ export default function DetailsPage() {
       </div>
 
       {/* Title Row */}
-      <div className="px-6 pb-6">
-        <h1 className="text-2xl font-light">
-          About: Work <span className="text-neutral-400">(YEAR)</span>
+      <div className="px-36 pb-16">
+        <h1 className="text-pf-2xl font-light font-metropolis font-medium">
+          About:{' '}
+          <span className="relative after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-px after:bg-neutral-400">
+            Work <span className="text-neutral-300">(YEAR)</span>
+          </span>
         </h1>
       </div>
 
       {/* Gallery Container - Takes remaining height */}
-      <div className="flex-1 px-6 pb-6">
-        <div className="h-full bg-neutral-800 rounded-lg border border-neutral-700">
+      <div className="flex flex-col flex-1  pb-24 w-full h-full justify-center -px-4">
+        <div className="w-full h-full  rounded-lg   flex-1 items-center flex justify-center pb-8">
           {/* Gallery component will go here */}
-          <div className="flex items-center justify-center h-full text-neutral-400">
-            Gallery component placeholder
+          <div className="flex items-center justify-center  ">
+            <ExperienceItem></ExperienceItem>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -92,7 +92,8 @@ const ContactSection = () => {
                   component: SiLinkedin,
                 }}
                 text="LinkedIn"
-                size="sm"
+                size="md"
+                hideText={true}
                 onClick={() =>
                   window.open('https://www.linkedin.com/in/linards-liepenieks')
                 }
