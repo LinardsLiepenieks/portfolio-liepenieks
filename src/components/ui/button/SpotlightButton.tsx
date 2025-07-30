@@ -1,5 +1,5 @@
 import React from 'react';
-import AdaptiveIcon from '../AdaptiveIcon';
+import AdaptiveIcon from '../utility/AdaptiveIcon';
 
 interface SpotlightButtonProps {
   icon: {
