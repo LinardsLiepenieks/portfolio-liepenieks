@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Briefcase, GraduationCap, Lightbulb } from 'lucide-react';
+import { MdWork, MdSchool, MdLightbulb } from 'react-icons/md';
 import { useRouter } from 'next/navigation';
 import SpotlightButton from '../ui/button/SpotlightButton';
 
@@ -90,24 +90,36 @@ const AboutSection = () => {
         <div className="flex items-center pt-4 relative justify-center w-full">
           <div className="flex gap-12 md:gap-32">
             <SpotlightButton
-              icon={Briefcase}
+              icon={{
+                type: 'react-icons',
+                component: MdWork,
+              }}
               text="Experience"
+              size="xxxl"
               onMouseEnter={() => handleMouseEnter('Experience', 'experience')}
               onMouseLeave={() => handleMouseLeave('Experience')}
               onClick={() => handleButtonClick('experience')}
             />
 
             <SpotlightButton
-              icon={GraduationCap}
+              icon={{
+                type: 'react-icons',
+                component: MdSchool,
+              }}
               text="Education"
+              size="xxxl"
               onMouseEnter={() => handleMouseEnter('Education', 'education')}
               onMouseLeave={() => handleMouseLeave('Education')}
               onClick={() => handleButtonClick('education')}
             />
 
             <SpotlightButton
-              icon={Lightbulb}
+              icon={{
+                type: 'react-icons',
+                component: MdLightbulb,
+              }}
               text="Projects"
+              size="xxxl"
               onMouseEnter={() => handleMouseEnter('Projects', 'projects')}
               onMouseLeave={() => handleMouseLeave('Projects')}
               onClick={() => handleButtonClick('projects')}

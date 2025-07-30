@@ -21,14 +21,6 @@ const ContactSection = () => {
     setMessage('');
   };
 
-  const LinkedInIcon = ({
-    size,
-    className,
-  }: {
-    size?: number;
-    className?: string;
-  }) => <SiLinkedin size={size} className={className} />;
-
   return (
     <section className="h-screen bg-neutral-900 overflow-hidden font-metropolis  px-44.5 flex flex-col pt-20 pb-4">
       {/* Main Content */}
@@ -95,7 +87,10 @@ const ContactSection = () => {
                 copyValue="linardsliepenieks@gmail.com"
               />
               <SpotlightButton
-                icon={LinkedInIcon}
+                icon={{
+                  type: 'react-icons',
+                  component: SiLinkedin,
+                }}
                 text="LinkedIn"
                 size="sm"
                 onClick={() =>

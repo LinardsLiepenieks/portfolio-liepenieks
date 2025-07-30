@@ -1,7 +1,8 @@
-// app/details/page.tsx
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
+import { IoArrowBack } from 'react-icons/io5';
+import ReturnButton from '@/components/ui/button/ReturnButton';
 
 export default function DetailsPage() {
   const searchParams = useSearchParams();
@@ -19,18 +20,35 @@ export default function DetailsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Details Page</h1>
-        <p className="text-lg mb-6">
-          This is a separate page outside the scroll container
-        </p>
-        <button
+    <div className="min-h-screen bg-neutral-900 text-white">
+      {/* Header Row with Back Arrow */}
+      <div className="flex items-center p-6">
+        <ReturnButton
+          icon={{
+            type: 'react-icons',
+            component: IoArrowBack,
+          }}
+          size="xl"
           onClick={handleGoBack}
-          className="px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600"
-        >
-          ← Back to Section {returnSection + 1}
-        </button>
+          className="flex-shrink-0"
+        />
+      </div>
+
+      {/* Title Row */}
+      <div className="px-6 pb-6">
+        <h1 className="text-2xl font-light">
+          About: Work <span className="text-neutral-400">(YEAR)</span>
+        </h1>
+      </div>
+
+      {/* Gallery Container - Takes remaining height */}
+      <div className="flex-1 px-6 pb-6">
+        <div className="h-full bg-neutral-800 rounded-lg border border-neutral-700">
+          {/* Gallery component will go here */}
+          <div className="flex items-center justify-center h-full text-neutral-400">
+            Gallery component placeholder
+          </div>
+        </div>
       </div>
     </div>
   );

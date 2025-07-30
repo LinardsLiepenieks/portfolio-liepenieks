@@ -1,9 +1,13 @@
 import React from 'react';
+import AdaptiveIcon from '../AdaptiveIcon';
 
 interface SpotlightButtonProps {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: {
+    type: 'react-icons';
+    component: React.ComponentType<any>;
+  };
   text: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -11,7 +15,7 @@ interface SpotlightButtonProps {
 }
 
 const SpotlightButton: React.FC<SpotlightButtonProps> = ({
-  icon: IconComponent,
+  icon,
   text,
   size = 'lg',
   onClick,
@@ -19,30 +23,29 @@ const SpotlightButton: React.FC<SpotlightButtonProps> = ({
   onMouseLeave,
   className = '',
 }) => {
-  // Size variants
+  // Size variants for container
   const sizeClasses = {
-    sm: {
-      container: 'w-24 h-24',
-      iconSize: 48,
-    },
-    md: {
-      container: 'w-32 h-32',
-      iconSize: 64,
-    },
-    lg: {
-      container: 'w-48 h-48',
-      iconSize: 116,
-    },
+    sm: 'w-24 h-24',
+    md: 'w-32 h-32',
+    lg: 'w-48 h-48',
+    xl: 'w-64 h-64',
+    xxl: 'w-64 h-64',
+    xxxl: 'w-64 h-64',
   };
 
-  const currentSize = sizeClasses[size];
+  // Icon size mapping - direct 1:1 match with AdaptiveIcon sizes
+  const iconSizeMap = {
+    sm: 'sm', // 24px icons for sm button
+    md: 'md', // 32px icons for md button
+    lg: 'lg', // 48px icons for lg button
+    xl: 'xl', // 64px icons for xl button
+    xxl: 'xxl', // 64px icons for xl button
+    xxxl: 'xxxl', // 64px icons for xl button
+  } as const;
+
   return (
     <button
-      className={`group relative flex flex-col items-center ${
-        size === 'sm' ? 'justify-center' : 'justify-center'
-      } ${
-        currentSize.container
-      } overflow-hidden rounded-full border-2 border-transparent cursor-pointer ${className}`}
+      className={`group relative flex flex-col items-center justify-center ${sizeClasses[size]} overflow-hidden rounded-full border-2 border-transparent cursor-pointer flex-shrink-0 ${className}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onClick={onClick}
@@ -50,17 +53,19 @@ const SpotlightButton: React.FC<SpotlightButtonProps> = ({
       {/* White circular background that grows from center */}
       <div className="absolute inset-0 rounded-full bg-white scale-0 group-hover:scale-100 transition-transform duration-300 ease-out origin-center z-0"></div>
 
-      {/* Icon with color inversion on hover - perfectly centered for sm */}
-      <div className="relative z-10">
-        <IconComponent
-          size={currentSize.iconSize}
+      {/* Icon with color inversion on hover - centered */}
+      <div className="relative z-10 flex items-center justify-center">
+        <AdaptiveIcon
+          type={icon.type}
+          component={icon.component}
+          size={iconSizeMap[size]}
           className="text-white group-hover:text-black transition-colors duration-150"
         />
       </div>
 
-      {/* Text with color inversion - only shown for md and lg */}
+      {/* Text with color inversion - only shown for md, lg, and xl */}
       {size !== 'sm' && (
-        <span className="relative z-10 text-white group-hover:text-black text-pg-base font-semibold transition-colors duration-150 mt-2">
+        <span className="relative z-10 text-white group-hover:text-black text-pf-base font-semibold transition-colors duration-150 mt-2 text-center">
           {text}
         </span>
       )}
