@@ -13,15 +13,12 @@ export default function ExperiencePage() {
   const handleGoBack = () => {
     const sectionRoutes = ['/', '/about', '/contact'];
     const targetRoute = sectionRoutes[returnSection];
-
-    // Add instant=true parameter to signal instant scroll
     const urlWithInstant = `${targetRoute}?instant=true`;
-
     router.push(urlWithInstant);
   };
 
   return (
-    <section className="min-h-screen bg-neutral-900 text-white py-8 flex flex-col w-full">
+    <section className="h-screen bg-neutral-900 text-white py-8 flex flex-col w-full ">
       {/* Header Row with Back Arrow */}
       <div className="flex items-center pb-6 px-8">
         <ReturnButton
@@ -36,7 +33,7 @@ export default function ExperiencePage() {
       </div>
 
       {/* Title Row */}
-      <div className="px-36 pb-16">
+      <div className="px-8 md:px-16 lg:px-24 xl:px-36 pb-16">
         <h1 className="text-pf-2xl font-light font-metropolis font-medium">
           About:{' '}
           <span className="relative after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-px after:bg-neutral-400">
@@ -45,13 +42,10 @@ export default function ExperiencePage() {
         </h1>
       </div>
 
-      {/* Gallery Container - Takes remaining height */}
-      <div className="flex flex-col flex-1  pb-24 w-full h-full justify-center -px-4">
-        <div className="w-full h-full  rounded-lg   flex-1 items-center flex justify-center pb-8">
-          {/* Gallery component will go here */}
-          <div className="flex items-center justify-center  ">
-            <ExperienceItem></ExperienceItem>
-          </div>
+      {/* Gallery Container */}
+      <div className="h-full px-8 md:px-16 lg:px-24 xl:px-36  overflow-hidden">
+        <div className="w-full flex-1 h-full flex items-center justify-center  overflow-hidden">
+          <ExperienceItem></ExperienceItem>
         </div>
       </div>
     </section>

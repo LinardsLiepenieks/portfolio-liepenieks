@@ -30,33 +30,34 @@ const ExperienceItem = ({
 
   return (
     <>
-      <div className="text-white max-w-5xl font-metropolis">
+      <div className="text-white max-w-5xl font-metropolis h-full flex flex-col">
         {/* Top row - Year */}
-        <div className="text-lg mb-4 text-pf-xl">{year}</div>
+        <div className="text-lg mb-4 text-pf-xl flex-shrink-0">{year}</div>
 
         {/* Middle section - Photo and Description */}
-        <div className="flex gap-4 mb-4">
-          {/* Left side - Photo */}
-          <div>
-            <div className="w-144 h-96 mb-2 flex items-center justify-center border border-dotted border-gray-300">
+        <div className="flex flex-col gap-2 flex-1 min-h-0">
+          {/* Photo and Description Row */}
+          <div className="flex flex-1 min-h-0 gap-2">
+            <div className="aspect-[4/3] flex-[1.4]  flex items-center justify-center border border-dotted border-gray-300">
               <div>Photo</div>
             </div>
-            {/* Bottom section - Work Title and Button */}
-            <div className="flex flex-col items-start">
-              <h3 className="text-pf-xl font-light mb-px">{workTitle}</h3>
-              <button
-                onClick={handleRecommendationClick}
-                className="text-white hover:cursor-pointer text-sm italic font-semibold !tracking-wide rounded transition-colors relative group after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:ease-out hover:after:w-full"
-              >
-                Recommendation letter
-              </button>
+            {/* Right side - Description */}
+            <div className="flex-1 overflow-y-auto ">
+              <p className="text-pf-base text-medium text-gray-300 ">
+                {description}
+              </p>
             </div>
           </div>
-          {/* Right side - Description */}
-          <div className="flex-1">
-            <p className="text-pf-base text-medium text-gray-300 !leading-snug">
-              {description}
-            </p>
+
+          {/* Bottom section - Work Title and Button */}
+          <div className="flex flex-col items-start flex-shrink-0  p-2">
+            <h3 className="text-pf-xl font-light mb-px">{workTitle}</h3>
+            <button
+              onClick={handleRecommendationClick}
+              className="text-white hover:cursor-pointer text-sm italic font-semibold !tracking-wide rounded transition-colors relative group after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:ease-out hover:after:w-full"
+            >
+              Recommendation letter
+            </button>
           </div>
         </div>
       </div>
