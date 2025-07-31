@@ -1,0 +1,92 @@
+/* Custom scrollbar with white track and black oval thumb */
+.scrollbar-light {
+  scrollbar-width: thin;
+  scrollbar-color: #000000 #ffffff;
+}
+
+.scrollbar-light::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.scrollbar-light::-webkit-scrollbar-track {
+  background: #ffffff;
+  border-radius: 6px;
+}
+
+.scrollbar-light::-webkit-scrollbar-thumb {
+  background: #000000;
+  border-radius: 50px;
+  border: 2px solid #ffffff;
+}
+
+.scrollbar-light::-webkit-scrollbar-thumb:hover {
+  background: #333333;
+}
+
+.scrollbar-light::-webkit-scrollbar-corner {
+  background: #ffffff;
+}
+
+/* Custom scrollbar with neutral-600/40 track and light gray thumb */
+.scrollbar-dark {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af rgba(82, 82, 91, 0.4);
+}
+
+.scrollbar-dark::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-dark::-webkit-scrollbar-track {
+  background: rgba(82, 82, 91, 0.4); /* bg-neutral-600/40 */
+  border-radius: 0;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background: #9ca3af; /* more muted gray */
+  border-radius: 50px;
+  margin: 2px;
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db; /* lighter gray on hover */
+}
+
+.scrollbar-dark::-webkit-scrollbar-corner {
+  background: rgba(82, 82, 91, 0.4);
+}
+
+/* Custom scrollbar with transparent track and gray-200 thumb */
+.scrollbar-darker {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
+.scrollbar-darker::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-darker::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 0;
+}
+
+.scrollbar-darker::-webkit-scrollbar-thumb {
+  background: #e5e7eb; /* gray-200 */
+  border-radius: 50px;
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+.scrollbar-darker::-webkit-scrollbar-thumb:hover {
+  background: #f3f4f6; /* gray-100 on hover */
+}
+
+.scrollbar-darker::-webkit-scrollbar-corner {
+  background: transparent;
+}
