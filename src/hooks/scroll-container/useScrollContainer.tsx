@@ -1,10 +1,12 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
+import { useTouchpadDetection } from './useTouchpadDetection';
+import { useScrollThrottle } from './useScrollThrottle';
 
 interface UseScrollContainerProps {
   totalSections: number;
   updateURL: (sectionIndex: number) => void;
 }
-//Good luck
+
 const DEBUG = false; // Set to true for development debugging
 
 export const useScrollContainer = ({
@@ -15,22 +17,24 @@ export const useScrollContainer = ({
   const isScrollingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const lastThrottleTimeRef = useRef(0);
-
-  // Delta pattern analysis tracking
-  const lastDeltaRef = useRef(0);
-  const lastDirectionRef = useRef(0);
-  const lastEventTimeRef = useRef(0);
 
   // Touch tracking
   const touchStartYRef = useRef(0);
   const touchStartTimeRef = useRef(0);
   const isTouchingRef = useRef(false);
 
-  const THROTTLE_WAIT = 400; // ms - reduced for better responsiveness
-  const MOMENTUM_THROTTLE = 1800; // ms - extended throttle for momentum
-  const MIN_DELTA = 4; // minimum deltaY to consider
-  const MIN_TIME_GAP = 1500; // ms - minimum time gap to consider intentional
+  // Use the extracted hooks
+  const { detectInertia, isValidDelta } = useTouchpadDetection({
+    minTimeGap: 1500,
+    minDelta: 4,
+    debug: DEBUG,
+  });
+
+  const { isThrottled, updateThrottle, getThrottleStatus } = useScrollThrottle({
+    normalThrottle: 400,
+    momentumThrottle: 1800,
+    debug: DEBUG,
+  });
 
   // Touch constants
   const MIN_TOUCH_DISTANCE = 50; // minimum distance for a valid swipe
@@ -46,9 +50,10 @@ export const useScrollContainer = ({
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         setCurrentSection(sectionIndex);
         updateURL(sectionIndex);
+        updateThrottle(); // Update throttle when scrolling
       }
     },
-    [updateURL]
+    [updateURL, updateThrottle]
   );
 
   const handlePopStateNavigation = useCallback((sectionIndex: number) => {
@@ -98,55 +103,26 @@ export const useScrollContainer = ({
     return () => observer.disconnect();
   }, [totalSections]);
 
-  // Wheel event handler
+  // Wheel event handler - now using extracted hooks
   useEffect(() => {
     const throttledWheelHandler = (e: WheelEvent) => {
       e.preventDefault();
 
-      const now = Date.now();
-      const currentDelta = Math.abs(e.deltaY);
-      const currentDirection = Math.sign(e.deltaY);
-      const timeSinceLastEvent = now - lastEventTimeRef.current;
-
-      // Delta pattern analysis for momentum detection
-      // A scroll is momentum (not intentional) if ALL of these conditions are true:
-      const isTimeTooQuick = timeSinceLastEvent < MIN_TIME_GAP;
-      const isSameDirection =
-        lastDirectionRef.current !== 0 &&
-        currentDirection === lastDirectionRef.current;
-      const isDeltaNotIncreasing = currentDelta <= lastDeltaRef.current; // Allow equal or decreasing
-
-      const isMomentumScroll =
-        isTimeTooQuick && isSameDirection && isDeltaNotIncreasing;
-      const isIntentionalScroll = !isMomentumScroll;
-
-      // Update tracking values
-      lastDeltaRef.current = currentDelta;
-      lastDirectionRef.current = currentDirection;
-      lastEventTimeRef.current = now;
+      // Use the extracted touchpad detection
+      const isMomentumScroll = detectInertia(e);
+      const throttleStatus = getThrottleStatus(isMomentumScroll);
 
       if (DEBUG) {
         console.log('🖱️ Wheel event:', {
           deltaY: e.deltaY,
-          absDelta: currentDelta,
-          minDelta: MIN_DELTA,
-          timeSinceLastEvent,
-          isTimeTooQuick,
-          isSameDirection,
-          isDeltaNotIncreasing,
-          isIntentionalScroll,
           isMomentumScroll,
-          effectiveThrottle: isMomentumScroll
-            ? MOMENTUM_THROTTLE
-            : THROTTLE_WAIT,
+          throttleStatus,
           isScrolling: isScrollingRef.current,
-          lastThrottle: lastThrottleTimeRef.current,
-          timeDiff: now - lastThrottleTimeRef.current,
         });
       }
 
       // Dismiss wheel events with very small delta values (touchpad noise)
-      if (currentDelta < MIN_DELTA) {
+      if (!isValidDelta(e.deltaY)) {
         DEBUG && console.log('❌ Dismissed: Delta too small');
         return;
       }
@@ -157,17 +133,11 @@ export const useScrollContainer = ({
         return;
       }
 
-      // Dynamic throttle based on momentum detection
-      const effectiveThrottle = isMomentumScroll
-        ? MOMENTUM_THROTTLE
-        : THROTTLE_WAIT;
-
-      if (now - lastThrottleTimeRef.current < effectiveThrottle) {
+      // Check throttle using the extracted hook
+      if (isThrottled(isMomentumScroll)) {
         DEBUG &&
           console.log(
-            `❌ Dismissed: Throttled - ${
-              isMomentumScroll ? 'momentum (1800ms)' : 'normal (600ms)'
-            } blocked`
+            `❌ Dismissed: Throttled - ${throttleStatus.throttleType} (${throttleStatus.effectiveThrottle}ms) blocked`
           );
         return;
       }
@@ -187,8 +157,6 @@ export const useScrollContainer = ({
       if (nextSection >= 0 && nextSection < totalSections) {
         DEBUG && console.log('✅ Valid scroll, executing');
         scrollToSection(nextSection);
-        lastThrottleTimeRef.current = now;
-        DEBUG && console.log('⏰ Set throttle time to:', now);
       } else {
         DEBUG && console.log('❌ Dismissed: Out of bounds');
       }
@@ -199,7 +167,15 @@ export const useScrollContainer = ({
     return () => {
       window.removeEventListener('wheel', throttledWheelHandler);
     };
-  }, [currentSection, totalSections, scrollToSection]);
+  }, [
+    currentSection,
+    totalSections,
+    scrollToSection,
+    detectInertia,
+    isValidDelta,
+    isThrottled,
+    getThrottleStatus,
+  ]);
 
   // Touch event handlers
   useEffect(() => {
@@ -266,9 +242,9 @@ export const useScrollContainer = ({
         return;
       }
 
-      // Check throttle
-      const now = Date.now();
-      if (now - lastThrottleTimeRef.current < THROTTLE_WAIT) {
+      // Check throttle using the normal throttle for touch events
+      if (isThrottled(false)) {
+        // false = not momentum scroll for touch
         DEBUG && console.log('📱❌ Touch dismissed: Throttled');
         return;
       }
@@ -289,8 +265,6 @@ export const useScrollContainer = ({
       if (nextSection >= 0 && nextSection < totalSections) {
         DEBUG && console.log('📱✅ Valid swipe, executing');
         scrollToSection(nextSection);
-        lastThrottleTimeRef.current = now;
-        DEBUG && console.log('📱⏰ Set throttle time to:', now);
       } else {
         DEBUG && console.log('📱❌ Touch dismissed: Out of bounds');
       }
@@ -315,7 +289,7 @@ export const useScrollContainer = ({
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('touchcancel', handleTouchCancel);
     };
-  }, [currentSection, totalSections, scrollToSection]);
+  }, [currentSection, totalSections, scrollToSection, isThrottled]);
 
   return {
     currentSection,
