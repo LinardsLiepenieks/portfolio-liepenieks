@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
-import { IoClose } from 'react-icons/io5'; // or any other close icon you prefer
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { IoClose } from 'react-icons/io5';
 import AdaptiveIcon from '../ui/utility/AdaptiveIcon';
 
 interface A4ModalProps {
@@ -11,13 +12,34 @@ interface A4ModalProps {
 }
 
 const A4Modal = ({ isOpen, onClose, image }: A4ModalProps) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  return (
+  const modalContent = (
     <div
       className={`fixed inset-0 flex items-center justify-center z-50 p-8 transition-all duration-400 ease-out ${
         isOpen
@@ -26,8 +48,8 @@ const A4Modal = ({ isOpen, onClose, image }: A4ModalProps) => {
       }`}
       onClick={handleOverlayClick}
     >
-      <div className="shadow-2xl max-w-2xl rounded-sm h-full w-full  bg-neutral-600/40 p-2">
-        <div className="relative  h-full  overflow-hidden">
+      <div className="shadow-2xl max-w-2xl rounded-sm h-full w-full bg-neutral-600/40 p-2">
+        <div className="relative h-full overflow-hidden">
           {/* Close button positioned absolutely on top of image */}
           <button
             onClick={onClose}
@@ -41,8 +63,8 @@ const A4Modal = ({ isOpen, onClose, image }: A4ModalProps) => {
             />
           </button>
 
-          {/* A4 container with animation - NO transform on image */}
-          <div className="w-full transition-all duration-300 ease-out h-full rounded-sm   overflow-hidden  ">
+          {/* A4 container with animation */}
+          <div className="w-full transition-all duration-300 ease-out h-full rounded-sm overflow-hidden">
             <div className="w-full overflow-y-auto overflow-x-hidden h-full scrollbar-dark">
               <img
                 src={
@@ -50,7 +72,7 @@ const A4Modal = ({ isOpen, onClose, image }: A4ModalProps) => {
                   'https://via.placeholder.com/600x849/f3f4f6/6b7280?text=Recommendation+Letter'
                 }
                 alt="Recommendation Letter"
-                className="w-full h-auto "
+                className="w-full h-auto"
               />
             </div>
           </div>
@@ -58,6 +80,11 @@ const A4Modal = ({ isOpen, onClose, image }: A4ModalProps) => {
       </div>
     </div>
   );
+
+  // Only render if mounted (client-side) and return portal
+  if (!mounted) return null;
+
+  return createPortal(modalContent, document.body);
 };
 
 export default A4Modal;

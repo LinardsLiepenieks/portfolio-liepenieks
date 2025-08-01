@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { IoArrowBack } from 'react-icons/io5';
 import ReturnButton from '@/components/ui/button/ReturnButton';
-import ExperienceItem from '@/components/experience/ExperienceItem';
+import ExperienceGallery from '@/components/experience/ExperienceGallery';
 
 export default function ExperiencePage() {
   const searchParams = useSearchParams();
@@ -17,8 +17,17 @@ export default function ExperiencePage() {
     router.push(urlWithInstant);
   };
 
+  // Example experience items - replace with your actual data
+  const experienceItems = [
+    { id: 1 /* your experience data */ },
+    { id: 2 /* your experience data */ },
+    { id: 3 /* your experience data */ },
+    { id: 4 /* your experience data */ },
+    { id: 5 /* your experience data */ },
+  ];
+
   return (
-    <section className="h-screen bg-neutral-900 text-white py-8 flex flex-col w-full ">
+    <section className="h-screen bg-neutral-900 text-white py-8 flex flex-col w-full">
       {/* Header Row with Back Arrow */}
       <div className="flex items-center pb-6 px-8">
         <ReturnButton
@@ -33,7 +42,7 @@ export default function ExperiencePage() {
       </div>
 
       {/* Title Row */}
-      <div className="px-8 md:px-16 lg:px-24 xl:px-36 pb-16">
+      <div className="px-8 md:px-16 lg:px-24 xl:px-36 pb-8">
         <h1 className="text-pf-2xl font-light font-metropolis font-medium">
           About:{' '}
           <span className="relative after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-px after:bg-neutral-400">
@@ -42,11 +51,9 @@ export default function ExperiencePage() {
         </h1>
       </div>
 
-      {/* Gallery Container */}
-      <div className="h-full px-8 md:px-16 lg:px-24 xl:px-36  overflow-hidden">
-        <div className="w-full flex-1 h-full flex items-center justify-center  overflow-hidden">
-          <ExperienceItem></ExperienceItem>
-        </div>
+      {/* Experience Gallery */}
+      <div className=" flex flex-1 min-h-0">
+        <ExperienceGallery experienceItems={experienceItems} />
       </div>
     </section>
   );

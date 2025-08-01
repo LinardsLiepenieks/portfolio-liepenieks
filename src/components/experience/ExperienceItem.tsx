@@ -30,35 +30,33 @@ const ExperienceItem = ({
 
   return (
     <>
-      <div className="text-white max-w-5xl font-metropolis h-full flex flex-col">
+      <div className="text-white max-w-5xl font-metropolis flex flex-col justify-center max-h-full ">
         {/* Top row - Year */}
         <div className="text-lg mb-4 text-pf-xl flex-shrink-0">{year}</div>
 
         {/* Middle section - Photo and Description */}
-        <div className="flex flex-col gap-2 flex-1 min-h-0">
-          {/* Photo and Description Row */}
-          <div className="flex  min-h-0 gap-2">
-            <div className="aspect-[4/3] flex-[1.4] max-h-96  flex items-center justify-center border border-dotted border-gray-300">
-              <div>Photo</div>
-            </div>
-            {/* Right side - Description */}
-            <div className="flex-1 overflow-y-auto scrollbar-darker">
-              <p className="text-pf-base text-medium text-gray-200 ">
-                {description}
-              </p>
-            </div>
+        {/* Photo and Description Row */}
+        <div className="flex  min-h-0 gap-2  max-h-120 h-full mb-2">
+          <div className="aspect-[4/3] xl:flex-[1.4] md:flex-[1] max-h-96 max-h-full  flex items-center justify-center border border-dotted border-gray-500">
+            <div>Photo</div>
           </div>
+          {/* Right side - Description */}
+          <div className="flex-1 overflow-y-auto scrollbar-darker  max-h-full py-0 my-0">
+            <p className="text-pf-base text-medium text-gray-200 py-0 px-1">
+              {description}
+            </p>
+          </div>
+        </div>
 
-          {/* Bottom section - Work Title and Button */}
-          <div className="flex flex-col items-start flex-shrink-0  p-2">
-            <h3 className="text-pf-xl font-light mb-px">{workTitle}</h3>
-            <button
-              onClick={handleRecommendationClick}
-              className="text-white hover:cursor-pointer text-sm italic font-semibold !tracking-wide rounded transition-colors relative group after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:ease-out hover:after:w-full"
-            >
-              Recommendation letter
-            </button>
-          </div>
+        {/* Bottom section - Work Title and Button */}
+        <div className="flex flex-col items-start flex-shrink-0  p-2 ">
+          <h3 className="text-pf-xl font-light mb-px">{workTitle}</h3>
+          <button
+            onClick={handleRecommendationClick}
+            className="text-white hover:cursor-pointer text-sm italic font-semibold !tracking-wide rounded transition-colors relative group after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:ease-out hover:after:w-full"
+          >
+            Recommendation letter
+          </button>
         </div>
       </div>
 
