@@ -2,11 +2,6 @@
 import { useRef } from 'react';
 import ScrollContainer from './scroll-container/ScrollContainer';
 import Navbar from './ui/Navbar';
-import {
-  Section1,
-  Section2,
-  Section3,
-} from '@/components/sections/DummySections';
 import HeroSection from './sections/HeroSection';
 import AboutSection from './sections/AboutSection';
 import ContactSection from './sections/ContactSection';

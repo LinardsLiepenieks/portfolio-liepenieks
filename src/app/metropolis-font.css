@@ -1,0 +1,28 @@
+@theme {
+  --text-pf-xs: 0.75rem;
+  --text-pf-sm: 1rem;
+  --text-pf-base: 1.333rem;
+  --text-pf-lg: 1.777rem;
+  --text-pf-xl: 2.369rem;
+  --text-pf-2xl: 3.157rem;
+  --text-pf-3xl: 4.209rem;
+  --text-pf-4xl: 5.61rem;
+  --text-pf-5xl: 7.478rem;
+
+  --font-metropolis: var(--font-metropolis), sans-serif;
+}
+
+@layer base {
+  :root {
+    --font-metropolis-family: var(--font-metropolis), sans-serif;
+  }
+}
+
+@layer utilities {
+  /* Base class - use with existing Tailwind font-weight utilities */
+  .font-metropolis {
+    font-family: var(--font-metropolis-family);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

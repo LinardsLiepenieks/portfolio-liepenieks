@@ -3,13 +3,29 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-const ThreeJSLogo = ({ className = '' }) => {
+const ThreeJSLogo = ({
+  className = '',
+  sizes = { sm: 200, md: 300, lg: 400, xl: 500 },
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<any>(null);
   const rendererRef = useRef<any>(null);
+  const cameraRef = useRef<any>(null);
   const groupRef = useRef<any>(null);
   const targetRotationRef = useRef({ x: 0, y: 0 });
   const animationIdRef = useRef<number | null>(null);
+  const sizeRef = useRef(sizes.md); // Default to medium size
+
+  // Function to get current size based on window width
+  const getCurrentSize = () => {
+    if (typeof window === 'undefined') return sizes.md;
+
+    const width = window.innerWidth;
+    if (width >= 1280) return sizes.xl; // xl breakpoint
+    if (width >= 1024) return sizes.lg; // lg breakpoint
+    if (width >= 768) return sizes.md; // md breakpoint
+    return sizes.sm; // sm and below
+  };
 
   useEffect(() => {
     console.log('=== useEffect STARTED ===');
@@ -35,7 +51,12 @@ const ThreeJSLogo = ({ className = '' }) => {
     containerRef.current.innerHTML = '';
     console.log('Container cleared');
 
-    // Scene setup - using direct THREE import
+    // Get size based on current breakpoint
+    const canvasSize = getCurrentSize();
+    sizeRef.current = canvasSize;
+    console.log(`Using size: ${canvasSize}x${canvasSize}`);
+
+    // Scene setup - using breakpoint size
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({
@@ -43,16 +64,19 @@ const ThreeJSLogo = ({ className = '' }) => {
       alpha: true,
     });
 
-    renderer.setSize(800, 800);
+    // Set size based on breakpoint
+    renderer.setSize(canvasSize, canvasSize);
     renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.2;
 
-    // Generate static canvas ID (no random to avoid hydration mismatch)
+    // Generate static canvas ID
     const canvasId = 'threejs-canvas-logo';
     renderer.domElement.id = canvasId;
+    renderer.domElement.style.maxWidth = '100%';
+    renderer.domElement.style.maxHeight = '100%';
     console.log(`Creating canvas with ID: ${canvasId}`);
 
     containerRef.current.appendChild(renderer.domElement);
@@ -210,9 +234,29 @@ const ThreeJSLogo = ({ className = '' }) => {
     // Store references
     sceneRef.current = scene;
     rendererRef.current = renderer;
+    cameraRef.current = camera;
     groupRef.current = group;
 
     console.log('Three.js setup complete');
+
+    // Resize handler - updates size based on breakpoint
+    const handleResize = () => {
+      if (!rendererRef.current || !cameraRef.current) return;
+
+      const newSize = getCurrentSize();
+      if (newSize !== sizeRef.current) {
+        sizeRef.current = newSize;
+        rendererRef.current.setSize(newSize, newSize);
+        cameraRef.current.aspect = 1;
+        cameraRef.current.updateProjectionMatrix();
+
+        // Update container size
+        if (containerRef.current) {
+          containerRef.current.style.width = `${newSize}px`;
+          containerRef.current.style.height = `${newSize}px`;
+        }
+      }
+    };
 
     // Mouse move event listener
     const handleMouseMove = (event: MouseEvent) => {
@@ -226,6 +270,8 @@ const ThreeJSLogo = ({ className = '' }) => {
       targetRotationRef.current.x = -mouseY * 0.2;
     };
 
+    // Add event listeners
+    window.addEventListener('resize', handleResize);
     document.addEventListener('mousemove', handleMouseMove);
 
     // Animation loop
@@ -239,8 +285,8 @@ const ThreeJSLogo = ({ className = '' }) => {
           (targetRotationRef.current.x - groupRef.current.rotation.x) * 0.05;
       }
 
-      if (rendererRef.current && sceneRef.current) {
-        rendererRef.current.render(sceneRef.current, camera);
+      if (rendererRef.current && sceneRef.current && cameraRef.current) {
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
       }
     };
 
@@ -256,7 +302,8 @@ const ThreeJSLogo = ({ className = '' }) => {
         animationIdRef.current = null;
       }
 
-      // Remove event listener
+      // Remove event listeners
+      window.removeEventListener('resize', handleResize);
       document.removeEventListener('mousemove', handleMouseMove);
 
       // Clear container
@@ -294,17 +341,18 @@ const ThreeJSLogo = ({ className = '' }) => {
       // Clear refs
       sceneRef.current = null;
       rendererRef.current = null;
+      cameraRef.current = null;
       groupRef.current = null;
 
       console.log('Three.js cleanup complete');
     };
-  }, []);
+  }, [sizes]); // Add sizes as dependency
 
   return (
     <div
       ref={containerRef}
-      className={`flex items-center justify-center ${className}`}
-      style={{ minHeight: '800px', minWidth: '800px' }}
+      className={`flex items-center justify-center transition-all duration-300 ${className}`}
+      style={{ width: sizeRef.current, height: sizeRef.current }}
     />
   );
 };
