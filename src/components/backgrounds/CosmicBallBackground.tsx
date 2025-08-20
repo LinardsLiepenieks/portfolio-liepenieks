@@ -32,6 +32,13 @@ export default function CosmicBallBackground({
   const nextBallId = useRef(1);
   const disappearTimeouts = useRef<Map<number, NodeJS.Timeout>>(new Map());
 
+  // Add refs to track animation state
+  const lineSequenceTimeoutRef = useRef<
+    ReturnType<typeof setTimeout> | undefined
+  >(undefined);
+  const lineTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const isAnimatingRef = useRef(false);
+
   // Use the ballPosition prop directly
   const ballPositionRef = useRef(ballPosition);
 
@@ -91,6 +98,35 @@ export default function CosmicBallBackground({
       timeouts.clear();
     };
   }, []);
+
+  // Cleanup function to stop all animations and clear lines
+  const cleanupAnimations = () => {
+    // Clear all timeouts
+    if (lineSequenceTimeoutRef.current) {
+      clearTimeout(lineSequenceTimeoutRef.current);
+      lineSequenceTimeoutRef.current = undefined;
+    }
+
+    lineTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+    lineTimeoutsRef.current = [];
+
+    // Remove all existing lines from DOM
+    const container = containerRef.current;
+    if (container) {
+      const lines = container.querySelectorAll('div:not(.cosmic-ball)');
+      lines.forEach((line) => {
+        if (container.contains(line)) {
+          container.removeChild(line);
+        }
+      });
+    }
+
+    // Clear touching lines reference
+    touchingLinesRef.current = [];
+
+    // Reset animation flag
+    isAnimatingRef.current = false;
+  };
 
   useEffect(() => {
     const container = containerRef.current;
@@ -154,7 +190,7 @@ export default function CosmicBallBackground({
 
     const createLine = () => {
       const line = document.createElement('div');
-      line.className = 'absolute bg-white/90 pointer-events-none';
+      line.className = 'absolute bg-white/90 pointer-events-none cosmic-line';
       line.style.transformOrigin = 'top center';
       line.style.filter = 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))';
       line.style.boxShadow = `
@@ -167,21 +203,28 @@ export default function CosmicBallBackground({
     };
 
     const animateLine = () => {
-      // Use current ball position instead of prop
-      const centerX = (window.innerWidth * ballPositionRef.current.x) / 100;
-      const centerY = (window.innerHeight * ballPositionRef.current.y) / 100;
+      // Don't start new animations if we're not supposed to be animating
+      if (!isAnimatingRef.current) return;
+
+      // Get current screen dimensions
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+
+      // Use current ball position
+      const centerX = (screenWidth * ballPositionRef.current.x) / 100;
+      const centerY = (screenHeight * ballPositionRef.current.y) / 100;
 
       const side = Math.floor(Math.random() * 3);
       let startX, startY;
 
       if (side === 0) {
         startX = 0;
-        startY = window.innerHeight * (0.2 + Math.random() * 0.4);
+        startY = screenHeight * (0.2 + Math.random() * 0.4);
       } else if (side === 1) {
-        startX = window.innerWidth;
-        startY = window.innerHeight * (0.2 + Math.random() * 0.4);
+        startX = screenWidth;
+        startY = screenHeight * (0.2 + Math.random() * 0.4);
       } else {
-        startX = window.innerWidth * (0.2 + Math.random() * 0.6);
+        startX = screenWidth * (0.2 + Math.random() * 0.6);
         startY = 0;
       }
 
@@ -229,6 +272,14 @@ export default function CosmicBallBackground({
       const startTime = Date.now();
 
       const animate = () => {
+        // Stop animation if we're not supposed to be animating
+        if (!isAnimatingRef.current) {
+          if (container.contains(line)) {
+            container.removeChild(line);
+          }
+          return;
+        }
+
         const elapsed = Date.now() - startTime;
         const totalProgress = Math.min(
           elapsed / (phase1Duration + phase2Duration),
@@ -288,41 +339,65 @@ export default function CosmicBallBackground({
       animate();
     };
 
-    let lineSequenceTimeout: NodeJS.Timeout;
-    let lineTimeouts: NodeJS.Timeout[] = [];
-
     const startLineSequence = () => {
+      // Don't start if we're not supposed to be animating
+      if (!isAnimatingRef.current) return;
+
       animateLine();
 
-      lineTimeouts.forEach((timeout) => clearTimeout(timeout));
-      lineTimeouts = [];
+      // Clear existing timeouts
+      lineTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+      lineTimeoutsRef.current = [];
 
-      lineTimeouts.push(
-        setTimeout(() => animateLine(), 2000 + Math.random() * 3000)
-      );
-      lineTimeouts.push(
-        setTimeout(() => animateLine(), 4500 + Math.random() * 3000)
-      );
+      // Only set new timeouts if we're still supposed to be animating
+      if (isAnimatingRef.current) {
+        lineTimeoutsRef.current.push(
+          setTimeout(() => {
+            if (isAnimatingRef.current) animateLine();
+          }, 2000 + Math.random() * 3000)
+        );
+        lineTimeoutsRef.current.push(
+          setTimeout(() => {
+            if (isAnimatingRef.current) animateLine();
+          }, 4500 + Math.random() * 3000)
+        );
 
-      lineSequenceTimeout = setTimeout(
-        startLineSequence,
-        10000 + Math.random() * 2000
-      );
+        lineSequenceTimeoutRef.current = setTimeout(() => {
+          if (isAnimatingRef.current) startLineSequence();
+        }, 10000 + Math.random() * 2000);
+      }
     };
 
+    // Start animations
+    isAnimatingRef.current = true;
     startLineSequence();
 
+    // Handle resize events
+    const handleResize = () => {
+      // Stop current animations
+      cleanupAnimations();
+
+      // Wait a brief moment for things to settle, then restart
+      setTimeout(() => {
+        if (containerRef.current && dotRef.current) {
+          isAnimatingRef.current = true;
+          startLineSequence();
+        }
+      }, 100);
+    };
+
+    window.addEventListener('resize', handleResize);
+
     return () => {
+      window.removeEventListener('resize', handleResize);
+      cleanupAnimations();
+
       const existingStyle = document.getElementById('constantPulseStyle');
       if (existingStyle) {
         existingStyle.remove();
       }
-
-      clearTimeout(lineSequenceTimeout);
-      lineTimeouts.forEach((timeout) => clearTimeout(timeout));
-      touchingLinesRef.current = [];
     };
-  }, [balls, ballPosition]); // Use ballPosition instead of currentBallPosition
+  }, [ballPosition]);
 
   const handleBallClick = (clickedBall: BallInstance) => {
     if (balls.length >= 10) {
