@@ -1,12 +1,13 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import ReturnButton from '@/components/ui/button/ReturnButton';
 import EducationItem from '@/components/education/EducationItem';
 
-export default function ExperiencePage() {
+function EducationPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -139,5 +140,13 @@ export default function ExperiencePage() {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function EducationPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <EducationPageContent />
+    </Suspense>
   );
 }

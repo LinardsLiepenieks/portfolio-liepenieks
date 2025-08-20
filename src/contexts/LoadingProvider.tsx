@@ -7,8 +7,9 @@ import {
   useState,
   ReactNode,
   useRef,
+  useCallback,
 } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 interface LoadingContextType {
   isLoading: boolean;
@@ -27,23 +28,22 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
   const [isLoading, setIsLoading] = useState(true); // Start with loading on initial page load
   const [disableLoading, setDisableLoading] = useState(false); // New flag to disable loading
   const pathname = usePathname();
-  const router = useRouter();
 
   const loadingStartTimeRef = useRef<number | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialLoadRef = useRef(true);
 
   // Function to start loading with minimum duration enforcement
-  const startLoading = () => {
+  const startLoading = useCallback(() => {
     if (disableLoading) {
       return;
     }
     setIsLoading(true);
     loadingStartTimeRef.current = Date.now();
-  };
+  }, [disableLoading]);
 
   // Function to end loading with minimum duration check
-  const endLoading = () => {
+  const endLoading = useCallback(() => {
     if (loadingStartTimeRef.current === null) {
       setIsLoading(false);
       return;
@@ -65,16 +65,16 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
       setIsLoading(false);
       loadingStartTimeRef.current = null;
     }
-  };
+  }, []);
 
   // Manual loading control function
-  const setLoading = (loading: boolean) => {
+  const setLoading = useCallback((loading: boolean) => {
     if (loading) {
       startLoading();
     } else {
       endLoading();
     }
-  };
+  }, [startLoading, endLoading]);
 
   // Handle initial page load
   useEffect(() => {
@@ -89,7 +89,7 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
 
       return () => clearTimeout(initialLoadTimer);
     }
-  }, []);
+  }, [startLoading, endLoading]);
 
   // Listen for pathname changes (navigation)
   useEffect(() => {
@@ -98,15 +98,21 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
       return;
     }
 
-    startLoading();
+    // Check if the current history state indicates scroll navigation
+    const isFromScroll = window.history.state?.fromScroll === true;
+    
+    // Don't start loading if it's disabled (scroll navigation) or if it's from scroll
+    if (!disableLoading && !isFromScroll) {
+      startLoading();
 
-    // End loading after navigation completes
-    const navigationTimer = setTimeout(() => {
-      endLoading();
-    }, 50);
+      // End loading after navigation completes
+      const navigationTimer = setTimeout(() => {
+        endLoading();
+      }, 50);
 
-    return () => clearTimeout(navigationTimer);
-  }, [pathname]);
+      return () => clearTimeout(navigationTimer);
+    }
+  }, [pathname, startLoading, endLoading, disableLoading]);
 
   // Listen for page visibility changes (page refresh, coming back to tab)
   useEffect(() => {
@@ -135,7 +141,7 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, []);
+  }, [startLoading, endLoading]);
 
   // Cleanup on unmount
   useEffect(() => {

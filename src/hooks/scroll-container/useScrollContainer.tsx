@@ -42,11 +42,9 @@ export const useScrollContainer = ({
 
   const scrollToSection = useCallback(
     (sectionIndex: number) => {
-      DEBUG && console.log('🚀 Scrolling to section:', sectionIndex);
       const targetElement = sectionRefs.current[sectionIndex];
       if (targetElement) {
         isScrollingRef.current = true;
-        DEBUG && console.log('✅ Set isScrolling = true');
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         setCurrentSection(sectionIndex);
         updateURL(sectionIndex);
@@ -123,13 +121,11 @@ export const useScrollContainer = ({
 
       // Dismiss wheel events with very small delta values (touchpad noise)
       if (!isValidDelta(e.deltaY)) {
-        DEBUG && console.log('❌ Dismissed: Delta too small');
         return;
       }
 
       // If currently scrolling, ignore
       if (isScrollingRef.current) {
-        DEBUG && console.log('❌ Dismissed: Currently scrolling');
         return;
       }
 
@@ -155,10 +151,8 @@ export const useScrollContainer = ({
 
       // Check bounds
       if (nextSection >= 0 && nextSection < totalSections) {
-        DEBUG && console.log('✅ Valid scroll, executing');
         scrollToSection(nextSection);
       } else {
-        DEBUG && console.log('❌ Dismissed: Out of bounds');
       }
     };
 
@@ -181,7 +175,6 @@ export const useScrollContainer = ({
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
       if (isScrollingRef.current) {
-        DEBUG && console.log('📱❌ Touch dismissed: Currently scrolling');
         return;
       }
 
@@ -206,7 +199,6 @@ export const useScrollContainer = ({
 
     const handleTouchEnd = (e: TouchEvent) => {
       if (!isTouchingRef.current) {
-        DEBUG && console.log('📱❌ Touch end dismissed: Not touching');
         return;
       }
 
@@ -233,19 +225,16 @@ export const useScrollContainer = ({
 
       // Check if it's a valid swipe
       if (distance < MIN_TOUCH_DISTANCE) {
-        DEBUG && console.log('📱❌ Touch dismissed: Distance too small');
         return;
       }
 
       if (deltaTime > MAX_TOUCH_TIME) {
-        DEBUG && console.log('📱❌ Touch dismissed: Too slow');
         return;
       }
 
       // Check throttle using the normal throttle for touch events
       if (isThrottled(false)) {
         // false = not momentum scroll for touch
-        DEBUG && console.log('📱❌ Touch dismissed: Throttled');
         return;
       }
 
@@ -263,16 +252,13 @@ export const useScrollContainer = ({
 
       // Check bounds
       if (nextSection >= 0 && nextSection < totalSections) {
-        DEBUG && console.log('📱✅ Valid swipe, executing');
         scrollToSection(nextSection);
       } else {
-        DEBUG && console.log('📱❌ Touch dismissed: Out of bounds');
       }
     };
 
     const handleTouchCancel = () => {
       isTouchingRef.current = false;
-      DEBUG && console.log('📱🟡 Touch cancelled');
     };
 
     // Add touch event listeners

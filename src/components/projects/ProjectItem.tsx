@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 interface ProjectItemProps {
   title: string;
   year: string;
@@ -22,10 +24,11 @@ export default function ProjectItem({
       onClick={onClick}
     >
       {backgroundImage && (
-        <img
+        <Image
           src={backgroundImage}
           alt={title}
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
         />
       )}
 

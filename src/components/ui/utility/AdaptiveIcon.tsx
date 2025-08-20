@@ -13,7 +13,6 @@ interface AdaptiveIconProps {
 }
 
 const AdaptiveIcon: React.FC<AdaptiveIconProps> = ({
-  type,
   component: IconComponent,
   size,
   className = '',

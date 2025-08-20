@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 import { IoClose } from 'react-icons/io5';
 import AdaptiveIcon from '../ui/utility/AdaptiveIcon';
 
@@ -66,12 +67,14 @@ const A4Modal = ({ isOpen, onClose, image }: A4ModalProps) => {
           {/* A4 container with animation */}
           <div className="w-full transition-all duration-300 ease-out h-full rounded-sm overflow-hidden">
             <div className="w-full overflow-y-auto overflow-x-hidden h-full scrollbar-dark">
-              <img
+              <Image
                 src={
                   image ||
                   'https://via.placeholder.com/600x849/f3f4f6/6b7280?text=Recommendation+Letter'
                 }
                 alt="Recommendation Letter"
+                width={600}
+                height={849}
                 className="w-full h-auto"
               />
             </div>

@@ -27,11 +27,9 @@ export const useHorizontalScroll = ({
   const MIN_WHEEL_DELTA = 5; // Reduced from 10 for better sensitivity
 
   const scrollToItem = useCallback((itemIndex: number) => {
-    DEBUG && console.log('🚀 Scrolling to item:', itemIndex);
     const targetElement = itemRefs.current[itemIndex];
     if (targetElement && containerRef.current) {
       isScrollingRef.current = true;
-      DEBUG && console.log('✅ Set isScrolling = true');
 
       // Use scrollIntoView for smoother, more reliable scrolling
       targetElement.scrollIntoView({
@@ -46,7 +44,6 @@ export const useHorizontalScroll = ({
       // Reset scrolling flag after animation completes
       setTimeout(() => {
         isScrollingRef.current = false;
-        DEBUG && console.log('✅ Animation complete, set isScrolling = false');
       }, 400); // Slightly less than throttle time
     }
   }, []);
@@ -62,7 +59,6 @@ export const useHorizontalScroll = ({
                 '👁️ Observer: Item in view - resetting isScrolling flag'
               );
             isScrollingRef.current = false;
-            DEBUG && console.log('✅ Set isScrolling = false');
           }
         });
       },
@@ -97,7 +93,6 @@ export const useHorizontalScroll = ({
       }
 
       if (Math.abs(delta) < MIN_WHEEL_DELTA) {
-        DEBUG && console.log('❌ Dismissed: Delta too small');
         return;
       }
 
@@ -105,12 +100,10 @@ export const useHorizontalScroll = ({
 
       const now = Date.now();
       if (now - lastScrollTime.current < SCROLL_THROTTLE) {
-        DEBUG && console.log('❌ Dismissed: Throttled');
         return;
       }
 
       if (isScrollingRef.current) {
-        DEBUG && console.log('❌ Dismissed: Currently scrolling');
         return;
       }
 
@@ -128,10 +121,8 @@ export const useHorizontalScroll = ({
         );
 
       if (nextItem >= 0 && nextItem < totalItems) {
-        DEBUG && console.log('✅ Valid scroll, executing');
         scrollToItem(nextItem);
       } else {
-        DEBUG && console.log('❌ Dismissed: Out of bounds');
       }
     };
 
@@ -149,7 +140,6 @@ export const useHorizontalScroll = ({
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
       if (isScrollingRef.current) {
-        DEBUG && console.log('📱❌ Touch dismissed: Currently scrolling');
         return;
       }
 
@@ -173,7 +163,6 @@ export const useHorizontalScroll = ({
 
     const handleTouchEnd = (e: TouchEvent) => {
       if (!isTouchingRef.current) {
-        DEBUG && console.log('📱❌ Touch end dismissed: Not touching');
         return;
       }
 
@@ -197,18 +186,15 @@ export const useHorizontalScroll = ({
         });
 
       if (distance < MIN_TOUCH_DISTANCE) {
-        DEBUG && console.log('📱❌ Touch dismissed: Distance too small');
         return;
       }
 
       if (deltaTime > MAX_TOUCH_TIME) {
-        DEBUG && console.log('📱❌ Touch dismissed: Too slow');
         return;
       }
 
       const now = Date.now();
       if (now - lastScrollTime.current < SCROLL_THROTTLE) {
-        DEBUG && console.log('📱❌ Touch dismissed: Throttled');
         return;
       }
 
@@ -220,16 +206,13 @@ export const useHorizontalScroll = ({
         console.log('📱📍 Current item:', currentItem, 'Next:', nextItem);
 
       if (nextItem >= 0 && nextItem < totalItems) {
-        DEBUG && console.log('📱✅ Valid swipe, executing');
         scrollToItem(nextItem);
       } else {
-        DEBUG && console.log('📱❌ Touch dismissed: Out of bounds');
       }
     };
 
     const handleTouchCancel = () => {
       isTouchingRef.current = false;
-      DEBUG && console.log('📱🟡 Touch cancelled');
     };
 
     const container = containerRef.current;

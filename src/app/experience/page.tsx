@@ -1,11 +1,12 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { IoArrowBack } from 'react-icons/io5';
 import ReturnButton from '@/components/ui/button/ReturnButton';
 import ExperienceGallery from '@/components/experience/ExperienceGallery';
 
-export default function ExperiencePage() {
+function ExperiencePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const returnSection = parseInt(searchParams.get('returnTo') || '0');
@@ -56,5 +57,13 @@ export default function ExperiencePage() {
         <ExperienceGallery experienceItems={experienceItems} />
       </div>
     </section>
+  );
+}
+
+export default function ExperiencePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ExperiencePageContent />
+    </Suspense>
   );
 }

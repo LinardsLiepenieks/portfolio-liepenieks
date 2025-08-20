@@ -1,13 +1,13 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import ReturnButton from '@/components/ui/button/ReturnButton';
-import EducationItem from '@/components/education/EducationItem';
 import ProjectItem from '@/components/projects/ProjectItem';
 
-export default function ProjectsPage() {
+function ProjectsPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -162,5 +162,13 @@ export default function ProjectsPage() {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function ProjectsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ProjectsPageContent />
+    </Suspense>
   );
 }

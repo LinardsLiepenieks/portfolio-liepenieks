@@ -72,9 +72,10 @@ export default function CosmicBallBackground({
 
     return () => {
       clearInterval(interval);
-      // Clean up any pending timeouts
-      disappearTimeouts.current.forEach((timeout) => clearTimeout(timeout));
-      disappearTimeouts.current.clear();
+      // Clean up any pending timeouts - capture reference at cleanup time
+      const timeouts = disappearTimeouts.current;
+      timeouts.forEach((timeout) => clearTimeout(timeout));
+      timeouts.clear();
     };
   }, []);
 
@@ -417,7 +418,7 @@ export default function CosmicBallBackground({
     return () => {
       window.removeEventListener('click', handleGlobalClick);
     };
-  }, [balls]);
+  }, [balls, handleBallClick]);
 
   return (
     <div

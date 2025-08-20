@@ -3,14 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import CosmicBallBackground from '../backgrounds/CosmicBallBackground';
 import HoverFollowCard from '../ui/labels/HoverFollowCard';
-import { usePathname } from 'next/navigation';
 
 interface HeroSectionProps {
   onNavigate?: (sectionIndex: number) => void;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
-  const pathname = usePathname();
   const [currentTime, setCurrentTime] = useState<string>('--:--');
   const [isOnline, setIsOnline] = useState<boolean>(false);
   const [ballPosition, setBallPosition] = useState({ x: 50, y: 80 });
