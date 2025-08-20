@@ -1,10 +1,15 @@
 import React from 'react';
 import AdaptiveIcon from '../utility/AdaptiveIcon';
 
+interface IconProps {
+  className?: string;
+  size?: string | number;
+}
+
 interface SpotlightButtonProps {
   icon: {
     type: 'react-icons';
-    component: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    component: React.ComponentType<IconProps>;
   };
   text: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
