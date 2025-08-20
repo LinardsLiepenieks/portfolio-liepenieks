@@ -24,7 +24,7 @@ export default function Portfolio() {
       {/* Navbar with scroll navigation callback */}
       <Navbar routes={routes} onNavigate={handleNavbarNavigation} />
       <ScrollContainer ref={scrollContainerRef} routes={routes}>
-        <HeroSection></HeroSection>
+        <HeroSection onNavigate={handleNavbarNavigation}></HeroSection>
         <AboutSection></AboutSection>
         <ContactSection></ContactSection>
       </ScrollContainer>

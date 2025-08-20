@@ -1,119 +1,200 @@
 'use client';
 
-import React from 'react';
-import ThreeJSLogo from '../ThreeJSLogo';
-import MovingLinesBackground from '../MovingLinesBackground';
+import React, { useState, useEffect } from 'react';
+import CosmicBallBackground from '../backgrounds/CosmicBallBackground';
 import HoverFollowCard from '../ui/labels/HoverFollowCard';
 import { usePathname } from 'next/navigation';
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  onNavigate?: (sectionIndex: number) => void;
+}
+
+const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
   const pathname = usePathname();
+  const [currentTime, setCurrentTime] = useState<string>('--:--');
+  const [isOnline, setIsOnline] = useState<boolean>(false);
+  const [ballPosition, setBallPosition] = useState({ x: 50, y: 80 });
+
+  useEffect(() => {
+    const updateBallPosition = () => {
+      if (window.innerWidth >= 1280) {
+        // xl breakpoint (1280px)
+        setBallPosition({ x: 68, y: 42 });
+      } else {
+        setBallPosition({ x: 50, y: 80 });
+      }
+    };
+
+    // Set initial position
+    updateBallPosition();
+
+    // Listen for window resize
+    window.addEventListener('resize', updateBallPosition);
+
+    return () => {
+      window.removeEventListener('resize', updateBallPosition);
+    };
+  }, []);
+
+  useEffect(() => {
+    const fetchTime = async () => {
+      try {
+        const response = await fetch(
+          'https://worldtimeapi.org/api/timezone/Europe/Helsinki'
+        );
+        const data = await response.json();
+
+        if (data.datetime) {
+          const date = new Date(data.datetime);
+          const timeString = date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          });
+          setCurrentTime(timeString);
+
+          // Check if current time is between 08:00 and 19:00
+          const currentHour = date.getHours();
+          setIsOnline(currentHour >= 8 && currentHour < 19);
+        }
+      } catch (error) {
+        console.error('Failed to fetch time:', error);
+        // Fallback to browser time in Helsinki timezone
+        const fallbackDate = new Date();
+        const fallbackTime = fallbackDate.toLocaleTimeString('en-US', {
+          timeZone: 'Europe/Helsinki',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        });
+        setCurrentTime(fallbackTime);
+
+        // Get Helsinki time for online status check
+        const helsinkiTime = new Date(
+          fallbackDate.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' })
+        );
+        const currentHour = helsinkiTime.getHours();
+        setIsOnline(currentHour >= 8 && currentHour < 19);
+      }
+    };
+
+    // Fetch time immediately
+    fetchTime();
+
+    // Update time every minute
+    const interval = setInterval(fetchTime, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handle navigation for the contact link (index 2 for contact in typical nav structure)
+  const handleContactNavigation = (event: React.MouseEvent) => {
+    // Prevent default link behavior for smooth scroll navigation
+    event.preventDefault();
+
+    // If onNavigate callback is provided, use scroll navigation
+    if (onNavigate) {
+      onNavigate(2); // Contact is typically index 2 (Start=0, About=1, Contact=2)
+    } else {
+      // Fallback to regular navigation if no callback provided
+      window.location.href = '/contact';
+    }
+  };
 
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-[linear-gradient(135deg,#7F0C0C_0%,#A40000_49%,#761B1B_100%)] flex justify-center ">
+    <section className="relative h-screen w-full overflow-hidden bg-neutral-900 font-metropolis   flex justify-center">
       {/* Background container for elements */}
-      <div className="absolute inset-0 flex items-center justify-center py-16 w-full h-full">
-        <MovingLinesBackground
-          lineCount={25}
-          opacity={0.2}
-          className="z-0 w-full h-full"
-        />
-
-        {/* LOGO */}
-        <div className="h-full relative top-0 md:top-8 flex items-center justify-center md:opacity-40 z-10">
-          <ThreeJSLogo
-            sizes={{
-              sm: 360, // Small on mobile
-              md: 800, // Medium on tablet
-              lg: 800, // Large on desktop
-              xl: 800, // Extra large on big screens
-            }}
-          />
-        </div>
+      <div className="absolute -z-0 flex items-center justify-center w-full h-full">
+        <CosmicBallBackground
+          ballPosition={ballPosition}
+        ></CosmicBallBackground>
       </div>
 
       {/* Main Content Container */}
-      <div className="relative z-10 h-full flex flex-col pt-16 sm:pt-32 w-full  items-center justify-center  ">
-        <div className="px-4  lg:px-12  sm:mx-12 flex flex-col flex-1   gap-10 w-full max-w-[2000px]  3xl:justify-center  ">
-          <div className=" w-full  flex-1 pb-32 h-full md:gap-8 sm:flex sm:flex-col  justify-center">
-            <div className="sm:flex sm:pt-16 lg:pt-0  flex flex-col lg:flex-row  ">
-              {/* Left Side */}
-              <div className="flex flex-col lg:px-14  justify-center ">
-                <ul className="flex flex-col gap-2 sm:gap-6 font-metropolis text-pf-xl sm:text-pf-3xl lg:text-pf-5xl sm:flex-row lg:flex-col font-medium mt-6 md:mt-16 sm:m-0  ">
-                  <li>
-                    <HoverFollowCard
-                      maxMove={4}
-                      sensitivity={0.035}
-                      moveSpeed={0.35}
-                    >
-                      <span className="bg-neutral-900 text-stone-100 px-2 py-2 drop-shadow-sharp-card">
-                        Linards
-                      </span>
-                    </HoverFollowCard>
-                  </li>
-                  <li>
-                    <HoverFollowCard
-                      maxMove={4}
-                      sensitivity={0.035}
-                      moveSpeed={0.35}
-                    >
-                      <span className="bg-neutral-900 text-stone-100 px-2 py-2 drop-shadow-sharp-card">
-                        Liepenieks
-                      </span>
-                    </HoverFollowCard>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Right Side */}
-              <div className="flex flex-1 flex-col justify-center sm:px-0  relative pt-2 lg:top-24  ">
-                <ul className="flex md:flex-col lg:text-right text-neutral-100 italic gap-1 lg:gap-2 text-pf-xs md:text-pf-xl sm:text-pf-lg lg:text-pf-3xl">
-                  <li className="font-metropolis font-medium  ">
-                    <span className="md:px-2 py-2 sm:drop-shadow-sharp-card">
-                      Developer.
-                    </span>
-                  </li>
-                  <li className="font-metropolis font-medium  ">
-                    <span className="md:px-2 py-2 sm:drop-shadow-sharp-card">
-                      Entrepreneur.
-                    </span>
-                  </li>
-                  <li className="font-metropolis font-medium  ">
-                    <span className="md:px-2 py-2 sm:drop-shadow-sharp-card  ">
-                      Technology educator.
-                    </span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div className="w-full flex justify-between lg:items-center flex-col h-full sm:h-auto  gap-4 sm:flex-col sm:pb-4 md:gap-8 md:px-4 lg:flex-row ">
-              <ul className="flex flex-col gap-2 sm:text-pf-lg lg:text-pf-xl text-pf-base text-stone-200 flex-1 justify-end lg:px-16">
-                <li className="font-metropolis">Location: Finland, Turku</li>
-                <li className="font-metropolis">Local time: 00:00</li>
-                <li className="font-metropolis my-1">
-                  <span className="px-4 py-2 bg-neutral-900 text-stone-100 font-medium drop-shadow-sharp-card cursor-pointer hover:bg-neutral-800 hover:scale-105 transition-all duration-300 border-l-2 border-emerald-500">
-                    Currently online
-                  </span>
-                </li>
-              </ul>
-              <HoverFollowCard
-                maxMove={5}
-                sensitivity={0.04}
-                moveSpeed={0.4}
-                className="max-w-[640px]   p-3 bg-neutral-900 text-stone-100 drop-shadow-sharp-card -mx-4 md:mx-0 lg:m-4"
-              >
-                <span className="text-pf-base font-metropolis text-pf-sm sm:text-pf-lg">
-                  Finding beauty in elegant solutions and solving real world
-                  problems - tech should{' '}
-                  <span className="underline italic">be effortless</span>.
-                </span>
-              </HoverFollowCard>
-            </div>
+      <div className=" relative z-20  w-full px-8 lg:px-20 xl:px-32  h-full flex flex-col justify-between  pt-16 max-w-[3200px]">
+        <div className=" ">
+          <div className=" flex flex-col gap-1 items-start pt-14">
+            <HoverFollowCard
+              maxMove={40}
+              sensitivity={0.1}
+              moveSpeed={1}
+              returnSpeed={1.2}
+            >
+              <h1 className="text-pf-xl md:text-pf-2xl lg:text-pf-3xl xl:text-pf-5xl  bg-neutral-900 px-4 text-neutral-200">
+                Linards
+              </h1>
+            </HoverFollowCard>
+            <HoverFollowCard
+              maxMove={40}
+              sensitivity={0.1}
+              moveSpeed={1}
+              returnSpeed={1.2}
+            >
+              <h1 className="text-pf-xl md:text-pf-2xl lg:text-pf-3xl xl:text-pf-5xl bg-neutral-900 px-4 text-neutral-200">
+                Liepenieks
+              </h1>
+            </HoverFollowCard>
+          </div>
+          <div className="flex flex-col gap-1 items-start  mt-4">
+            <HoverFollowCard
+              maxMove={40}
+              sensitivity={0.1}
+              moveSpeed={1}
+              returnSpeed={1.2}
+            >
+              <h2 className="text-pf-base lg:text-pf-lg xl:text-pf-xl bg-neutral-900 px-4 text-neutral-200 ">
+                Software engineer
+              </h2>
+            </HoverFollowCard>
+            <HoverFollowCard
+              maxMove={40}
+              sensitivity={0.1}
+              moveSpeed={1}
+              returnSpeed={1.2}
+            >
+              <h2 className="text-pf-base lg:text-pf-lg xl:text-pf-xl bg-neutral-900 px-4 text-neutral-200">
+                &
+              </h2>
+            </HoverFollowCard>
+            <HoverFollowCard
+              maxMove={40}
+              sensitivity={0.1}
+              moveSpeed={1}
+              returnSpeed={1.2}
+            >
+              <h2 className="text-pf-base lg:text-pf-lg xl:text-pf-xl bg-neutral-900 px-4 text-neutral-200">
+                Educator
+              </h2>
+            </HoverFollowCard>
           </div>
         </div>
-        {/* Black Bottom Row */}
-        <div className="h-16 bg-neutral-900 w-full flex-shrink-0">
-          {/* You can add content here if needed */}
+        <div className="w-full mb-16 lg:mb-28 xl:mb-40 invisible sm:visible">
+          <div className="font-metropolis text-pf-base  xl:text-pf-lg flex flex-col text-right gap-1 xl:pr-8">
+            <h3 className="font-medium">Location: Finland, Turku 🇫🇮</h3>
+            <span className="font-medium">Local time: {currentTime}</span>
+            <div className="flex justify-end">
+              <a
+                href={onNavigate ? '#contact' : '/contact'}
+                onClick={handleContactNavigation}
+                className={`
+                  relative   font-semibold text-pf-sm xl:text-pf-base font-metropolis
+                  transition-all duration-200 ease-in-out
+                  hover:cursor-pointer group
+                  ${isOnline ? 'text-emerald-400' : 'text-red-400'}
+                `}
+              >
+                {isOnline ? 'Currently online' : 'Back at 08:00'}
+                {/* Underline that appears on hover */}
+                <span
+                  className={`
+                    absolute bottom-0 h-px transition-all duration-300 ease-out
+                    left-1/2 w-0 group-hover:w-[calc(100%)] group-hover:left-0
+                    ${isOnline ? 'bg-emerald-400' : 'bg-red-400'}
+                  `}
+                ></span>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
