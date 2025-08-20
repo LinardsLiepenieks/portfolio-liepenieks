@@ -1,8 +1,13 @@
 import React from 'react';
 
+interface IconProps {
+  className?: string;
+  size?: string | number;
+}
+
 interface AdaptiveIconProps {
   type: 'react-icons';
-  component: React.ComponentType<any>;
+  component: React.ComponentType<IconProps>;
   size: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
   className?: string;
 }

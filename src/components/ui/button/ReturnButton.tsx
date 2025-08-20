@@ -1,10 +1,15 @@
 import React from 'react';
 import AdaptiveIcon from '../utility/AdaptiveIcon';
 
+interface IconProps {
+  className?: string;
+  size?: string | number;
+}
+
 interface ReturnButtonProps {
   icon: {
     type: 'react-icons';
-    component: React.ComponentType<any>;
+    component: React.ComponentType<IconProps>;
   };
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
   onClick?: () => void;
