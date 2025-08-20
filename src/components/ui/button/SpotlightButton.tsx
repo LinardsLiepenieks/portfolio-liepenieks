@@ -4,7 +4,7 @@ import AdaptiveIcon from '../utility/AdaptiveIcon';
 interface SpotlightButtonProps {
   icon: {
     type: 'react-icons';
-    component: React.ComponentType<any>;
+    component: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   };
   text: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
