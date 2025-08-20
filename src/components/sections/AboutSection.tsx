@@ -127,13 +127,13 @@ const AboutSection = () => {
   return (
     <section className="flex flex-col w-full">
       {/* Title Section */}
-      <div className="mt-16 mx-8">
-        <div className="flex items-start gap-1 mt-8 flex-col">
-          <h2 className="text-pf-lg font-medium font-metropolis text-white">
+      <div className="mt-16 mx-8 lg:mt-32 lg:mx-16">
+        <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mb-8 xl:mt-4 xl:mx-12">
+          <h2 className="text-pf-lg font-medium font-metropolis text-white lg:text-pf-2xl xl:text-pf-3xl">
             About:
           </h2>
-          <div className="h-px bg-white w-64 md:w-70 relative mt-10">
-            <span className="absolute -bottom-2 left-0 text-white text-pf-xl font-metropolis font-semibold tracking-wide">
+          <div className="h-px bg-white w-64 md:w-70 relative mt-10 lg:-bottom-5 xl:-bottom-11">
+            <span className="absolute -bottom-2 left-0 text-white text-pf-xl font-metropolis font-semibold tracking-wide lg:text-pf-xl xl:text-pf-2xl">
               {displayText}
             </span>
           </div>
@@ -145,7 +145,7 @@ const AboutSection = () => {
         ref={containerRef}
         className="w-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pt-4"
       >
-        <div className="flex w-max md:w-full md:justify-center md:gap-32 mt-16">
+        <div className="flex w-max md:w-full md:justify-center md:gap-4 mt-16 lg:gap-32">
           {buttons.map((button, index) => (
             <div
               key={button.id}
