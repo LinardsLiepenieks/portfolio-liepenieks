@@ -60,22 +60,22 @@ const SpotlightButton: React.FC<SpotlightButtonProps> = ({
       onMouseLeave={onMouseLeave}
       onClick={onClick}
     >
-      {/* White circular background that grows from center */}
-      <div className="absolute inset-0 rounded-full bg-white scale-0 group-hover:scale-100 transition-transform duration-300 ease-out origin-center z-0"></div>
+      {/* White circular background that grows from center - works on hover, active, and focus */}
+      <div className="absolute inset-0 rounded-full bg-white scale-0 group-hover:scale-100 group-active:scale-100 group-focus:scale-100 transition-transform duration-300 ease-out origin-center z-0"></div>
 
-      {/* Icon with color inversion on hover - centered */}
+      {/* Icon with color inversion on hover, active, and focus - centered */}
       <div className="relative z-10 flex items-center justify-center">
         <AdaptiveIcon
           type={icon.type}
           component={icon.component}
           size={iconSizeMap[size]}
-          className="text-white group-hover:text-black transition-colors duration-150"
+          className="text-white group-hover:text-black group-active:text-black group-focus:text-black transition-colors duration-150"
         />
       </div>
 
-      {/* Text with color inversion - controlled by hideText parameter and size */}
+      {/* Text with color inversion - controlled by hideText parameter and size - works on hover, active, and focus */}
       {shouldShowText && (
-        <span className="relative z-10 text-white group-hover:text-black text-pf-base font-semibold transition-colors duration-150 mt-2 text-center">
+        <span className="relative z-10 text-white group-hover:text-black group-active:text-black group-focus:text-black text-pf-base font-semibold transition-colors duration-150 mt-2 text-center">
           {text}
         </span>
       )}

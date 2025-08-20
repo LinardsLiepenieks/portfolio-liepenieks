@@ -1,52 +1,78 @@
+// useHorizontalScrollContainer.js
 import { useRef, useState, useCallback, useEffect } from 'react';
+import { useTouchpadDetection } from './useTouchpadDetection';
+import { useScrollThrottle } from './useScrollThrottle';
 
-interface UseHorizontalScrollProps {
+interface UseHorizontalScrollContainerProps {
   totalItems: number;
+  updateActiveItem?: (itemIndex: number) => void;
 }
 
 const DEBUG = false; // Set to true for development debugging
 
-export const useHorizontalScroll = ({
+export const useHorizontalScrollContainer = ({
   totalItems,
-}: UseHorizontalScrollProps) => {
+  updateActiveItem,
+}: UseHorizontalScrollContainerProps) => {
   const [currentItem, setCurrentItem] = useState(0);
   const isScrollingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const lastScrollTime = useRef(0);
 
   // Touch tracking
   const touchStartXRef = useRef(0);
   const touchStartTimeRef = useRef(0);
   const isTouchingRef = useRef(false);
 
-  // Scroll constants
-  const SCROLL_THROTTLE = 800; // Reduced from 600ms for better responsiveness
-  const MIN_TOUCH_DISTANCE = 30; // Reduced from 50 for easier swipes
-  const MAX_TOUCH_TIME = 1000; // Increased from 800ms for more forgiving swipes
-  const MIN_WHEEL_DELTA = 5; // Reduced from 10 for better sensitivity
+  // Use the existing hooks (same as vertical)
+  const { detectInertia, isValidDelta } = useTouchpadDetection({
+    minTimeGap: 1500,
+    minDelta: 4,
+    debug: DEBUG,
+  });
 
-  const scrollToItem = useCallback((itemIndex: number) => {
-    const targetElement = itemRefs.current[itemIndex];
-    if (targetElement && containerRef.current) {
-      isScrollingRef.current = true;
+  const { isThrottled, updateThrottle, getThrottleStatus } = useScrollThrottle({
+    normalThrottle: 400,
+    momentumThrottle: 1800,
+    debug: DEBUG,
+  });
 
-      // Use scrollIntoView for smoother, more reliable scrolling
-      targetElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center',
-      });
+  // Touch constants
+  const MIN_TOUCH_DISTANCE = 50; // minimum distance for a valid swipe
+  const MAX_TOUCH_TIME = 800; // maximum time for a valid swipe (ms)
 
-      setCurrentItem(itemIndex);
-      lastScrollTime.current = Date.now();
+  const scrollToItem = useCallback(
+    (itemIndex: number) => {
+      const targetElement = itemRefs.current[itemIndex];
+      if (targetElement) {
+        isScrollingRef.current = true;
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center',
+        });
+        setCurrentItem(itemIndex);
+        updateActiveItem?.(itemIndex);
+        updateThrottle(); // Update throttle when scrolling
+      }
+    },
+    [updateActiveItem, updateThrottle]
+  );
 
-      // Reset scrolling flag after animation completes
-      setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 400); // Slightly less than throttle time
-    }
-  }, []);
+  const handleItemChange = useCallback(
+    (itemIndex: number, behavior: 'smooth' | 'instant' = 'smooth') => {
+      const targetElement = itemRefs.current[itemIndex];
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior,
+          block: 'nearest',
+          inline: 'center',
+        });
+        setCurrentItem(itemIndex);
+      }
+    },
+    []
+  );
 
   // Stop scrolling animation when item comes into view
   useEffect(() => {
@@ -56,9 +82,11 @@ export const useHorizontalScroll = ({
           if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
             DEBUG &&
               console.log(
-                '👁️ Observer: Item in view - resetting isScrolling flag'
+                '👁️ Observer: Item in view - only resetting isScrolling flag'
               );
             isScrollingRef.current = false;
+            DEBUG &&
+              console.log('✅ Set isScrolling = false (throttle still active)');
           }
         });
       },
@@ -75,68 +103,83 @@ export const useHorizontalScroll = ({
     return () => observer.disconnect();
   }, [totalItems]);
 
-  // Horizontal wheel event handler
+  // Wheel event handler - horizontal scrolling
   useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      // Prioritize horizontal scrolling, but allow vertical-to-horizontal conversion
-      let delta = 0;
+    const throttledWheelHandler = (e: WheelEvent) => {
+      // Only handle horizontal scroll or shift+wheel for horizontal movement
+      const deltaX = e.deltaX !== 0 ? e.deltaX : e.shiftKey ? e.deltaY : 0;
 
-      // If there's horizontal wheel movement, use it directly
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        delta = e.deltaX;
-      }
-      // If vertical movement is stronger and there's no horizontal movement, convert it
-      else if (Math.abs(e.deltaY) > MIN_WHEEL_DELTA && Math.abs(e.deltaX) < 5) {
-        delta = e.deltaY;
-      } else {
-        return; // Don't handle mixed or unclear scroll directions
-      }
-
-      if (Math.abs(delta) < MIN_WHEEL_DELTA) {
-        return;
-      }
+      if (deltaX === 0) return; // No horizontal movement
 
       e.preventDefault();
 
-      const now = Date.now();
-      if (now - lastScrollTime.current < SCROLL_THROTTLE) {
+      // Create a mock event for the existing detectInertia function
+      const mockEvent = { ...e, deltaY: deltaX };
+      const isMomentumScroll = detectInertia(mockEvent);
+      const throttleStatus = getThrottleStatus(isMomentumScroll);
+
+      if (DEBUG) {
+        console.log('🖱️ Horizontal Wheel event:', {
+          deltaX,
+          isMomentumScroll,
+          throttleStatus,
+          isScrolling: isScrollingRef.current,
+        });
+      }
+
+      // Dismiss wheel events with very small delta values (touchpad noise)
+      if (!isValidDelta(deltaX)) {
         return;
       }
 
+      // If currently scrolling, ignore
       if (isScrollingRef.current) {
         return;
       }
 
-      const direction = delta > 0 ? 1 : -1;
+      // Check throttle using the extracted hook
+      if (isThrottled(isMomentumScroll)) {
+        DEBUG &&
+          console.log(
+            `❌ Dismissed: Throttled - ${throttleStatus.throttleType} (${throttleStatus.effectiveThrottle}ms) blocked`
+          );
+        return;
+      }
+
+      const direction = deltaX > 0 ? 1 : -1;
       const nextItem = currentItem + direction;
 
-      DEBUG &&
-        console.log(
-          '📍 Current item:',
-          currentItem,
-          'Next:',
-          nextItem,
-          'Delta:',
-          delta
-        );
+      DEBUG && console.log('📍 Current item:', currentItem, 'Next:', nextItem);
 
+      // Check bounds
       if (nextItem >= 0 && nextItem < totalItems) {
         scrollToItem(nextItem);
-      } else {
       }
     };
 
     const container = containerRef.current;
     if (container) {
-      container.addEventListener('wheel', handleWheel, { passive: false });
-
-      return () => {
-        container.removeEventListener('wheel', handleWheel);
-      };
+      container.addEventListener('wheel', throttledWheelHandler, {
+        passive: false,
+      });
     }
-  }, [currentItem, totalItems, scrollToItem]);
 
-  // Touch event handlers for horizontal swiping
+    return () => {
+      if (container) {
+        container.removeEventListener('wheel', throttledWheelHandler);
+      }
+    };
+  }, [
+    currentItem,
+    totalItems,
+    scrollToItem,
+    detectInertia,
+    isValidDelta,
+    isThrottled,
+    getThrottleStatus,
+  ]);
+
+  // Touch event handlers - horizontal
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
       if (isScrollingRef.current) {
@@ -156,6 +199,7 @@ export const useHorizontalScroll = ({
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      // Prevent default scrolling behavior during touch
       if (isTouchingRef.current) {
         e.preventDefault();
       }
@@ -183,8 +227,11 @@ export const useHorizontalScroll = ({
           deltaX,
           distance,
           deltaTime,
+          minDistance: MIN_TOUCH_DISTANCE,
+          maxTime: MAX_TOUCH_TIME,
         });
 
+      // Check if it's a valid swipe
       if (distance < MIN_TOUCH_DISTANCE) {
         return;
       }
@@ -193,21 +240,21 @@ export const useHorizontalScroll = ({
         return;
       }
 
-      const now = Date.now();
-      if (now - lastScrollTime.current < SCROLL_THROTTLE) {
+      // Check throttle using the normal throttle for touch events
+      if (isThrottled(false)) {
         return;
       }
 
-      // Positive deltaX = swipe left = go to next item
+      // Determine direction (positive deltaX = swipe left = go to next item)
       const direction = deltaX > 0 ? 1 : -1;
       const nextItem = currentItem + direction;
 
       DEBUG &&
         console.log('📱📍 Current item:', currentItem, 'Next:', nextItem);
 
+      // Check bounds
       if (nextItem >= 0 && nextItem < totalItems) {
         scrollToItem(nextItem);
-      } else {
       }
     };
 
@@ -227,20 +274,26 @@ export const useHorizontalScroll = ({
       container.addEventListener('touchcancel', handleTouchCancel, {
         passive: true,
       });
+    }
 
-      return () => {
+    return () => {
+      if (container) {
         container.removeEventListener('touchstart', handleTouchStart);
         container.removeEventListener('touchmove', handleTouchMove);
         container.removeEventListener('touchend', handleTouchEnd);
         container.removeEventListener('touchcancel', handleTouchCancel);
-      };
-    }
-  }, [currentItem, totalItems, scrollToItem]);
+      }
+    };
+  }, [currentItem, totalItems, scrollToItem, isThrottled]);
 
   return {
     currentItem,
     containerRef,
     itemRefs,
     scrollToItem,
+    handleItemChange,
   };
 };
+
+// Only need the main useHorizontalScrollContainer hook
+// Reuses existing useTouchpadDetection and useScrollThrottle hooks

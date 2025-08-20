@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { MdWork, MdSchool, MdLightbulb } from 'react-icons/md';
 import { useRouter } from 'next/navigation';
 import SpotlightButton from '../ui/button/SpotlightButton';
+import { useHorizontalScrollContainer } from '@/hooks/scroll-container/useHorizontalScroll';
 
 const AboutSection = () => {
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
@@ -12,6 +13,35 @@ const AboutSection = () => {
   );
   const router = useRouter();
 
+  // Button data for easier management
+  const buttons = [
+    {
+      id: 'experience',
+      name: 'Experience',
+      icon: MdWork,
+    },
+    {
+      id: 'education',
+      name: 'Education',
+      icon: MdSchool,
+    },
+    {
+      id: 'projects',
+      name: 'Projects',
+      icon: MdLightbulb,
+    },
+  ];
+
+  // Horizontal scroll hook
+  const { currentItem, containerRef, itemRefs, scrollToItem } =
+    useHorizontalScrollContainer({
+      totalItems: buttons.length,
+      updateActiveItem: (index) => {
+        // Sync the text animation with scroll
+        handleInteractionStart(buttons[index].name, buttons[index].id);
+      },
+    });
+
   const clearCurrentInterval = () => {
     if (currentInterval) {
       clearInterval(currentInterval);
@@ -20,11 +50,9 @@ const AboutSection = () => {
   };
 
   const animateText = (text: string, isEntering: boolean) => {
-    // Clear any existing interval first
     clearCurrentInterval();
 
     if (isEntering) {
-      // Clear display text immediately and start typing
       setDisplayText('');
       let currentIndex = 0;
       const typeInterval = setInterval(() => {
@@ -37,7 +65,6 @@ const AboutSection = () => {
       }, 30);
       setCurrentInterval(typeInterval);
     } else {
-      // Remove letter by letter
       let currentIndex = text.length;
       const removeInterval = setInterval(() => {
         setDisplayText(text.slice(0, currentIndex - 1));
@@ -52,80 +79,121 @@ const AboutSection = () => {
     }
   };
 
-  const handleMouseEnter = (name: string, id: string) => {
+  // Detect if device is mobile/touch device
+  const isMobileDevice = () => {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  };
+
+  const handleInteractionStart = (name: string, id: string) => {
     setHoveredButton(id);
     animateText(name, true);
   };
 
-  const handleMouseLeave = (name: string) => {
+  const handleInteractionEnd = (name: string) => {
     if (hoveredButton && displayText) {
       animateText(name, false);
     }
     setHoveredButton(null);
   };
 
-  const handleButtonClick = (buttonId: string) => {
-    router.push(`/${buttonId}?returnTo=1`);
+  const handleTouchEnd = (name: string) => {
+    if (hoveredButton && displayText) {
+      animateText(name, false);
+    }
+    setHoveredButton(null);
+  };
+
+  const handleButtonClick = (buttonId: string, index: number) => {
+    // Scroll to the button if not already active
+    if (currentItem !== index) {
+      scrollToItem(index);
+    }
+
+    if (isMobileDevice()) {
+      // Add delay on mobile to let animation finish
+      setTimeout(() => {
+        router.push(`/${buttonId}?returnTo=1`);
+      }, 550);
+    } else {
+      // Navigate immediately on desktop
+      router.push(`/${buttonId}?returnTo=1`);
+    }
+  };
+
+  const handleIndicatorClick = (index: number) => {
+    scrollToItem(index);
   };
 
   return (
-    <section className="relative h-screen bg-neutral-900 overflow-hidden font-metropolis justify-center flex">
-      <div className="h-full flex flex-col px-8 md:px-20 w-full">
-        {/* Title Section - Fixed position from top */}
-        <div className="mt-40 mb-32 -top-4 left-0">
-          <div className="flex items-end gap-2">
-            <h2 className="text-pf-xl font-extralight font-metropolis text-white tracking-wide">
-              About:
-            </h2>
-            <div className="h-px bg-white w-32 md:w-70 relative -top-1">
-              {/* Animated text above the line */}
-              <span className="absolute -top-12 left-0 text-white text-pf-2xl font-bold tracking-wide">
-                {displayText}
-              </span>
+    <section className="flex flex-col w-full">
+      {/* Title Section */}
+      <div className="mt-16 mx-8">
+        <div className="flex items-start gap-1 mt-8 flex-col">
+          <h2 className="text-pf-lg font-medium font-metropolis text-white">
+            About:
+          </h2>
+          <div className="h-px bg-white w-64 md:w-70 relative mt-10">
+            <span className="absolute -bottom-2 left-0 text-white text-pf-xl font-metropolis font-semibold tracking-wide">
+              {displayText}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Horizontal Scroll Gallery */}
+      <div
+        ref={containerRef}
+        className="w-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pt-4"
+      >
+        <div className="flex w-max md:w-full md:justify-center md:gap-32 mt-16">
+          {buttons.map((button, index) => (
+            <div
+              key={button.id}
+              ref={(el) => {
+                itemRefs.current[index] = el;
+              }}
+              className="w-screen md:w-auto flex justify-center items-center snap-center snap-always md:[scroll-snap-align:none]"
+            >
+              <div
+                onTouchStart={() =>
+                  handleInteractionStart(button.name, button.id)
+                }
+                onTouchEnd={() => handleTouchEnd(button.name)}
+                className="touch-none"
+              >
+                <SpotlightButton
+                  icon={{
+                    type: 'react-icons',
+                    component: button.icon,
+                  }}
+                  text={button.name}
+                  size="xxxl"
+                  onMouseEnter={() =>
+                    handleInteractionStart(button.name, button.id)
+                  }
+                  onMouseLeave={() => handleInteractionEnd(button.name)}
+                  onClick={() => handleButtonClick(button.id, index)}
+                />
+              </div>
             </div>
-          </div>
+          ))}
         </div>
+      </div>
 
-        {/* Buttons Section - Always centered vertically */}
-        <div className="flex items-center pt-4 relative justify-center w-full">
-          <div className="flex gap-12 md:gap-32">
-            <SpotlightButton
-              icon={{
-                type: 'react-icons',
-                component: MdWork,
-              }}
-              text="Experience"
-              size="xxxl"
-              onMouseEnter={() => handleMouseEnter('Experience', 'experience')}
-              onMouseLeave={() => handleMouseLeave('Experience')}
-              onClick={() => handleButtonClick('experience')}
-            />
-
-            <SpotlightButton
-              icon={{
-                type: 'react-icons',
-                component: MdSchool,
-              }}
-              text="Education"
-              size="xxxl"
-              onMouseEnter={() => handleMouseEnter('Education', 'education')}
-              onMouseLeave={() => handleMouseLeave('Education')}
-              onClick={() => handleButtonClick('education')}
-            />
-
-            <SpotlightButton
-              icon={{
-                type: 'react-icons',
-                component: MdLightbulb,
-              }}
-              text="Projects"
-              size="xxxl"
-              onMouseEnter={() => handleMouseEnter('Projects', 'projects')}
-              onMouseLeave={() => handleMouseLeave('Projects')}
-              onClick={() => handleButtonClick('projects')}
-            />
-          </div>
-        </div>
+      {/* Scroll Indicators - Only show on mobile */}
+      <div className="md:hidden flex justify-center items-center gap-2 mt-8 pb-4">
+        {buttons.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => handleIndicatorClick(index)}
+            className={`h-1 transition-all duration-300 ease-out ${
+              currentItem === index
+                ? 'w-8 bg-white'
+                : 'w-4 bg-white/40 hover:bg-white/60'
+            }`}
+            aria-label={`Go to ${buttons[index].name}`}
+          />
+        ))}
       </div>
     </section>
   );
