@@ -81,11 +81,11 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
     if (isInitialLoadRef.current) {
       startLoading();
 
-      // End initial loading after a short delay to ensure page is ready
+      // End initial loading after a delay to ensure page is ready and components are mounted
       const initialLoadTimer = setTimeout(() => {
         endLoading();
         isInitialLoadRef.current = false;
-      }, 50);
+      }, 200);
 
       return () => clearTimeout(initialLoadTimer);
     }

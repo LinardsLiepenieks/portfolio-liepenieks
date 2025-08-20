@@ -11,6 +11,8 @@ interface HeroSectionProps {
 const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
   const [currentTime, setCurrentTime] = useState<string>('--:--');
   const [isOnline, setIsOnline] = useState<boolean>(false);
+
+  // Always start with default position to avoid hydration mismatch
   const [ballPosition, setBallPosition] = useState({ x: 50, y: 80 });
 
   useEffect(() => {
@@ -23,7 +25,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
       }
     };
 
-    // Set initial position
+    // Set correct position after mount
     updateBallPosition();
 
     // Listen for window resize
@@ -104,12 +106,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
       {/* Background container for elements */}
       <div className="absolute -z-0 flex items-center justify-center w-full h-full">
         <CosmicBallBackground
+          key={`${ballPosition.x}-${ballPosition.y}`}
           ballPosition={ballPosition}
-        ></CosmicBallBackground>
+        />
       </div>
 
       {/* Main Content Container */}
-      <div className=" relative z-20  w-full px-8 lg:px-20 xl:px-32  h-full flex flex-col justify-between  pt-16 max-w-[3200px]">
+      <div className=" relative z-20  w-full px-8 lg:px-20 xl:px-32  h-full flex flex-col  pt-16 max-w-[3200px]">
         <div className=" ">
           <div className=" flex flex-col gap-1 items-start pt-14">
             <HoverFollowCard

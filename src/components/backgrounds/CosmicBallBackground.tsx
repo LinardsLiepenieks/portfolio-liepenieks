@@ -17,7 +17,7 @@ interface BallInstance {
   isOriginal: boolean;
   isTransitioning?: boolean;
   isDisappearing?: boolean;
-  createdAt?: number; // Add timestamp for tracking
+  createdAt?: number;
 }
 
 export default function CosmicBallBackground({
@@ -29,13 +29,29 @@ export default function CosmicBallBackground({
   const touchingLinesRef = useRef<
     Array<{ element: HTMLDivElement; isRed: boolean }>
   >([]);
-  const ballPositionRef = useRef(ballPosition);
   const nextBallId = useRef(1);
   const disappearTimeouts = useRef<Map<number, NodeJS.Timeout>>(new Map());
+
+  // Use the ballPosition prop directly
+  const ballPositionRef = useRef(ballPosition);
 
   const [balls, setBalls] = useState<BallInstance[]>([
     { id: 0, x: ballPosition.x, y: ballPosition.y, isOriginal: true },
   ]);
+
+  // Update position when prop changes
+  useEffect(() => {
+    ballPositionRef.current = ballPosition;
+
+    // Update the original ball position
+    setBalls((prev) =>
+      prev.map((ball) =>
+        ball.isOriginal
+          ? { ...ball, x: ballPosition.x, y: ballPosition.y }
+          : ball
+      )
+    );
+  }, [ballPosition]);
 
   // Auto-disappear effect for non-original balls
   useEffect(() => {
@@ -44,7 +60,6 @@ export default function CosmicBallBackground({
       setBalls((prev) => {
         let hasChanges = false;
         const updatedBalls = prev.map((ball) => {
-          // Check if ball should start disappearing (5 seconds old and not original)
           if (
             !ball.isOriginal &&
             !ball.isDisappearing &&
@@ -53,7 +68,6 @@ export default function CosmicBallBackground({
           ) {
             hasChanges = true;
 
-            // Set individual timeout for this specific ball
             const timeoutId = setTimeout(() => {
               setBalls((current) => current.filter((b) => b.id !== ball.id));
               disappearTimeouts.current.delete(ball.id);
@@ -68,29 +82,15 @@ export default function CosmicBallBackground({
 
         return hasChanges ? updatedBalls : prev;
       });
-    }, 100); // Check every 100ms
+    }, 100);
 
     return () => {
       clearInterval(interval);
-      // Clean up any pending timeouts - capture reference at cleanup time
       const timeouts = disappearTimeouts.current;
       timeouts.forEach((timeout) => clearTimeout(timeout));
       timeouts.clear();
     };
   }, []);
-
-  // Update the ref whenever ballPosition changes
-  useEffect(() => {
-    ballPositionRef.current = ballPosition;
-    // Update the original ball position
-    setBalls((prev) =>
-      prev.map((ball) =>
-        ball.isOriginal
-          ? { ...ball, x: ballPosition.x, y: ballPosition.y }
-          : ball
-      )
-    );
-  }, [ballPosition]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -120,7 +120,6 @@ export default function CosmicBallBackground({
       style.textContent = pulseKeyframes;
       document.head.appendChild(style);
 
-      // Apply pulse to all balls
       const allBallElements = container.querySelectorAll('.cosmic-ball');
       allBallElements.forEach((ballElement) => {
         (ballElement as HTMLElement).style.animation =
@@ -128,7 +127,6 @@ export default function CosmicBallBackground({
       });
     };
 
-    // Initialize pulse animation
     setupPulseAnimation();
 
     const updateBallColor = () => {
@@ -137,7 +135,6 @@ export default function CosmicBallBackground({
       const redLines = touchingLines.filter((line) => line.isRed).length;
       const redPercentage = totalLines > 0 ? redLines / totalLines : 0;
 
-      // Proper color blending from white to red
       let red, green, blue;
 
       if (redPercentage === 0 || totalLines === 0) {
@@ -150,7 +147,6 @@ export default function CosmicBallBackground({
         blue = Math.round(229 - (229 - 40) * redPercentage);
       }
 
-      // Apply color changes to original ball
       if (dot) {
         dot.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
       }
@@ -171,14 +167,10 @@ export default function CosmicBallBackground({
     };
 
     const animateLine = () => {
-      // Always target the original ball (the one that changes color)
-      const originalBall = balls.find((ball) => ball.isOriginal);
-      if (!originalBall) return;
-
+      // Use current ball position instead of prop
       const centerX = (window.innerWidth * ballPositionRef.current.x) / 100;
       const centerY = (window.innerHeight * ballPositionRef.current.y) / 100;
 
-      // Random position on left, right, or top side
       const side = Math.floor(Math.random() * 3);
       let startX, startY;
 
@@ -330,21 +322,18 @@ export default function CosmicBallBackground({
       lineTimeouts.forEach((timeout) => clearTimeout(timeout));
       touchingLinesRef.current = [];
     };
-  }, [balls, ballPosition]);
+  }, [balls, ballPosition]); // Use ballPosition instead of currentBallPosition
 
   const handleBallClick = (clickedBall: BallInstance) => {
-    // Check if we need to remove old balls first
     if (balls.length >= 10) {
       setBalls((prev) => {
         const nonOriginalBalls = prev.filter((ball) => !ball.isOriginal);
         if (nonOriginalBalls.length > 0) {
           const oldestBall = nonOriginalBalls[0];
-          // Mark ball for disappearing animation
           const updatedBalls = prev.map((ball) =>
             ball.id === oldestBall.id ? { ...ball, isDisappearing: true } : ball
           );
 
-          // Set individual timeout for this specific ball
           const timeoutId = setTimeout(() => {
             setBalls((current) =>
               current.filter((ball) => ball.id !== oldestBall.id)
@@ -360,26 +349,23 @@ export default function CosmicBallBackground({
       });
     }
 
-    // Generate final random position for the new ball
     const finalX = 15 + Math.random() * 70;
     const finalY = 15 + Math.random() * 70;
 
     const spawnX = clickedBall.x;
     const spawnY = clickedBall.y;
 
-    // Create new ball at spawn position with timestamp
     const newBall: BallInstance = {
       id: nextBallId.current++,
       x: spawnX,
       y: spawnY,
       isOriginal: false,
       isTransitioning: false,
-      createdAt: Date.now(), // Add creation timestamp
+      createdAt: Date.now(),
     };
 
     setBalls((prev) => [...prev, newBall]);
 
-    // Immediately start sliding animation to final position
     setTimeout(() => {
       setBalls((prev) =>
         prev.map((ball) =>
@@ -391,13 +377,11 @@ export default function CosmicBallBackground({
     }, 50);
   };
 
-  // Handle global click detection for balls
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
       const clickX = e.clientX;
       const clickY = e.clientY;
 
-      // Check if click is near any ball
       for (const ball of balls) {
         const ballScreenX = (window.innerWidth * ball.x) / 100;
         const ballScreenY = (window.innerHeight * ball.y) / 100;
@@ -425,7 +409,6 @@ export default function CosmicBallBackground({
       ref={containerRef}
       className={`relative w-full h-full overflow-hidden ${className}`}
     >
-      {/* All Balls */}
       {balls.map((ball) => (
         <div
           key={ball.id}
