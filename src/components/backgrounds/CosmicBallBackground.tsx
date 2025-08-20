@@ -46,6 +46,35 @@ export default function CosmicBallBackground({
     { id: 0, x: ballPosition.x, y: ballPosition.y, isOriginal: true },
   ]);
 
+  // Function to get accurate viewport dimensions for mobile
+  const getViewportDimensions = () => {
+    const container = containerRef.current;
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      return {
+        width: rect.width,
+        height: rect.height,
+        offsetX: rect.left,
+        offsetY: rect.top,
+      };
+    }
+    return {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      offsetX: 0,
+      offsetY: 0,
+    };
+  };
+
+  // Function to get ball position in screen coordinates
+  const getBallScreenPosition = (ball: BallInstance) => {
+    const { width, height, offsetX, offsetY } = getViewportDimensions();
+    return {
+      x: offsetX + (width * ball.x) / 100,
+      y: offsetY + (height * ball.y) / 100,
+    };
+  };
+
   // Update position when prop changes
   useEffect(() => {
     ballPositionRef.current = ballPosition;
@@ -206,11 +235,15 @@ export default function CosmicBallBackground({
       // Don't start new animations if we're not supposed to be animating
       if (!isAnimatingRef.current) return;
 
-      // Get current screen dimensions
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
+      // Get current container dimensions (mobile-safe)
+      const {
+        width: screenWidth,
+        height: screenHeight,
+        offsetX,
+        offsetY,
+      } = getViewportDimensions();
 
-      // Use current ball position
+      // Use current ball position relative to container
       const centerX = (screenWidth * ballPositionRef.current.x) / 100;
       const centerY = (screenHeight * ballPositionRef.current.y) / 100;
 
@@ -218,12 +251,15 @@ export default function CosmicBallBackground({
       let startX, startY;
 
       if (side === 0) {
+        // Left side
         startX = 0;
         startY = screenHeight * (0.2 + Math.random() * 0.4);
       } else if (side === 1) {
+        // Right side
         startX = screenWidth;
         startY = screenHeight * (0.2 + Math.random() * 0.4);
       } else {
+        // Top side
         startX = screenWidth * (0.2 + Math.random() * 0.6);
         startY = 0;
       }
@@ -250,6 +286,7 @@ export default function CosmicBallBackground({
       const phase1Duration = 900;
       const phase2Duration = 1600;
 
+      // Position relative to container, not window
       line.style.left = startX + 'px';
       line.style.top = startY + 'px';
       line.style.width = initialWidth + 'px';
@@ -453,16 +490,32 @@ export default function CosmicBallBackground({
   };
 
   useEffect(() => {
-    const handleGlobalClick = (e: MouseEvent) => {
-      const clickX = e.clientX;
-      const clickY = e.clientY;
+    const handleGlobalClick = (e: MouseEvent | TouchEvent) => {
+      let clickX, clickY;
+
+      if (e instanceof TouchEvent) {
+        // Handle touch events
+        if (e.touches.length > 0) {
+          clickX = e.touches[0].clientX;
+          clickY = e.touches[0].clientY;
+        } else if (e.changedTouches.length > 0) {
+          clickX = e.changedTouches[0].clientX;
+          clickY = e.changedTouches[0].clientY;
+        } else {
+          return;
+        }
+      } else {
+        // Handle mouse events
+        clickX = e.clientX;
+        clickY = e.clientY;
+      }
 
       for (const ball of balls) {
-        const ballScreenX = (window.innerWidth * ball.x) / 100;
-        const ballScreenY = (window.innerHeight * ball.y) / 100;
+        const ballScreenPos = getBallScreenPosition(ball);
 
         const distance = Math.sqrt(
-          Math.pow(clickX - ballScreenX, 2) + Math.pow(clickY - ballScreenY, 2)
+          Math.pow(clickX - ballScreenPos.x, 2) +
+            Math.pow(clickY - ballScreenPos.y, 2)
         );
 
         if (distance <= 20) {
@@ -472,10 +525,13 @@ export default function CosmicBallBackground({
       }
     };
 
+    // Add both mouse and touch event listeners
     window.addEventListener('click', handleGlobalClick);
+    window.addEventListener('touchend', handleGlobalClick);
 
     return () => {
       window.removeEventListener('click', handleGlobalClick);
+      window.removeEventListener('touchend', handleGlobalClick);
     };
   }, [balls, handleBallClick]);
 
@@ -502,6 +558,10 @@ export default function CosmicBallBackground({
             opacity: ball.isDisappearing ? '0' : '1',
           }}
           onMouseDown={(e) => {
+            e.preventDefault();
+            handleBallClick(ball);
+          }}
+          onTouchStart={(e) => {
             e.preventDefault();
             handleBallClick(ball);
           }}
