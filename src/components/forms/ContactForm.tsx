@@ -17,7 +17,7 @@ interface UseEmailFormProps {
   templateId: string;
   publicKey: string;
   onSuccess?: () => void;
-  onError?: (error: any) => void;
+  onError?: (error: Error) => void;
 }
 
 // Custom hook for email form functionality
@@ -91,10 +91,12 @@ const useEmailForm = ({
       });
 
       onSuccess?.();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to send email:', error);
       setSubmitStatus('error');
-      onError?.(error);
+      onError?.(
+        error instanceof Error ? error : new Error('Unknown error occurred')
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -127,7 +129,7 @@ interface ContactFormProps {
   templateId: string;
   publicKey: string;
   onSuccess?: () => void;
-  onError?: (error: any) => void;
+  onError?: (error: Error) => void;
   actionButtons?: React.ReactNode;
 }
 
@@ -346,7 +348,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
       {/* Success Overlay - Always mounted, controlled by isSuccessVisible */}
       {showSuccessOverlay && (
         <div
-          className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-all duration-900 ${
+          className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-all duration-1000 ease-out ${
             isSuccessVisible
               ? 'bg-black/50 backdrop-blur-sm opacity-100 visible'
               : 'bg-black/0 backdrop-blur-none opacity-0 invisible'

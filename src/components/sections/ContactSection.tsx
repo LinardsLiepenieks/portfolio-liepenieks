@@ -30,7 +30,7 @@ const ContactSection = () => {
     // You can add additional success handling here if needed
   };
 
-  const handleFormError = (error: any) => {
+  const handleFormError = (error: Error) => {
     console.error('Email failed from ContactSection:', error);
     // You can add additional error handling here if needed
   };
