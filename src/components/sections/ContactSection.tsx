@@ -1,103 +1,38 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import CopyLink from '../ui/links/CopyLink';
 import SpotlightButton from '../ui/button/SpotlightButton';
 import { SiLinkedin } from 'react-icons/si';
+import ContactForm from '../forms/ContactForm';
 
 const ContactSection = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
   const [isXlScreen, setIsXlScreen] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // EmailJS configuration from environment variables
+  const EMAILJS_SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!;
+  const EMAILJS_TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!;
+  const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!;
 
   // Hook to detect xl breakpoint
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsXlScreen(window.innerWidth >= 1280); // xl breakpoint is 1280px
+      setIsXlScreen(window.innerWidth >= 1280);
     };
 
-    // Check initial size
     checkScreenSize();
-
-    // Add event listener
     window.addEventListener('resize', checkScreenSize);
-
-    // Cleanup
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Prevent page scrolling when interacting with textarea (only if textarea has content)
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
+  // Handlers for form submission
+  const handleFormSuccess = () => {
+    console.log('Email sent successfully from ContactSection');
+    // You can add additional success handling here if needed
+  };
 
-    const handleTextareaWheel = (e: WheelEvent) => {
-      // Only stop propagation if textarea has content
-      if (textarea.value.trim().length > 0) {
-        e.stopPropagation();
-      }
-      // If empty, allow page scrolling
-    };
-
-    // Touch event handling
-    let isTouchingTextarea = false;
-
-    const handleTextareaTouchStart = (e: TouchEvent) => {
-      isTouchingTextarea = true;
-    };
-
-    const handleTextareaTouchMove = (e: TouchEvent) => {
-      if (!isTouchingTextarea) return;
-      // Only stop propagation if textarea has content
-      if (textarea.value.trim().length > 0) {
-        e.stopPropagation();
-      }
-      // If empty, allow page scrolling
-    };
-
-    const handleTextareaTouchEnd = () => {
-      isTouchingTextarea = false;
-    };
-
-    const handleTextareaTouchCancel = () => {
-      isTouchingTextarea = false;
-    };
-
-    // Add event listeners
-    textarea.addEventListener('wheel', handleTextareaWheel, { passive: false });
-    textarea.addEventListener('touchstart', handleTextareaTouchStart, {
-      passive: true,
-    });
-    textarea.addEventListener('touchmove', handleTextareaTouchMove, {
-      passive: false,
-    });
-    textarea.addEventListener('touchend', handleTextareaTouchEnd, {
-      passive: true,
-    });
-    textarea.addEventListener('touchcancel', handleTextareaTouchCancel, {
-      passive: true,
-    });
-
-    return () => {
-      textarea.removeEventListener('wheel', handleTextareaWheel);
-      textarea.removeEventListener('touchstart', handleTextareaTouchStart);
-      textarea.removeEventListener('touchmove', handleTextareaTouchMove);
-      textarea.removeEventListener('touchend', handleTextareaTouchEnd);
-      textarea.removeEventListener('touchcancel', handleTextareaTouchCancel);
-    };
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    setIsSubmitting(false);
-    setSubject('');
-    setMessage('');
+  const handleFormError = (error: any) => {
+    console.error('Email failed from ContactSection:', error);
+    // You can add additional error handling here if needed
   };
 
   return (
@@ -119,68 +54,24 @@ const ContactSection = () => {
 
       {/* Main Content */}
       <div className="flex flex-col w-full px-8 pr-12 lg:px-16 xl:px-28">
-        {/* First Row - Title and Subtitle */}
-
-        {/* Second Row - Form */}
-        <div className="w-full">
-          <h2 className="text-pf-lg font-medium text-neutral-100 mb-2 tracking-wide lg:text-pf-lg xl:text-pf-2xl xl:font-normal">
-            Send <span className="hidden md:inline">me</span> an email:
-          </h2>
-
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-2 md:space-y-4 max-w-xl xl:max-w-2xl"
-          >
-            {/* Subject Input */}
-            <input
-              type="text"
-              placeholder="Subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              required
-              className="w-full px-4 py-2 bg-transparent border-2 border-neutral-300 placeholder:font-metropolis text-pf-sm rounded-lg lg:text-pf-base text-neutral-100 placeholder-neutral-300 focus:outline-none transition-colors"
-            />
-
-            {/* Message Textarea */}
-            <textarea
-              ref={textareaRef}
-              placeholder="Message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              required
-              rows={6}
-              className="w-full px-4 py-3 bg-transparent text-pf-sm border-2 border-neutral-300 rounded-lg text-white placeholder-gray-300 lg:text-pf-base focus:outline-none focus:border-neutral-300 transition-colors resize-none"
-            />
-            <div className="flex gap-6 items-center">
-              {/* Send Button */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="group relative px-4 py-2.5 bg-white border-2 hover:cursor-pointer border-white text-black font-semibold rounded-lg overflow-hidden disabled:opacity-70"
-              >
-                {/* Background that slides down from top */}
-                <div className="absolute inset-0 bg-black transform -translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-
-                <span
-                  className={`relative z-10 transition-all duration-300 text-pf-sm xl:text-pf-base ${
-                    isSubmitting ? 'scale-0' : 'scale-100'
-                  } group-hover:text-white`}
-                >
-                  Send
-                </span>
-                {isSubmitting && (
-                  <div className="absolute inset-0 flex items-center justify-center z-20">
-                    <div className="w-5 h-5 border-2 border-black group-hover:border-white border-t-transparent rounded-full animate-spin transition-colors duration-300"></div>
-                  </div>
-                )}
-              </button>
-              {/* Email Button */}
+        {/* Contact Form with Action Buttons */}
+        <ContactForm
+          serviceId={EMAILJS_SERVICE_ID}
+          templateId={EMAILJS_TEMPLATE_ID}
+          publicKey={EMAILJS_PUBLIC_KEY}
+          onSuccess={handleFormSuccess}
+          onError={handleFormError}
+          actionButtons={
+            <>
+              {/* Email Link */}
               <div className="hidden md:block text-pf-base xl:text-pf-lg">
                 <CopyLink
                   text="- linardsliepenieks@gmail.com"
                   copyValue="linardsliepenieks@gmail.com"
                 />
               </div>
+
+              {/* LinkedIn Button */}
               <SpotlightButton
                 icon={{
                   type: 'react-icons',
@@ -193,10 +84,11 @@ const ContactSection = () => {
                   window.open('https://www.linkedin.com/in/linards-liepenieks')
                 }
               />
-            </div>
-          </form>
-        </div>
+            </>
+          }
+        />
       </div>
+
       {/* Footer */}
       <footer className="w-full flex justify-center absolute bottom-4">
         <div className="text-neutral-500 font-light text-pf-xs">
