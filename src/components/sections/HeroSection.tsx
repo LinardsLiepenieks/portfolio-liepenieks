@@ -112,7 +112,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
       </div>
 
       {/* Main Content Container */}
-      <div className=" relative z-20  w-full px-8 lg:px-20 xl:px-32  h-full flex flex-col justify-between pt-16 max-w-[3200px]">
+      <div className="relative z-20  w-full px-8 lg:px-20 xl:px-32  h-full flex flex-col justify-between pt-16 max-w-[3200px]">
         <div className=" ">
           <div className=" flex flex-col gap-1 items-start pt-14">
             <HoverFollowCard
@@ -169,7 +169,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
             </HoverFollowCard>
           </div>
         </div>
-        <div className="w-full mb-16 lg:mb-28 xl:mb-40 invisible sm:visible">
+        <div className="w-full  invisible sm:visible absolute right-12 bottom-16 lg:right-20 lg:bottom-20">
           <div className="font-metropolis text-pf-base  xl:text-pf-lg flex flex-col text-right gap-1 xl:pr-8">
             <h3 className="font-medium">Location: Finland, Turku 🇫🇮</h3>
             <span className="font-medium">Local time: {currentTime}</span>
