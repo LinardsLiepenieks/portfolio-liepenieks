@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import CopyLink from '../ui/links/CopyLink';
 import SpotlightButton from '../ui/button/SpotlightButton';
 import { SiLinkedin } from 'react-icons/si';
@@ -9,6 +9,7 @@ const ContactSection = () => {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [isXlScreen, setIsXlScreen] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Hook to detect xl breakpoint
   useEffect(() => {
@@ -26,6 +27,67 @@ const ContactSection = () => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
+  // Prevent page scrolling when interacting with textarea (only if textarea has content)
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const handleTextareaWheel = (e: WheelEvent) => {
+      // Only stop propagation if textarea has content
+      if (textarea.value.trim().length > 0) {
+        e.stopPropagation();
+      }
+      // If empty, allow page scrolling
+    };
+
+    // Touch event handling
+    let isTouchingTextarea = false;
+
+    const handleTextareaTouchStart = (e: TouchEvent) => {
+      isTouchingTextarea = true;
+    };
+
+    const handleTextareaTouchMove = (e: TouchEvent) => {
+      if (!isTouchingTextarea) return;
+      // Only stop propagation if textarea has content
+      if (textarea.value.trim().length > 0) {
+        e.stopPropagation();
+      }
+      // If empty, allow page scrolling
+    };
+
+    const handleTextareaTouchEnd = () => {
+      isTouchingTextarea = false;
+    };
+
+    const handleTextareaTouchCancel = () => {
+      isTouchingTextarea = false;
+    };
+
+    // Add event listeners
+    textarea.addEventListener('wheel', handleTextareaWheel, { passive: false });
+    textarea.addEventListener('touchstart', handleTextareaTouchStart, {
+      passive: true,
+    });
+    textarea.addEventListener('touchmove', handleTextareaTouchMove, {
+      passive: false,
+    });
+    textarea.addEventListener('touchend', handleTextareaTouchEnd, {
+      passive: true,
+    });
+    textarea.addEventListener('touchcancel', handleTextareaTouchCancel, {
+      passive: true,
+    });
+
+    return () => {
+      textarea.removeEventListener('wheel', handleTextareaWheel);
+      textarea.removeEventListener('touchstart', handleTextareaTouchStart);
+      textarea.removeEventListener('touchmove', handleTextareaTouchMove);
+      textarea.removeEventListener('touchend', handleTextareaTouchEnd);
+      textarea.removeEventListener('touchcancel', handleTextareaTouchCancel);
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -39,9 +101,9 @@ const ContactSection = () => {
   };
 
   return (
-    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis   mx-auto max-w-[3200px]">
+    <section className="flex relative flex-col w-full h-full bg-neutral-900 font-metropolis mx-auto max-w-[3200px]">
       {/* Title Section */}
-      <div className="mt-16 mx-8  lg:mx-16 mb-14 text-neutral-100  lg:mt-24 xl:mb-12">
+      <div className="mt-16 mx-8 lg:mx-16 mb-14 text-neutral-100 lg:mt-24 xl:mb-12">
         <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mb-8 xl:mt-4 xl:mx-12">
           <h2 className="text-pf-2xl font-light font-metropolis md:text-pf-3xl xl:text-pf-4xl">
             Contact me!
@@ -61,7 +123,7 @@ const ContactSection = () => {
 
         {/* Second Row - Form */}
         <div className="w-full">
-          <h2 className="text-pf-lg  font-medium text-neutral-100 mb-2 tracking-wide lg:text-pf-lg xl:text-pf-2xl xl:font-normal">
+          <h2 className="text-pf-lg font-medium text-neutral-100 mb-2 tracking-wide lg:text-pf-lg xl:text-pf-2xl xl:font-normal">
             Send <span className="hidden md:inline">me</span> an email:
           </h2>
 
@@ -81,6 +143,7 @@ const ContactSection = () => {
 
             {/* Message Textarea */}
             <textarea
+              ref={textareaRef}
               placeholder="Message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
