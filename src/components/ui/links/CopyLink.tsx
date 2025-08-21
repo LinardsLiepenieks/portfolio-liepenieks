@@ -46,7 +46,7 @@ const CopyLink: React.FC<CopyLinkProps> = ({
     <div className="relative">
       <span
         onClick={handleCopy}
-        className={`antialiased text-neutral-300 font text-pf-lg cursor-pointer font-metropolis hover-underline ${className}`}
+        className={`antialiased text-neutral-100 font cursor-pointer font-metropolis hover-underline ${className}`}
       >
         {text}
       </span>

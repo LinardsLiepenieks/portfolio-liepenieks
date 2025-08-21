@@ -125,7 +125,7 @@ const AboutSection = () => {
   };
 
   return (
-    <section className="flex flex-col w-full h-full">
+    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis">
       {/* Title Section */}
       <div className="mt-16 mx-8 lg:mt-32 lg:mx-16">
         <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mb-8 xl:mt-4 xl:mx-12">
