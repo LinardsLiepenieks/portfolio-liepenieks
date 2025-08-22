@@ -24,7 +24,7 @@ const AboutTitle = ({
   titleClassName = '',
   displayTextClassName = '',
   lineClassName = '',
-  lineWidth = 'w-64 md:w-70',
+  lineWidth = 'w-64 md:w-80',
 }: AboutTitleProps) => {
   return (
     <div className={`mt-16 mx-8 lg:mt-32 lg:mx-16 ${className}`}>
