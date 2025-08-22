@@ -4,15 +4,20 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { IoClose } from 'react-icons/io5';
-import AdaptiveIcon from '../ui/utility/AdaptiveIcon';
 
 interface A4ModalProps {
   isOpen: boolean;
   onClose: () => void;
   image?: string | null;
+  linkTitle?: string;
 }
 
-const A4Modal = ({ isOpen, onClose, image }: A4ModalProps) => {
+const A4Modal = ({
+  isOpen,
+  onClose,
+  image,
+  linkTitle = 'Recommendation Letter',
+}: A4ModalProps) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -40,44 +45,75 @@ const A4Modal = ({ isOpen, onClose, image }: A4ModalProps) => {
     }
   };
 
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onClose();
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen]);
+
   const modalContent = (
     <div
-      className={`fixed inset-0 flex items-center justify-center z-50 p-8 transition-all duration-400 ease-out ${
+      className={`fixed inset-0 flex items-center justify-center z-50 p-4 md:p-8 transition-all duration-300 ease-out ${
         isOpen
           ? 'opacity-100 visible pointer-events-auto bg-black/80'
           : 'opacity-0 invisible pointer-events-none bg-transparent'
       }`}
       onClick={handleOverlayClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
     >
-      <div className="shadow-2xl max-w-2xl rounded-sm h-full w-full bg-neutral-600/40 p-2">
-        <div className="relative h-full overflow-hidden">
-          {/* Close button positioned absolutely on top of image */}
+      <div
+        className={`shadow-2xl max-w-4xl w-full h-full max-h-[90vh] bg-neutral-800/95 backdrop-blur-sm rounded-lg overflow-hidden transition-all duration-300 ease-out ${
+          isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header with close button */}
+        <div className="flex justify-between items-center p-4 border-b border-neutral-700">
+          <h2
+            id="modal-title"
+            className="text-white text-lg font-medium tracking-wide font-metropolis"
+          >
+            {linkTitle}
+          </h2>
           <button
             onClick={onClose}
-            className="hover:bg-gray-600 hover:cursor-pointer transition-all active:bg-gray-200 duration-300 absolute top-1 right-5 z-10 bg-black bg-opacity-50 hover:bg-opacity-70 text-white rounded-full p-2 flex items-center justify-center"
+            className="hover:bg-neutral-700 transition-colors duration-200 text-neutral-400 hover:text-white rounded-full p-2 flex items-center justify-center"
+            aria-label="Close modal"
           >
-            <AdaptiveIcon
-              type="react-icons"
-              component={IoClose}
-              size="sm"
-              className="text-white"
-            />
+            <IoClose size={24} />
           </button>
+        </div>
 
-          {/* A4 container with animation */}
-          <div className="w-full transition-all duration-300 ease-out h-full rounded-sm overflow-hidden">
-            <div className="w-full overflow-y-auto overflow-x-hidden h-full scrollbar-dark">
+        {/* Content area */}
+        <div className="relative h-full overflow-hidden bg-neutral-100">
+          <div className="w-full h-full overflow-auto flex items-center bg-neutral-900">
+            {image ? (
               <Image
-                src={
-                  image ||
-                  'https://via.placeholder.com/600x849/f3f4f6/6b7280?text=Recommendation+Letter'
-                }
-                alt="Recommendation Letter"
-                width={600}
-                height={849}
-                className="w-full h-auto"
+                src={image}
+                alt={linkTitle}
+                width={800}
+                height={1132}
+                className="w-full h-auto object-contain relative -top-16"
+                unoptimized
+                priority
               />
-            </div>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-neutral-500 text-center">
+                  <div className="text-6xl mb-4">📄</div>
+                  <p>No {linkTitle.toLowerCase()} available</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

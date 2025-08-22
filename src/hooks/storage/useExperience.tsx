@@ -11,6 +11,8 @@ export interface ExperienceItem {
   description_short: string;
   logo_url?: string;
   position: string;
+  recommendation_url: string;
+  reference_title: string;
 }
 
 export function useExperience() {

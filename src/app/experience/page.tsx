@@ -160,15 +160,17 @@ function ExperiencePageContent() {
                 <ExperienceMobileItem
                   key={experience.id}
                   title={experience.title}
-                  position={experience.position}
+                  position={experience.position} // You might want to split this into separate fields
                   period={`${experience.start_year}-${
                     experience.end_year || 'Present'
                   }`}
                   description={experience.description_short}
                   logoUrl={experience.logo_url}
+                  recommendationUrl={experience.recommendation_url}
                   avatarBg={getAvatarBg(index)}
                   onSelect={() => handleExperienceSelect(experience.title)}
                   onDeselect={handleExperienceDeselect}
+                  linkTitle={experience.reference_title}
                 />
               ))}
             </div>
