@@ -71,12 +71,7 @@ function ExperiencePageContent() {
     };
   }, [currentInterval]);
 
-  // Helper function to get avatar letter from title
-  const getAvatarLetter = (title: string) => {
-    return title.charAt(0).toUpperCase();
-  };
-
-  // Helper function to generate avatar background
+  // Helper function to generate avatar background (fallback when no logo)
   const getAvatarBg = (index: number) => {
     const gradients = [
       'bg-gradient-to-br from-blue-500 to-indigo-600',
@@ -165,10 +160,12 @@ function ExperiencePageContent() {
                 <ExperienceMobileItem
                   key={experience.id}
                   title={experience.title}
-                  position={experience.title} // You might want to split this into separate fields
-                  period={`${experience.start_year}-${experience.end_year}`}
+                  position={experience.position}
+                  period={`${experience.start_year}-${
+                    experience.end_year || 'Present'
+                  }`}
                   description={experience.description_short}
-                  avatar={getAvatarLetter(experience.title)}
+                  logoUrl={experience.logo_url}
                   avatarBg={getAvatarBg(index)}
                   onSelect={() => handleExperienceSelect(experience.title)}
                   onDeselect={handleExperienceDeselect}

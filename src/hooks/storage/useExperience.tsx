@@ -9,7 +9,8 @@ export interface ExperienceItem {
   end_year: number;
   description: string;
   description_short: string;
-  image_url?: string;
+  logo_url?: string;
+  position: string;
 }
 
 export function useExperience() {
