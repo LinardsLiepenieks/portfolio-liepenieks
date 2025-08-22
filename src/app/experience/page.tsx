@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import ContentNavbar from '@/components/ui/ContentNavbar';
 import AboutTitle from '@/components/sections/about_section/AboutTitle';
 import ExperienceGallery from '@/components/experience/ExperienceGallery';
@@ -9,6 +9,67 @@ import { useExperience } from '@/hooks/storage/useExperience';
 
 function ExperiencePageContent() {
   const { experiences, loading, error } = useExperience();
+  const [selectedExperienceTitle, setSelectedExperienceTitle] =
+    useState<string>('Experience');
+  const [currentInterval, setCurrentInterval] = useState<NodeJS.Timeout | null>(
+    null
+  );
+
+  // Animation function similar to AboutSection
+  const clearCurrentInterval = (): void => {
+    if (currentInterval) {
+      clearInterval(currentInterval);
+      setCurrentInterval(null);
+    }
+  };
+
+  const animateText = (oldText: string, newText: string): void => {
+    clearCurrentInterval();
+
+    if (oldText === newText) return;
+
+    // First, clear the old text
+    let currentIndex = oldText.length;
+    const removeInterval = setInterval(() => {
+      setSelectedExperienceTitle(oldText.slice(0, currentIndex - 1));
+      currentIndex--;
+      if (currentIndex <= 0) {
+        clearInterval(removeInterval);
+
+        // Then type the new text
+        let typeIndex = 0;
+        const typeInterval = setInterval(() => {
+          setSelectedExperienceTitle(newText.slice(0, typeIndex + 1));
+          typeIndex++;
+          if (typeIndex >= newText.length) {
+            clearInterval(typeInterval);
+            setCurrentInterval(null);
+          }
+        }, 30);
+        setCurrentInterval(typeInterval);
+      }
+    }, 20);
+    setCurrentInterval(removeInterval);
+  };
+
+  // Handle experience selection
+  const handleExperienceSelect = (experienceTitle: string) => {
+    animateText(selectedExperienceTitle, experienceTitle);
+  };
+
+  // Reset to "Experience" when no item is selected
+  const handleExperienceDeselect = () => {
+    animateText(selectedExperienceTitle, 'Experience');
+  };
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (currentInterval) {
+        clearInterval(currentInterval);
+      }
+    };
+  }, [currentInterval]);
 
   // Helper function to get avatar letter from title
   const getAvatarLetter = (title: string) => {
@@ -84,11 +145,11 @@ function ExperiencePageContent() {
 
       {/* Main content container - full viewport height minus navbar */}
       <section className="h-screen bg-neutral-900 text-white flex flex-col w-full overflow-hidden">
-        {/* Title Section - fixed height */}
+        {/* Title Section - fixed height with animated title */}
         <div className="flex-shrink-0 pt-8 pb-8">
           <AboutTitle
             title="About:"
-            displayText="Experience"
+            displayText={selectedExperienceTitle}
             className=""
             displayTextClassName="text-neutral-300"
             lineWidth="w-64 md:w-70 lg:w-90"
@@ -98,7 +159,7 @@ function ExperiencePageContent() {
         {/* Scrollable content area - takes remaining space */}
         <div className="flex-1 min-h-0 flex flex-col">
           {/* Mobile Experience Items - scrollable */}
-          <div className="flex-1 overflow-y-auto px-4 pb-4 md:hidden">
+          <div className="flex-1 overflow-y-auto px-8 pb-4 md:hidden">
             <div className="space-y-4">
               {experiences.map((experience, index) => (
                 <ExperienceMobileItem
@@ -109,6 +170,8 @@ function ExperiencePageContent() {
                   description={experience.description_short}
                   avatar={getAvatarLetter(experience.title)}
                   avatarBg={getAvatarBg(index)}
+                  onSelect={() => handleExperienceSelect(experience.title)}
+                  onDeselect={handleExperienceDeselect}
                 />
               ))}
             </div>

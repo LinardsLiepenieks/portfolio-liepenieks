@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useDatabase } from './useDatabase';
 
 export interface ExperienceItem {
   id: number;
@@ -13,27 +13,10 @@ export interface ExperienceItem {
 }
 
 export function useExperience() {
-  const [experiences, setExperiences] = useState<ExperienceItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchExperiences() {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/experience');
-        if (!response.ok) throw new Error('Failed to fetch experiences');
-        const data = await response.json();
-        setExperiences(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchExperiences();
-  }, []);
-
+  const {
+    data: experiences,
+    loading,
+    error,
+  } = useDatabase<ExperienceItem>('/api/experience');
   return { experiences, loading, error };
 }

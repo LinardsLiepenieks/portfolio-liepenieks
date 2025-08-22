@@ -19,6 +19,10 @@ interface ExperienceMobileItemProps {
   className?: string;
   /** Click handler for additional actions */
   onClick?: () => void;
+  /** Called when item is expanded/selected */
+  onSelect?: () => void;
+  /** Called when item is collapsed/deselected */
+  onDeselect?: () => void;
 }
 
 const ExperienceMobileItem = ({
@@ -30,11 +34,23 @@ const ExperienceMobileItem = ({
   avatarBg = 'bg-gradient-to-br from-red-500 to-orange-500',
   className = '',
   onClick,
+  onSelect,
+  onDeselect,
 }: ExperienceMobileItemProps) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const handleToggle = (): void => {
-    setIsExpanded(!isExpanded);
+    const newExpandedState = !isExpanded;
+    setIsExpanded(newExpandedState);
+
+    // Call the appropriate callback based on the new state
+    if (newExpandedState) {
+      onSelect?.();
+    } else {
+      onDeselect?.();
+    }
+
+    // Call the general onClick handler
     onClick?.();
   };
 
@@ -65,9 +81,8 @@ const ExperienceMobileItem = ({
         cursor-pointer 
         select-none 
         relative 
-        overflow-hidden 
-        max-w-[280px] 
-        w-[280px]
+        overflow-hidden
+        w-full 
         transition-all 
         duration-[300ms] 
         ${isExpanded ? 'pb-5' : ''}

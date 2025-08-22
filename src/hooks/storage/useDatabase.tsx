@@ -1,20 +1,30 @@
-import { neon } from '@neondatabase/serverless';
-import { NextResponse } from 'next/server';
+// hooks/useDatabase.ts
+'use client';
 
-const sql = neon(process.env.DATABASE_URL!);
+import { useState, useEffect } from 'react';
 
-export async function GET() {
-  try {
-    const experiences = await sql`
-      SELECT * FROM experience_items 
-      ORDER BY start_year DESC
-    `;
-    return NextResponse.json(experiences);
-  } catch (error) {
-    console.error('Database error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch experiences' },
-      { status: 500 }
-    );
-  }
+export function useDatabase<T>(endpoint: string) {
+  const [data, setData] = useState<T[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        const response = await fetch(endpoint);
+        if (!response.ok) throw new Error(`Failed to fetch from ${endpoint}`);
+        const result = await response.json();
+        setData(result);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [endpoint]);
+
+  return { data, loading, error };
 }
