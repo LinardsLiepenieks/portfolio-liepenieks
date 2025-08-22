@@ -1,16 +1,19 @@
 'use client';
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { MdWork, MdSchool, MdLightbulb } from 'react-icons/md';
 import { useRouter } from 'next/navigation';
 import SpotlightButton from '../ui/button/SpotlightButton';
+import AboutTitle from './about_section/AboutTitle';
 import { useHorizontalScrollContainer } from '@/hooks/scroll-container/useHorizontalScroll';
 
 const AboutSection = () => {
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
-  const [displayText, setDisplayText] = useState('');
+  const [displayText, setDisplayText] = useState<string>('');
   const [currentInterval, setCurrentInterval] = useState<NodeJS.Timeout | null>(
     null
   );
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const router = useRouter();
 
   // Button data for easier management
@@ -32,24 +35,37 @@ const AboutSection = () => {
     },
   ];
 
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = (): void => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Horizontal scroll hook
   const { currentItem, containerRef, itemRefs, scrollToItem } =
     useHorizontalScrollContainer({
       totalItems: buttons.length,
-      updateActiveItem: (index) => {
-        // Sync the text animation with scroll
-        handleInteractionStart(buttons[index].name, buttons[index].id);
+      updateActiveItem: (index: number) => {
+        // On mobile, sync the text animation with scroll view
+        if (isMobile) {
+          handleViewChange(buttons[index].name);
+        }
       },
     });
 
-  const clearCurrentInterval = () => {
+  const clearCurrentInterval = (): void => {
     if (currentInterval) {
       clearInterval(currentInterval);
       setCurrentInterval(null);
     }
   };
 
-  const animateText = (text: string, isEntering: boolean) => {
+  const animateText = (text: string, isEntering: boolean): void => {
     clearCurrentInterval();
 
     if (isEntering) {
@@ -80,30 +96,54 @@ const AboutSection = () => {
   };
 
   // Detect if device is mobile/touch device
-  const isMobileDevice = () => {
+  const isMobileDevice = (): boolean => {
     return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   };
 
-  const handleInteractionStart = (name: string, id: string) => {
-    setHoveredButton(id);
-    animateText(name, true);
-  };
-
-  const handleInteractionEnd = (name: string) => {
-    if (hoveredButton && displayText) {
-      animateText(name, false);
+  // Handle view change (for mobile scroll-based text updates)
+  const handleViewChange = (name: string): void => {
+    if (displayText !== name) {
+      if (displayText) {
+        // Clear current text first, then show new text
+        animateText(displayText, false);
+        setTimeout(() => {
+          animateText(name, true);
+        }, displayText.length * 20 + 50); // Wait for clear animation to finish
+      } else {
+        animateText(name, true);
+      }
     }
-    setHoveredButton(null);
   };
 
-  const handleTouchEnd = (name: string) => {
-    if (hoveredButton && displayText) {
-      animateText(name, false);
+  // Handle desktop hover interactions
+  const handleInteractionStart = (name: string, id: string): void => {
+    if (!isMobile) {
+      setHoveredButton(id);
+      animateText(name, true);
     }
-    setHoveredButton(null);
   };
 
-  const handleButtonClick = (buttonId: string, index: number) => {
+  const handleInteractionEnd = (name: string): void => {
+    if (!isMobile && hoveredButton && displayText) {
+      animateText(name, false);
+      setHoveredButton(null);
+    }
+  };
+
+  // Handle mobile touch interactions (only for navigation, not text animation)
+  const handleTouchStart = (name: string, id: string): void => {
+    if (isMobile) {
+      setHoveredButton(id);
+    }
+  };
+
+  const handleTouchEnd = (): void => {
+    if (isMobile) {
+      setHoveredButton(null);
+    }
+  };
+
+  const handleButtonClick = (buttonId: string, index: number): void => {
     // Scroll to the button if not already active
     if (currentItem !== index) {
       scrollToItem(index);
@@ -120,25 +160,21 @@ const AboutSection = () => {
     }
   };
 
-  const handleIndicatorClick = (index: number) => {
+  const handleIndicatorClick = (index: number): void => {
     scrollToItem(index);
   };
 
+  // Initialize with first item on mobile
+  useEffect(() => {
+    if (isMobile && !displayText && buttons.length > 0) {
+      animateText(buttons[currentItem].name, true);
+    }
+  }, [isMobile, currentItem]);
+
   return (
     <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis">
-      {/* Title Section */}
-      <div className="mt-16 mx-8 lg:mt-32 lg:mx-16">
-        <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mb-8 xl:mt-4 xl:mx-12">
-          <h2 className="text-pf-lg font-medium font-metropolis text-white lg:text-pf-2xl xl:text-pf-3xl">
-            About:
-          </h2>
-          <div className="h-px bg-white w-64 md:w-70 relative mt-10 lg:-bottom-5 xl:-bottom-11">
-            <span className="absolute -bottom-2 left-0 text-white text-pf-xl font-metropolis font-semibold tracking-wide lg:text-pf-xl xl:text-pf-2xl">
-              {displayText}
-            </span>
-          </div>
-        </div>
-      </div>
+      {/* Title Section - Now using the extracted component */}
+      <AboutTitle title="About:" displayText={displayText} />
 
       {/* Horizontal Scroll Gallery */}
       <div
@@ -155,10 +191,8 @@ const AboutSection = () => {
               className="w-screen md:w-auto flex justify-center items-center snap-center snap-always md:[scroll-snap-align:none]"
             >
               <div
-                onTouchStart={() =>
-                  handleInteractionStart(button.name, button.id)
-                }
-                onTouchEnd={() => handleTouchEnd(button.name)}
+                onTouchStart={() => handleTouchStart(button.name, button.id)}
+                onTouchEnd={handleTouchEnd}
                 className="touch-none"
               >
                 <SpotlightButton
