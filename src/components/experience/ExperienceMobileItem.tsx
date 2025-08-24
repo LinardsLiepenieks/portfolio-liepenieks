@@ -170,10 +170,11 @@ const ExperienceMobileItem = ({
             overflow-hidden
             transition-all 
             duration-[600ms] 
+            h-full
             ease-[cubic-bezier(0.4,0,0.1,0.8)]
             ${
               isExpanded
-                ? 'opacity-100 max-h-[200px] mt-3 pt-3 mb-0 translate-y-0'
+                ? 'opacity-100 max-h-[400px] mt-3 pt-3 mb-0 translate-y-0'
                 : 'opacity-0 max-h-0 mt-0 pt-0 mb-0 -translate-y-2.5'
             }
           `}
