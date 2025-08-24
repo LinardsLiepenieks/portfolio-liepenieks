@@ -112,9 +112,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
       </div>
 
       {/* Main Content Container */}
-      <div className="relative z-20  w-full px-8 lg:px-20 xl:px-32  h-full flex flex-col justify-between pt-16 max-w-[3200px]">
+      <div className="relative z-20  w-full px-8 lg:px-20 xl:px-32  h-full flex flex-col justify-between pt-12 max-w-[3200px]">
         <div className=" ">
-          <div className=" flex flex-col gap-1 items-start pt-14">
+          <div className="flex flex-col gap-1 items-start pt-14">
             <HoverFollowCard
               maxMove={40}
               sensitivity={0.1}

@@ -256,7 +256,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
   return (
     <>
       <div className="w-full">
-        <h2 className="text-pf-lg font-medium text-neutral-100 mb-3 sm:mb-2 tracking-wide lg:text-pf-lg xl:text-pf-2xl xl:font-normal">
+        <h2 className="text-pf-lg font-medium text-neutral-100 mb-4 sm:mb-2 tracking-wide lg:text-pf-lg xl:text-pf-2xl xl:font-normal">
           Send <span className="hidden md:inline">me</span> an email:
         </h2>
 
@@ -283,7 +283,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
               onChange={handleInputChange}
               required
               disabled={isSubmitting}
-              className="w-full px-4 mb-3 bg-transparent border-b-1 sm:border-2 sm:mb-0 sm:py-2 sm:rounded-lg border-neutral-300 placeholder:font-metropolis text-pf-sm lg:text-pf-base text-neutral-100 placeholder-neutral-300 focus:outline-none focus:border-neutral-200 transition-colors disabled:opacity-50"
+              className="w-full px-4 mb-2 bg-transparent border-b-1 sm:border-2 sm:mb-0 sm:py-2 sm:rounded-lg border-neutral-300 placeholder:font-metropolis text-pf-sm lg:text-pf-base text-neutral-100 placeholder-neutral-300 focus:outline-none focus:border-neutral-200 transition-colors disabled:opacity-50"
             />
 
             <input
