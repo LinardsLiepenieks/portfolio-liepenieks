@@ -192,14 +192,15 @@ const ExperienceMobileItem = ({
           )}
         </div>
       </div>
-
       {/* A4 Modal */}
-      <A4Modal
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
-        image={recommendationUrl}
-        linkTitle={linkTitle}
-      />
+      {linkTitle && recommendationUrl && (
+        <A4Modal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          image={recommendationUrl}
+          linkTitle={linkTitle}
+        />
+      )}
     </>
   );
 };
