@@ -8,10 +8,12 @@ import { ExperienceComponentProps } from '@/types/ExperienceItemType';
 
 interface ExperienceGalleryProps {
   experienceItems: ExperienceComponentProps[];
+  onSelectExperience: (title: string) => void; // accepts a string
 }
 
 export default function ExperienceGallery({
   experienceItems,
+  onSelectExperience,
 }: ExperienceGalleryProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [visibleIndex, setVisibleIndex] = useState(0);
@@ -20,7 +22,10 @@ export default function ExperienceGallery({
   const { currentItem, containerRef, itemRefs, scrollToItem } =
     useHorizontalScrollContainer({
       totalItems: experienceItems.length,
-      updateActiveItem: (index: number) => setVisibleIndex(index),
+      updateActiveItem: (index: number) => {
+        setVisibleIndex(index);
+        onSelectExperience(experienceItems[index].title); // 🔥 Trigger animation
+      },
     });
 
   // Detect mobile viewport
@@ -82,24 +87,27 @@ export default function ExperienceGallery({
         <button
           onClick={handlePrev}
           disabled={currentItem === 0}
-          className={`p-2 rounded-full ${
+          className={`p-2 rounded-full  ${
             currentItem === 0
               ? 'text-neutral-600 cursor-not-allowed'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-700'
+              : 'text-neutral-300 hover:text-white hover:bg-neutral-700 hover:cursor-pointer '
           }`}
         >
           <IoChevronBack size={20} />
         </button>
 
         {/* Dots */}
-        <div className="flex gap-2">
-          {experienceItems.map((_, i) => (
+        <div className="flex justify-center items-center gap-2">
+          {experienceItems.map((_, index) => (
             <button
-              key={i}
-              onClick={() => scrollToItem(i)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                i === currentItem ? 'bg-white scale-125' : 'bg-neutral-600'
+              key={index}
+              onClick={() => scrollToItem(index)}
+              className={`h-1 transition-all duration-300 ease-out rounded-full ${
+                currentItem === index
+                  ? 'w-8 bg-white'
+                  : 'w-4 bg-white/40 hover:bg-white/60'
               }`}
+              aria-label={`Go to experience ${index + 1}`}
             />
           ))}
         </div>
@@ -111,7 +119,7 @@ export default function ExperienceGallery({
           className={`p-2 rounded-full ${
             currentItem === experienceItems.length - 1
               ? 'text-neutral-600 cursor-not-allowed'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-700'
+              : 'text-neutral-300 hover:text-white hover:bg-neutral-700 hover:cursor-pointer'
           }`}
         >
           <IoChevronForward size={20} />

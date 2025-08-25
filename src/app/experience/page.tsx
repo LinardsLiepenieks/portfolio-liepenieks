@@ -14,8 +14,16 @@ function ExperiencePageContent() {
   const [currentInterval, setCurrentInterval] = useState<NodeJS.Timeout | null>(
     null
   );
+  const [hasSetInitialTitle, setHasSetInitialTitle] = useState(false);
 
-  // Animation function similar to AboutSection
+  useEffect(() => {
+    if (!hasSetInitialTitle && experiences.length > 0) {
+      animateText('Experience', experiences[0].title);
+      setHasSetInitialTitle(true);
+    }
+  }, [experiences, hasSetInitialTitle]);
+
+  // Animation function
   const clearCurrentInterval = (): void => {
     if (currentInterval) {
       clearInterval(currentInterval);
@@ -28,7 +36,6 @@ function ExperiencePageContent() {
 
     if (oldText === newText) return;
 
-    // First, clear the old text
     let currentIndex = oldText.length;
     const removeInterval = setInterval(() => {
       setSelectedExperienceTitle(oldText.slice(0, currentIndex - 1));
@@ -36,7 +43,6 @@ function ExperiencePageContent() {
       if (currentIndex <= 0) {
         clearInterval(removeInterval);
 
-        // Then type the new text
         let typeIndex = 0;
         const typeInterval = setInterval(() => {
           setSelectedExperienceTitle(newText.slice(0, typeIndex + 1));
@@ -52,12 +58,10 @@ function ExperiencePageContent() {
     setCurrentInterval(removeInterval);
   };
 
-  // Handle experience selection
   const handleExperienceSelect = (experienceTitle: string) => {
     animateText(selectedExperienceTitle, experienceTitle);
   };
 
-  // Reset to "Experience" when no item is selected
   const handleExperienceDeselect = () => {
     animateText(selectedExperienceTitle, 'Experience');
   };
@@ -65,13 +69,11 @@ function ExperiencePageContent() {
   // Cleanup interval on unmount
   useEffect(() => {
     return () => {
-      if (currentInterval) {
-        clearInterval(currentInterval);
-      }
+      if (currentInterval) clearInterval(currentInterval);
     };
   }, [currentInterval]);
 
-  // Helper function to generate avatar background (fallback when no logo)
+  // Helper for avatar background
   const getAvatarBg = (index: number) => {
     const gradients = [
       'bg-gradient-to-br from-blue-500 to-indigo-600',
@@ -89,11 +91,10 @@ function ExperiencePageContent() {
       <>
         <ContentNavbar />
         <section className="h-screen bg-neutral-900 text-white flex flex-col w-full overflow-hidden">
-          <div className="flex-shrink-0  pb-8">
+          <div className="flex-shrink-0 pb-8">
             <AboutTitle
               title="About:"
               displayText="Experience"
-              className=""
               displayTextClassName="text-neutral-300"
               lineWidth="w-64 md:w-70 lg:w-90"
             />
@@ -114,11 +115,10 @@ function ExperiencePageContent() {
       <>
         <ContentNavbar />
         <section className="h-screen bg-neutral-900 text-white flex flex-col w-full overflow-hidden">
-          <div className="flex-shrink-0  pb-8">
+          <div className="flex-shrink-0 pb-8">
             <AboutTitle
               title="About:"
               displayText="Experience"
-              className=""
               displayTextClassName="text-neutral-300"
               lineWidth="w-64 md:w-70 lg:w-90"
             />
@@ -135,29 +135,23 @@ function ExperiencePageContent() {
 
   return (
     <>
-      {/* ContentNavbar - fixed positioned */}
       <ContentNavbar />
-
-      {/* Main content container - full viewport height minus navbar */}
       <section className="h-screen bg-neutral-900 text-white flex flex-col w-full overflow-hidden">
-        {/* Title Section - fixed height with animated title */}
         <AboutTitle
           title="About:"
           displayText={selectedExperienceTitle}
-          className=""
           displayTextClassName="text-neutral-300"
           lineWidth="w-64 md:w-70 lg:w-90"
         />
 
-        {/* Scrollable content area - takes remaining space */}
         <div className="flex-1 min-h-0 flex flex-col">
-          {/* Mobile Experience Items - scrollable */}
-          <div className="flex-1 overflow-y-auto px-8 pb-4 md:hidden">
+          {/* Mobile Experience Items */}
+          <div className="flex-1 overflow-y-auto px-8 pb-4 md:hidden pt-4">
             <div className="space-y-4">
-              {experiences.map((experience, index) => (
+              {experiences.map((experience) => (
                 <ExperienceMobileItem
-                  id={experience.id}
                   key={experience.id}
+                  id={experience.id}
                   title={experience.title}
                   position={experience.position}
                   period={experience.period}
@@ -173,8 +167,11 @@ function ExperiencePageContent() {
           </div>
 
           {/* Desktop Experience Gallery */}
-          <div className="flex-1 min-h-0 hidden md:block  my-2">
-            <ExperienceGallery experienceItems={experiences} />
+          <div className="flex-1 min-h-0 hidden md:block my-2">
+            <ExperienceGallery
+              experienceItems={experiences}
+              onSelectExperience={handleExperienceSelect}
+            />
           </div>
         </div>
       </section>
