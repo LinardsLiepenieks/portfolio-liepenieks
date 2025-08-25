@@ -89,7 +89,7 @@ function ExperiencePageContent() {
       <>
         <ContentNavbar />
         <section className="h-screen bg-neutral-900 text-white flex flex-col w-full overflow-hidden">
-          <div className="flex-shrink-0 pt-8 pb-8">
+          <div className="flex-shrink-0  pb-8">
             <AboutTitle
               title="About:"
               displayText="Experience"
@@ -114,7 +114,7 @@ function ExperiencePageContent() {
       <>
         <ContentNavbar />
         <section className="h-screen bg-neutral-900 text-white flex flex-col w-full overflow-hidden">
-          <div className="flex-shrink-0 pt-8 pb-8">
+          <div className="flex-shrink-0  pb-8">
             <AboutTitle
               title="About:"
               displayText="Experience"
@@ -141,15 +141,13 @@ function ExperiencePageContent() {
       {/* Main content container - full viewport height minus navbar */}
       <section className="h-screen bg-neutral-900 text-white flex flex-col w-full overflow-hidden">
         {/* Title Section - fixed height with animated title */}
-        <div className="flex-shrink-0 pt-8 pb-8">
-          <AboutTitle
-            title="About:"
-            displayText={selectedExperienceTitle}
-            className=""
-            displayTextClassName="text-neutral-300"
-            lineWidth="w-64 md:w-70 lg:w-90"
-          />
-        </div>
+        <AboutTitle
+          title="About:"
+          displayText={selectedExperienceTitle}
+          className=""
+          displayTextClassName="text-neutral-300"
+          lineWidth="w-64 md:w-70 lg:w-90"
+        />
 
         {/* Scrollable content area - takes remaining space */}
         <div className="flex-1 min-h-0 flex flex-col">
@@ -158,26 +156,24 @@ function ExperiencePageContent() {
             <div className="space-y-4">
               {experiences.map((experience, index) => (
                 <ExperienceMobileItem
+                  id={experience.id}
                   key={experience.id}
                   title={experience.title}
-                  position={experience.position} // You might want to split this into separate fields
-                  period={`${experience.start_year}-${
-                    experience.end_year || 'Present'
-                  }`}
-                  description={experience.description_short}
-                  logoUrl={experience.logo_url}
-                  recommendationUrl={experience.recommendation_url}
-                  avatarBg={getAvatarBg(index)}
+                  position={experience.position}
+                  period={experience.period}
+                  description={experience.descriptionShort}
+                  logoUrl={experience.logoUrl}
+                  recommendationUrl={experience.recommendationUrl}
                   onSelect={() => handleExperienceSelect(experience.title)}
                   onDeselect={handleExperienceDeselect}
-                  linkTitle={experience.reference_title}
+                  linkTitle={experience.linkTitle}
                 />
               ))}
             </div>
           </div>
 
           {/* Desktop Experience Gallery */}
-          <div className="flex-1 min-h-0 hidden md:block">
+          <div className="flex-1 min-h-0 hidden md:block  my-2">
             <ExperienceGallery experienceItems={experiences} />
           </div>
         </div>

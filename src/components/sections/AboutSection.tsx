@@ -181,7 +181,7 @@ const AboutSection = () => {
         ref={containerRef}
         className="w-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
-        <div className="flex w-max md:w-full md:justify-center md:gap-4 mt-12 lg:gap-32">
+        <div className="flex w-max md:w-full md:justify-center md:gap-4 mt-14 lg:gap-32 md:mt-28 lg:mt-16">
           {buttons.map((button, index) => (
             <div
               key={button.id}
@@ -215,7 +215,7 @@ const AboutSection = () => {
       </div>
 
       {/* Scroll Indicators - Only show on mobile */}
-      <div className="md:hidden flex justify-center items-center gap-2 mt-4 pb-4">
+      <div className="md:hidden flex justify-center items-center gap-2 mt-5 pb-4">
         {buttons.map((_, index) => (
           <button
             key={index}

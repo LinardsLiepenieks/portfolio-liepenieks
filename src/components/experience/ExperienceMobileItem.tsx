@@ -3,33 +3,9 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import A4Modal from '../modals/A4Modal';
+import { ExperienceComponentProps } from '@/types/ExperienceItemType';
 
-interface ExperienceMobileItemProps {
-  /** Company or project name */
-  title: string;
-  /** Job title or role */
-  position: string;
-  /** Time period (e.g., "2023-2024", "Jan 2023 - Present") */
-  period: string;
-  /** Detailed description of the role/experience */
-  description: string;
-  /** Logo URL from Vercel Blob storage */
-  logoUrl?: string;
-  /** Recommendation letter URL */
-  recommendationUrl?: string;
-  /** Link title for the modal */
-  linkTitle?: string;
-  /** Avatar background color classes (fallback when no logo) */
-  avatarBg?: string;
-  /** Custom className for the container */
-  className?: string;
-  /** Click handler for additional actions */
-  onClick?: () => void;
-  /** Called when item is expanded/selected */
-  onSelect?: () => void;
-  /** Called when item is collapsed/deselected */
-  onDeselect?: () => void;
-}
+interface ExperienceMobileItemProps extends ExperienceComponentProps {}
 
 const ExperienceMobileItem = ({
   title,
@@ -39,7 +15,6 @@ const ExperienceMobileItem = ({
   logoUrl,
   recommendationUrl,
   linkTitle = 'Recommendation letter',
-  avatarBg = 'bg-gradient-to-br from-red-500 to-orange-500',
   className = '',
   onClick,
   onSelect,
@@ -104,33 +79,50 @@ const ExperienceMobileItem = ({
         {/* Main Content Row */}
         <div className="flex items-center gap-3 w-full justify-start">
           {/* Logo/Avatar */}
-          <div
-            className={`
-              border border-gray-800 
-              w-20 h-20
-              flex-shrink-0 
-              flex 
-              items-center 
-              justify-center
-              rounded-lg
-              overflow-hidden
-              ${logoUrl ? 'bg-none' : avatarBg}
-            `}
-          >
-            {logoUrl ? (
-              <Image
-                src={logoUrl}
-                alt={`${title} logo`}
-                width={80}
-                height={80}
-                className="w-full h-full object-contain"
-                unoptimized // Since it's from Vercel Blob storage
-              />
-            ) : (
-              <span className="text-white font-bold text-base">
-                {title.charAt(0).toUpperCase()}
-              </span>
+          <div className="relative w-20 h-20 flex-shrink-0">
+            {logoUrl && (
+              <>
+                {/* Corner borders for logos */}
+                <div className="absolute top-0 left-0 w-5 h-5 border-l border-t border-gray-700 rounded-tl-lg"></div>
+                <div className="absolute top-0 right-0 w-5 h-5 border-r border-t border-gray-700 rounded-tr-lg"></div>
+                <div className="absolute bottom-0 left-0 w-5 h-5 border-l border-b border-gray-700 rounded-bl-lg"></div>
+                <div className="absolute bottom-0 right-0 w-5 h-5 border-r border-b border-gray-700 rounded-br-lg"></div>
+              </>
             )}
+
+            <div
+              className={`
+                w-full h-full
+                flex 
+                items-center 
+                justify-center
+                rounded-lg
+                overflow-hidden
+                transition-all
+                duration-[300ms]
+                ${isExpanded ? 'p-2.5' : 'p-3'}
+                ${
+                  logoUrl
+                    ? 'bg-none'
+                    : 'bg-gradient-to-br from-red-500 to-orange-500 border border-gray-700'
+                }
+              `}
+            >
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={`${title} logo`}
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-contain"
+                  unoptimized // Since it's from Vercel Blob storage
+                />
+              ) : (
+                <span className="text-white font-bold text-base">
+                  {title.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Info */}
@@ -171,7 +163,7 @@ const ExperienceMobileItem = ({
             transition-all 
             duration-[600ms] 
             h-full
-            ease-[cubic-bezier(0.4,0,0.1,0.8)]
+            
             ${
               isExpanded
                 ? 'opacity-100 max-h-[400px] mt-3 pt-3 mb-0 translate-y-0'

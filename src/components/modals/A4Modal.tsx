@@ -71,13 +71,13 @@ const A4Modal = ({
       aria-labelledby="modal-title"
     >
       <div
-        className={`shadow-2xl max-w-4xl w-full h-full max-h-[90vh] bg-neutral-800/95 backdrop-blur-sm rounded-lg overflow-hidden transition-all duration-300 ease-out ${
+        className={`shadow-2xl max-w-4xl w-full max-h-[90vh] bg-neutral-800/95 backdrop-blur-sm rounded-lg overflow-hidden transition-all duration-300 ease-out flex flex-col ${
           isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with close button */}
-        <div className="flex justify-between items-center p-4 border-b border-neutral-700">
+        <div className="flex justify-between items-center p-4 border-b border-neutral-700 flex-shrink-0">
           <h2
             id="modal-title"
             className="text-white text-lg font-medium tracking-wide font-metropolis"
@@ -94,27 +94,27 @@ const A4Modal = ({
         </div>
 
         {/* Content area */}
-        <div className="relative h-full overflow-hidden bg-neutral-100">
-          <div className="w-full h-full overflow-auto flex items-center bg-neutral-900">
-            {image ? (
+        <div className="flex-1 overflow-hidden bg-neutral-900 flex items-center justify-center min-h-0">
+          {image ? (
+            <div className="w-full h-full p-4 flex items-center justify-center">
               <Image
                 src={image}
                 alt={linkTitle}
                 width={800}
                 height={1132}
-                className="w-full h-auto object-contain relative -top-16"
+                className="max-w-full max-h-full w-auto h-auto object-contain"
                 unoptimized
                 priority
               />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-neutral-500 text-center">
-                  <div className="text-6xl mb-4">📄</div>
-                  <p>No {linkTitle.toLowerCase()} available</p>
-                </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-neutral-500 text-center">
+                <div className="text-6xl mb-4">📄</div>
+                <p>No {linkTitle.toLowerCase()} available</p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
