@@ -5,7 +5,7 @@ import Image from 'next/image';
 import A4Modal from '../modals/A4Modal';
 import { ExperienceComponentProps } from '@/types/ExperienceItemType';
 
-interface ExperienceItemProps extends ExperienceComponentProps {}
+type ExperienceItemProps = ExperienceComponentProps;
 
 const ExperienceItem = ({
   title,
