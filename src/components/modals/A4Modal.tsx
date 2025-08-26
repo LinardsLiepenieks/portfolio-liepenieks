@@ -86,23 +86,22 @@ const A4Modal = ({
           </h2>
           <button
             onClick={onClose}
-            className="hover:bg-neutral-700 transition-colors duration-200 text-neutral-400 hover:text-white rounded-full p-2 flex items-center justify-center"
+            className="hover:bg-neutral-700 hover:cursor-pointer transition-colors duration-200 text-neutral-400 hover:text-white rounded-full p-2 flex items-center justify-center"
             aria-label="Close modal"
           >
             <IoClose size={24} />
           </button>
         </div>
 
-        {/* Content area */}
-        <div className="flex-1 overflow-hidden bg-neutral-900 flex items-center justify-center min-h-0">
+        {/* Content area - key changes here */}
+        <div className="flex-1 overflow-auto bg-neutral-900 min-h-0 scrollbar-dark">
           {image ? (
-            <div className="w-full h-full p-4 flex items-center justify-center">
+            <div className="w-full min-h-full flex justify-center">
               <Image
                 src={image}
                 alt={linkTitle}
-                width={800}
-                height={1132}
-                className="max-w-full max-h-full w-auto h-auto object-contain"
+                fill
+                className="!relative h-full w-auto max-w-full object-contain object-top"
                 unoptimized
                 priority
               />
