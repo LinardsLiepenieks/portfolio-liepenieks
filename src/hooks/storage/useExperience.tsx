@@ -21,6 +21,7 @@ export function useExperience(
       title: experience.title,
       position: experience.position,
       period: `${experience.start_year}-${experience.end_year || 'Present'}`,
+      startYear: experience.start_year,
       descriptionShort: experience.description_short,
       description: experience.description,
       logoUrl: experience.logo_url,

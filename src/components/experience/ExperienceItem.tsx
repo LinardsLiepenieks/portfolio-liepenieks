@@ -24,7 +24,7 @@ const ExperienceItem = ({
 
   return (
     <>
-      <div className="text-neutral-100 max-w-6xl font-metropolis flex flex-col justify-center max-h-full border-dashed border-neutral-600 px-8 py-2 border">
+      <div className="text-neutral-100 max-w-6xl font-metropolis flex flex-col justify-center max-h-full border-dashed border-neutral-500 px-8 py-2 border">
         {/* Top row - Year */}
 
         <div className="text-lg mb-2 text-pf-2xl flex-shrink-0 flex items-baseline gap-2">
@@ -37,7 +37,7 @@ const ExperienceItem = ({
         {/* Middle section - Photo/Image and Description */}
         <div className="flex min-h-0 gap-2 max-h-90 h-full mb-1">
           {/* Image container */}
-          <div className="w-90 aspect-square flex items-center justify-center border border-dotted border-gray-500 flex-shrink-0 mx-16 bg-gray-900 relative p-4">
+          <div className="w-90 aspect-square flex items-center justify-center border border-dotted border-gray-500 flex-shrink-0 mx-16  relative p-4">
             <div className="w-full h-full relative">
               {logoUrl ? (
                 <Image
@@ -45,7 +45,7 @@ const ExperienceItem = ({
                   alt={`Experience ${title} image`}
                   fill
                   style={{ objectFit: 'cover' }}
-                  className="rounded"
+                  className="rounded drop-shadow-[2px_0px_16px_rgba(255,255,255,0.1)]"
                 />
               ) : (
                 <div className="text-gray-300">No image</div>
