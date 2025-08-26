@@ -92,14 +92,14 @@ export function ContentNavbar({
     <>
       <nav
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 h-16 bg-neutral-900 border-b border-neutral-800',
-          'flex items-center justify-between px-4 shadow-lg',
+          'fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-sm shadow-sm',
+          'flex items-center justify-between px-9 py-4 pt-4.5',
           className
         )}
         role="navigation"
         aria-label="Main navigation"
       >
-        {/* Back Button */}
+        {/* Back Button - visible on all screen sizes */}
         {showBackButton && (
           <ReturnButton
             icon={{
@@ -112,12 +112,27 @@ export function ContentNavbar({
           />
         )}
 
-        {/* Menu Toggle Button */}
+        {/* Desktop Navigation Links - visible on lg+ screens */}
+        <div className="flex items-center space-x-6 hidden md:flex">
+          {navigationItems.map((item) => (
+            <NavbarLink
+              key={item.href}
+              href={item.href}
+              label={item.name}
+              onClick={(event) => {
+                event.preventDefault();
+                handleNavigation(item.href);
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Menu Toggle Button - visible on md and below */}
         <button
           onClick={toggleMenu}
           className={cn(
-            'flex items-center justify-center w-10 h-10 rounded-md',
-            'text-neutral-100 transition-colors duration-200',
+            'flex items-center justify-center w-10 h-10 rounded-md md:hidden',
+            'text-white transition-colors duration-200 hover:bg-white/10',
             'focus:outline-none'
           )}
           aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
@@ -141,21 +156,21 @@ export function ContentNavbar({
         </button>
       </nav>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu Overlay - only on lg and below */}
       <div
         className={cn(
-          'fixed inset-0 z-40 bg-black/50 transition-opacity duration-300',
+          'fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 lg:hidden',
           isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         )}
         onClick={() => setIsMenuOpen(false)}
         aria-hidden="true"
       />
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - only on lg and below */}
       <div
         id="mobile-menu"
         className={cn(
-          'fixed top-16 left-0 right-0 z-40 bg-neutral-900 border-b border-neutral-800',
+          'fixed top-16 left-0 right-0 z-40 bg-neutral-900 border-b border-neutral-800 lg:hidden',
           'transform transition-all duration-300 ease-out shadow-xl',
           isMenuOpen
             ? 'translate-y-0 opacity-100'

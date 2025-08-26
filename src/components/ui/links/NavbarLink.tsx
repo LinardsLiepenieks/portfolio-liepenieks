@@ -22,23 +22,25 @@ const NavbarLink: React.FC<NavbarLinkProps> = ({ href, label, onClick }) => {
       href={href}
       onClick={handleClick}
       className={`
-        relative px-4 py-1 text-white font-metropolis font-medium text-pf-sm tracking-wider
+        relative px-4  lg:px-3 lg:py-1.5 lg:mb-1.5 text-white font-metropolis font-semibold text-pf-sm lg:text-pf-sm
         transition-all duration-200 ease-in-out
         hover:text-white/90 cursor-pointer group
       `}
     >
-      {label}
-      {/* Single underline that changes behavior based on active state */}
-      <span
-        className={`
-          absolute bottom-0 h-px bg-white transition-all duration-300 ease-out
+      <div className="relative px-1 lg:px-0.5">
+        {label}
+        {/* Single underline that changes behavior based on active state */}
+        <span
+          className={`
+          absolute bottom-0 h-px bg-white transition-all duration-300 ease-out 
           ${
             isActive
-              ? 'left-2 right-2 w-[calc(100%-1rem)]' // Active state - full width
-              : 'left-1/2 w-0 group-hover:w-[calc(100%-1rem)] group-hover:left-2' // Hover state - animated from center
+              ? 'left-0  w-full ' // Active state - full width
+              : 'left-1/2 w-0 group-hover:w-full group-hover:left-0' // Hover state - animated from center
           }
         `}
-      ></span>
+        ></span>
+      </div>
     </a>
   );
 };

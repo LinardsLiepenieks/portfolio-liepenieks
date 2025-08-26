@@ -35,7 +35,7 @@ const ExperienceItem = ({
         </div>
 
         {/* Middle section - Photo/Image and Description */}
-        <div className="flex min-h-0 gap-2 max-h-90 h-full mb-1">
+        <div className="flex min-h-0 gap-2 max-h-96 h-full mb-1">
           {/* Image container */}
           <div className="w-90 aspect-square flex items-center justify-center border border-dotted border-gray-500 flex-shrink-0 mx-16  relative p-4">
             <div className="w-full h-full relative">

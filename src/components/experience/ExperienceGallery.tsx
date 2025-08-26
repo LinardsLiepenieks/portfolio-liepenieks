@@ -133,7 +133,7 @@ export default function ExperienceGallery({
                     isLastItem(index) ? 'invisible' : ''
                   }`}
                 >
-                  <div className="w-full flex items-center gap-2">
+                  <div className="w-full flex items-center gap-1">
                     <span
                       className={`h-px border-neutral-500 border-dashed border transition-all duration-600 delay-300 ease-out block ${
                         shouldAnimateLine ? 'w-full' : 'w-0'
@@ -142,7 +142,7 @@ export default function ExperienceGallery({
                     {nextExperienceYear && (
                       <button
                         onClick={() => handleYearClick(index)}
-                        className="text-pf-base font-metropolis text-neutral-300 font-medium hover:text-white hover:cursor-pointer transition-colors duration-200 relative group"
+                        className="text-pf-base font-metropolis text-neutral-300 font-medium hover:text-white hover:cursor-pointer transition-colors duration-200 relative group mx-3"
                       >
                         {nextExperienceYear}
                         <span className="absolute bottom-1 left-0 w-0 h-0.5 bg-neutral-300 transition-all duration-300 ease-out group-hover:w-full"></span>
