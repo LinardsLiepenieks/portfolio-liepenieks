@@ -6,19 +6,25 @@ import Image from 'next/image';
 import { IoClose } from 'react-icons/io5';
 
 interface A4ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   image?: string | null;
   linkTitle?: string;
+  children?: React.ReactNode;
+  defaultButtonText?: string;
+  defaultButtonClassName?: string;
 }
 
 const A4Modal = ({
-  isOpen,
-  onClose,
   image,
   linkTitle = 'Recommendation Letter',
+  children,
+  defaultButtonText = 'View Document',
+  defaultButtonClassName = "hover:cursor-pointer text-pf-base italic font-semibold !tracking-wide rounded transition-colors relative group after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:ease-out hover:after:w-full text-white",
 }: A4ModalProps) => {
+  const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const openModal = () => setIsOpen(true);
+  const closeModal = () => setIsOpen(false);
 
   useEffect(() => {
     setMounted(true);
@@ -41,13 +47,13 @@ const A4Modal = ({
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      closeModal();
     }
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
-      onClose();
+      closeModal();
     }
   };
 
@@ -58,6 +64,47 @@ const A4Modal = ({
     }
   }, [isOpen]);
 
+  // Trigger component
+  const Trigger = () => {
+    if (children) {
+      return (
+        <div
+          onClick={(e) => {
+            // Open the modal regardless of child's stopPropagation
+            openModal();
+          }}
+          onClickCapture={(e) => {
+            // Use capture phase to ensure we get the click before child's stopPropagation
+            openModal();
+            e.stopPropagation(); // Stop it from bubbling up further
+          }}
+          className="cursor-pointer"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              openModal();
+            }
+          }}
+        >
+          {children}
+        </div>
+      );
+    }
+
+    return (
+      <button
+        onClick={openModal}
+        className={defaultButtonClassName}
+        type="button"
+      >
+        {defaultButtonText}
+      </button>
+    );
+  };
+
+  // Modal content
   const modalContent = (
     <div
       className={`fixed inset-0 flex items-center justify-center z-50 p-4 md:p-8 transition-all duration-300 ease-out ${
@@ -85,7 +132,7 @@ const A4Modal = ({
             {linkTitle}
           </h2>
           <button
-            onClick={onClose}
+            onClick={closeModal}
             className="hover:bg-neutral-700 hover:cursor-pointer transition-colors duration-200 text-neutral-400 hover:text-white rounded-full p-2 flex items-center justify-center"
             aria-label="Close modal"
           >
@@ -93,7 +140,7 @@ const A4Modal = ({
           </button>
         </div>
 
-        {/* Content area - key changes here */}
+        {/* Content area */}
         <div className="flex-1 overflow-auto bg-neutral-900 min-h-0 scrollbar-dark">
           {image ? (
             <div className="w-full min-h-full flex justify-center">
@@ -119,10 +166,15 @@ const A4Modal = ({
     </div>
   );
 
-  // Only render if mounted (client-side) and return portal
+  // Only render if mounted (client-side)
   if (!mounted) return null;
 
-  return createPortal(modalContent, document.body);
+  return (
+    <>
+      <Trigger />
+      {createPortal(modalContent, document.body)}
+    </>
+  );
 };
 
 export default A4Modal;

@@ -8,6 +8,8 @@ import { useEducation } from '@/hooks/storage/useEducation';
 import ContentNavbar from '@/components/ui/ContentNavbar';
 import AboutTitle from '@/components/sections/about_section/AboutTitle';
 import EducationMobileItem from '@/components/education/EducationMobileItem';
+import CertificateMobileItem from '@/components/education/CertificateMobileItem';
+import { useCertificates } from '@/hooks/storage/useCertificates';
 
 function EducationPageContent() {
   const searchParams = useSearchParams();
@@ -31,6 +33,12 @@ function EducationPageContent() {
   } = useEducation(
     (name: string) => handleEducationSelect(name), // onSelect for mobile
     () => handleEducationDeselect() // onDeselect for mobile
+  );
+
+  // Use the certificates hook
+  const { certificates: certificateItems } = useCertificates(
+    () => {}, // onSelect for mobile
+    () => {} // onDeselect for mobile
   );
 
   // Check if we're on desktop
@@ -146,7 +154,7 @@ function EducationPageContent() {
 
         // Check if item is hitting the top of the scroll container
         const distanceFromTop = itemTop - containerTop;
-        const threshold = itemHeight * 0.15;
+        const threshold = itemHeight / 40;
 
         if (distanceFromTop <= threshold) {
           // Add class to trigger CSS animation
@@ -189,7 +197,7 @@ function EducationPageContent() {
           <div className="md:absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-neutral-900 to-transparent z-10 pointer-events-none" />
 
           {/* Mobile Education Items */}
-          <div className="flex-1 overflow-y-auto px-8 pb-4 md:hidden pt-4">
+          <div className="flex-1 overflow-y-auto mx-4 sm:mx-8 pb-4 md:hidden pt-4">
             <div className="space-y-4">
               {educationItems.map((education) => (
                 <EducationMobileItem
@@ -206,6 +214,23 @@ function EducationPageContent() {
                   diplomaUrl={education.diplomaUrl}
                   onSelect={education.onSelect}
                   onDeselect={education.onDeselect}
+                />
+              ))}
+            </div>
+            <h3 className="font-metropolis text-pf-lg font-medium">
+              Certificates:
+            </h3>
+            <div className="space-y-4 mt-4  w-full">
+              {certificateItems.map((certificate) => (
+                <CertificateMobileItem
+                  id={certificate.id}
+                  name={certificate.name}
+                  provider={certificate.provider}
+                  year={certificate.year}
+                  logoUrl={certificate.logoUrl}
+                  certificateUrl={certificate.certificateUrl}
+                  onSelect={certificate.onSelect}
+                  onDeselect={certificate.onDeselect}
                 />
               ))}
             </div>

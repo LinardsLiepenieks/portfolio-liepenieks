@@ -27,7 +27,7 @@ const AboutTitle = ({
   lineWidth = 'w-64 md:w-80',
 }: AboutTitleProps) => {
   return (
-    <div className={`mt-16 mx-8 lg:mt-24 lg:mx-16 ${className}`}>
+    <div className={`mt-16 mx-4 sm:mx-8 lg:mt-24 lg:mx-16 ${className}`}>
       <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mb-8 xl:mt-4 xl:mx-12">
         <h2
           className={`text-pf-lg font-medium font-metropolis text-white lg:text-pf-2xl xl:text-pf-3xl ${titleClassName}`}
