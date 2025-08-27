@@ -181,7 +181,7 @@ const AboutSection = () => {
         ref={containerRef}
         className="w-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
-        <div className="flex w-max md:w-full md:justify-center md:gap-4 mt-14 lg:gap-32 md:mt-28 lg:mt-16">
+        <div className="flex w-max md:w-full md:justify-center md:gap-4 mt-14 lg:gap-32 md:mt-28 lg:mt-16 2xl:mt-24">
           {buttons.map((button, index) => (
             <div
               key={button.id}

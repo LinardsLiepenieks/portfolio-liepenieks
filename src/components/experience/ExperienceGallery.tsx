@@ -78,11 +78,11 @@ export default function ExperienceGallery({
   };
 
   return (
-    <div className="flex flex-col h-full w-full relative overflow-hidden ">
+    <div className="flex flex-col h-full w-full relative overflow-hidden pb-8">
       {/* Scrollable row */}
       <div
         ref={containerRef}
-        className="flex overflow-x-auto  overflow-y-hidden scrollbar-hidden"
+        className="flex overflow-x-auto overflow-y-hidden scrollbar-hidden h-full"
       >
         {experienceItems.map((experience, index) => {
           const isVisible = index === visibleIndex;
@@ -95,9 +95,9 @@ export default function ExperienceGallery({
               ref={(el) => {
                 itemRefs.current[index] = el;
               }}
-              className="flex-shrink-0 w-[100vw] flex items-center justify-center"
+              className="flex-shrink-0 w-[100vw] flex items-center justify-center h-full "
             >
-              <div className="w-full justify-center flex">
+              <div className="w-full justify-center flex h-full">
                 {/* Left line - hidden for first item */}
                 <div
                   className={`flex flex-1 items-center ${
@@ -108,7 +108,7 @@ export default function ExperienceGallery({
                 </div>
 
                 <div
-                  className={`h-full transition-all duration-700 ease-out transform justify-center flex  ${
+                  className={`h-full transition-all duration-700 ease-out transform justify-center flex  items-center  ${
                     isVisible
                       ? 'opacity-100 translate-y-0'
                       : 'opacity-0 translate-y-5'
@@ -142,7 +142,7 @@ export default function ExperienceGallery({
                     {nextExperienceYear && (
                       <button
                         onClick={() => handleYearClick(index)}
-                        className="text-pf-base font-metropolis text-neutral-300 font-medium hover:text-white hover:cursor-pointer transition-colors duration-200 relative group mx-3"
+                        className="text-pf-base font-metropolis text-neutral-300 font-medium hover:text-white hover:cursor-pointer transition-colors duration-200 relative group mx-4"
                       >
                         {nextExperienceYear}
                         <span className="absolute bottom-1 left-0 w-0 h-0.5 bg-neutral-300 transition-all duration-300 ease-out group-hover:w-full"></span>
@@ -157,7 +157,7 @@ export default function ExperienceGallery({
       </div>
 
       {/* Navigation controls */}
-      <div className="flex justify-center items-center gap-4 mt-4">
+      <div className="flex justify-center items-center gap-4 mt-8">
         {/* Prev button */}
         <button
           onClick={handlePrev}

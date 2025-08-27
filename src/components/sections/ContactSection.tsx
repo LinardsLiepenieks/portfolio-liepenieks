@@ -38,8 +38,8 @@ const ContactSection = () => {
   return (
     <section className="flex relative flex-col w-full h-full bg-neutral-900 font-metropolis mx-auto max-w-[3200px]">
       {/* Title Section */}
-      <div className="mt-12 mx-8 lg:mx-16 mb-12 text-neutral-100 lg:mt-24 xl:mb-12">
-        <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mb-8 xl:mt-4 xl:mx-12">
+      <div className="mt-12 mx-8 lg:mx-16 mb-2 text-neutral-100 lg:mt-24 2xl:mb-8 ">
+        <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mb-8 xl:mt-4 xl:mx-12 2xl:mt-8">
           <h2 className="text-pf-2xl font-light font-metropolis md:text-pf-3xl xl:text-pf-4xl">
             Contact me!
           </h2>
@@ -53,7 +53,7 @@ const ContactSection = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col w-full px-8 pr-12 lg:px-16 xl:px-28">
+      <div className="flex flex-col w-full px-8 pr-12 lg:px-16 xl:px-28 ">
         {/* Contact Form with Action Buttons */}
         <ContactForm
           serviceId={EMAILJS_SERVICE_ID}

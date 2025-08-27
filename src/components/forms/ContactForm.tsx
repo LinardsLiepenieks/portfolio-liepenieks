@@ -312,7 +312,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
           />
 
           {/* Submit Button Row */}
-          <div className="flex gap-6 items-center">
+          <div className="flex gap-6 items-center 2xl:mt-2">
             <button
               type="submit"
               disabled={isSubmitting}
