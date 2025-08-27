@@ -3,15 +3,20 @@
 import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { IoArrowBack } from 'react-icons/io5';
-import ReturnButton from '@/components/ui/button/ReturnButton';
 import EducationItem from '@/components/education/EducationItem';
+import { useEducation } from '@/hooks/storage/useEducation';
+import ContentNavbar from '@/components/ui/ContentNavbar';
+import AboutTitle from '@/components/sections/about_section/AboutTitle';
+import EducationMobileItem from '@/components/education/EducationMobileItem';
 
 function EducationPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const returnSection = parseInt(searchParams.get('returnTo') || '0');
+
+  // Use the education hook to get data
+  const { education: educationItems, loading, error } = useEducation();
 
   const handleGoBack = () => {
     const sectionRoutes = ['/', '/about', '/contact'];
@@ -36,7 +41,7 @@ function EducationPageContent() {
 
         // Check if item is hitting the top of the scroll container
         const distanceFromTop = itemTop - containerTop;
-        const threshold = itemHeight * 0.0000000005; // Trigger when 1.5% of item is above container top
+        const threshold = itemHeight * 0.15; // Fixed threshold back to reasonable value
 
         if (distanceFromTop <= threshold) {
           // Add class to trigger CSS animation
@@ -59,87 +64,77 @@ function EducationPageContent() {
   }, []);
 
   return (
-    <section className="h-screen bg-neutral-900 text-white pt-8 flex flex-col w-full">
-      {/* Header Row with Back Arrow */}
-      <div className="flex items-center pb-6 px-8">
-        <ReturnButton
-          icon={{
-            type: 'react-icons',
-            component: IoArrowBack,
-          }}
-          size="xl"
-          onClick={handleGoBack}
-          className="flex-shrink-0"
+    <>
+      <ContentNavbar />
+
+      <section className="h-screen bg-neutral-900 text-white flex flex-col w-full">
+        <AboutTitle
+          title="About:"
+          displayText="Education"
+          displayTextClassName="text-neutral-300"
+          lineWidth="w-64 md:w-70 lg:w-90"
         />
-      </div>
 
-      {/* Title Row */}
-      <div className="px-8 md:px-16 lg:px-24 xl:px-36 pb-4">
-        <h1 className="text-pf-2xl font-light font-metropolis font-medium">
-          About:{' '}
-          <span className="relative after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-px after:bg-neutral-400">
-            Education
-          </span>
-        </h1>
-      </div>
+        {/* Education Gallery */}
+        <div className="flex-1 relative min-h-0 flex flex-col">
+          {/* Top gradient fade */}
+          <div className="md:absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-neutral-900 to-transparent z-10 pointer-events-none hidden" />
 
-      {/* Education Gallery */}
-      <div className="flex-1 relative min-h-0 ">
-        {/* Top gradient fade */}
-        <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-neutral-900 to-transparent z-10 pointer-events-none" />
+          {/* Bottom gradient fade */}
+          <div className="md:absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-neutral-900 to-transparent z-10 pointer-events-none" />
 
-        {/* Bottom gradient fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-neutral-900 to-transparent z-10 pointer-events-none" />
+          {/* Mobile Education Items */}
+          <div className="flex-1 overflow-y-auto px-8 pb-4 md:hidden pt-4">
+            <div className="space-y-4">
+              {educationItems.map((education) => (
+                <EducationMobileItem
+                  id={education.id}
+                  startYear={education.startYear}
+                  name={education.name}
+                  nameShort={education.nameShort}
+                  degree={education.degree}
+                  specialty={education.specialty}
+                  period={education.period}
+                  descriptionShort={education.descriptionShort}
+                  logoUrl={education.logoUrl}
+                  diplomaUrl={education.diplomaUrl}
+                  onSelect={education.onSelect}
+                  onDeselect={education.onDeselect}
+                />
+              ))}
+            </div>
+          </div>
 
-        <div
-          ref={scrollContainerRef}
-          className="absolute inset-0 flex flex-col overflow-y-auto px-20 py-4 scrollbar-black mx-px "
-        >
           <div
-            data-education-item
-            className="transition-all duration-500 ease-out [&.animate-left]:transform [&.animate-left]:-translate-x-12 [&.animate-left]:opacity-40"
+            ref={scrollContainerRef}
+            className=" inset-0 flex flex-col overflow-y-auto px-20 py-4 scrollbar-black mx-px hidden md:block bg-red-500"
           >
-            <EducationItem />
-          </div>
-          <div
-            data-education-item
-            className="transition-all duration-500 ease-out [&.animate-left]:transform [&.animate-left]:-translate-x-12 [&.animate-left]:opacity-40"
-          >
-            <EducationItem />
-          </div>
-          <div
-            data-education-item
-            className="transition-all duration-500 ease-out [&.animate-left]:transform [&.animate-left]:-translate-x-12 [&.animate-left]:opacity-40"
-          >
-            <EducationItem />
-          </div>
-          <div
-            data-education-item
-            className="transition-all duration-500 ease-out [&.animate-left]:transform [&.animate-left]:-translate-x-12 [&.animate-left]:opacity-40"
-          >
-            <EducationItem />
-          </div>
-          <div
-            data-education-item
-            className="transition-all duration-500 ease-out [&.animate-left]:transform [&.animate-left]:-translate-x-12 [&.animate-left]:opacity-40"
-          >
-            <EducationItem />
-          </div>
-          <div
-            data-education-item
-            className="transition-all duration-500 ease-out [&.animate-left]:transform [&.animate-left]:-translate-x-12 [&.animate-left]:opacity-40"
-          >
-            <EducationItem />
-          </div>
-          <div
-            data-education-item
-            className="transition-all duration-500 ease-out [&.animate-left]:transform [&.animate-left]:-translate-x-12 [&.animate-left]:opacity-40"
-          >
-            <EducationItem />
+            {educationItems.map((education, index) => (
+              <div
+                key={education.id}
+                data-education-item
+                className="transition-all duration-500 ease-out [&.animate-left]:transform [&.animate-left]:-translate-x-12 [&.animate-left]:opacity-40"
+              >
+                <EducationItem
+                  id={education.id}
+                  startYear={education.startYear}
+                  name={education.name}
+                  nameShort={education.nameShort}
+                  degree={education.degree}
+                  specialty={education.specialty}
+                  period={education.period}
+                  descriptionShort={education.descriptionShort}
+                  logoUrl={education.logoUrl}
+                  diplomaUrl={education.diplomaUrl}
+                  onSelect={education.onSelect}
+                  onDeselect={education.onDeselect}
+                />
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
 
