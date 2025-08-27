@@ -1,8 +1,8 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import EducationItem from '@/components/education/EducationItem';
 import { useEducation } from '@/hooks/storage/useEducation';
 import ContentNavbar from '@/components/ui/ContentNavbar';
@@ -15,8 +15,96 @@ function EducationPageContent() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const returnSection = parseInt(searchParams.get('returnTo') || '0');
 
-  // Use the education hook to get data
-  const { education: educationItems, loading, error } = useEducation();
+  const [selectedEducationTitle, setSelectedEducationTitle] =
+    useState<string>('Education');
+  const [currentInterval, setCurrentInterval] = useState<NodeJS.Timeout | null>(
+    null
+  );
+  const [hasSetInitialTitle, setHasSetInitialTitle] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Use the education hook to get data with custom handlers
+  const {
+    education: educationItems,
+    loading,
+    error,
+  } = useEducation(
+    (name: string) => handleEducationSelect(name), // onSelect
+    () => handleEducationDeselect() // onDeselect
+  );
+
+  // Check if we're on desktop
+  useEffect(() => {
+    const checkIsDesktop = () => {
+      setIsDesktop(window.innerWidth >= 768); // md breakpoint
+    };
+
+    checkIsDesktop();
+    window.addEventListener('resize', checkIsDesktop);
+
+    return () => window.removeEventListener('resize', checkIsDesktop);
+  }, []);
+
+  useEffect(() => {
+    // Only set initial title on desktop and if we haven't set it yet
+    if (!hasSetInitialTitle && educationItems.length > 0 && isDesktop) {
+      animateText(
+        'Education',
+        educationItems[0].nameShort || educationItems[0].name
+      );
+      setHasSetInitialTitle(true);
+    }
+  }, [educationItems, hasSetInitialTitle, isDesktop]);
+
+  // Animation function
+  const clearCurrentInterval = (): void => {
+    if (currentInterval) {
+      clearInterval(currentInterval);
+      setCurrentInterval(null);
+    }
+  };
+
+  const animateText = (oldText: string, newText: string): void => {
+    clearCurrentInterval();
+
+    if (oldText === newText) return;
+
+    let currentIndex = oldText.length;
+    const removeInterval = setInterval(() => {
+      setSelectedEducationTitle(oldText.slice(0, currentIndex - 1));
+      currentIndex--;
+      if (currentIndex <= 0) {
+        clearInterval(removeInterval);
+
+        let typeIndex = 0;
+        const typeInterval = setInterval(() => {
+          setSelectedEducationTitle(newText.slice(0, typeIndex + 1));
+          typeIndex++;
+          if (typeIndex >= newText.length) {
+            clearInterval(typeInterval);
+            setCurrentInterval(null);
+          }
+        }, 30);
+        setCurrentInterval(typeInterval);
+      }
+    }, 20);
+    setCurrentInterval(removeInterval);
+  };
+
+  const handleEducationSelect = (educationName: string) => {
+    animateText(selectedEducationTitle, educationName);
+  };
+
+  const handleEducationDeselect = () => {
+    animateText(selectedEducationTitle, 'Education');
+  };
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (currentInterval) clearInterval(currentInterval);
+    };
+  }, [currentInterval]);
 
   const handleGoBack = () => {
     const sectionRoutes = ['/', '/about', '/contact'];
@@ -70,7 +158,7 @@ function EducationPageContent() {
       <section className="h-screen bg-neutral-900 text-white flex flex-col w-full">
         <AboutTitle
           title="About:"
-          displayText="Education"
+          displayText={selectedEducationTitle}
           displayTextClassName="text-neutral-300"
           lineWidth="w-64 md:w-70 lg:w-90"
         />
@@ -88,6 +176,7 @@ function EducationPageContent() {
             <div className="space-y-4">
               {educationItems.map((education) => (
                 <EducationMobileItem
+                  key={education.id}
                   id={education.id}
                   startYear={education.startYear}
                   name={education.name}

@@ -15,13 +15,27 @@ function ExperiencePageContent() {
     null
   );
   const [hasSetInitialTitle, setHasSetInitialTitle] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Check if we're on desktop
+  useEffect(() => {
+    const checkIsDesktop = () => {
+      setIsDesktop(window.innerWidth >= 768); // md breakpoint
+    };
+
+    checkIsDesktop();
+    window.addEventListener('resize', checkIsDesktop);
+
+    return () => window.removeEventListener('resize', checkIsDesktop);
+  }, []);
 
   useEffect(() => {
-    if (!hasSetInitialTitle && experiences.length > 0) {
+    // Only set initial title on desktop and if we haven't set it yet
+    if (!hasSetInitialTitle && experiences.length > 0 && isDesktop) {
       animateText('Experience', experiences[0].title);
       setHasSetInitialTitle(true);
     }
-  }, [experiences, hasSetInitialTitle]);
+  }, [experiences, hasSetInitialTitle, isDesktop]);
 
   // Animation function
   const clearCurrentInterval = (): void => {

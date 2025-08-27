@@ -27,7 +27,7 @@ export function useEducation(
       descriptionShort: edu.description_short,
       logoUrl: edu.logo_url,
       diplomaUrl: edu.diploma_url,
-      onSelect: () => onSelect?.(edu.name),
+      onSelect: () => onSelect?.(edu.name_short || edu.name),
       onDeselect: onDeselect,
     })) || [];
 
