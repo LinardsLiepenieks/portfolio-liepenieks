@@ -24,11 +24,11 @@ const ExperienceItem = ({
 
   return (
     <>
-      <div className="text-neutral-100 max-w-6xl font-metropolis flex flex-col justify-center h-full border-dashed border-neutral-500 px-8 py-2 border max-h-140 aspect-18/9">
+      <div className="text-neutral-100 max-w-6xl font-metropolis flex flex-col justify-center h-full border-dashed border-neutral-500 px-8 py-2 border max-h-80 lg:max-h-120 xl:max-h-140 aspect-18/9">
         {/* Top row - Year */}
-        <div className="text-lg mb-2 text-pf-2xl flex-shrink-0 flex items-baseline gap-2">
+        <div className="mb-2 text-pf-xl lg:text-pf-2xl flex-shrink-0 flex items-baseline gap-2">
           <h3>{position}</h3>
-          <span className="text-pf-lg font-regular text-neutral-200">
+          <span className="text-pf-base lg:text-pf-lg font-regular text-neutral-200">
             {period}
           </span>
         </div>
@@ -36,7 +36,7 @@ const ExperienceItem = ({
         {/* Middle section - Photo/Image and Description */}
         <div className="flex min-h-0 gap-2 flex-1 mb-1">
           {/* Image container */}
-          <div className="flex-shrink-0 aspect-square flex items-center justify-center border border-dotted border-gray-500 mx-16 relative p-4 self-stretch">
+          <div className="flex-shrink-0 aspect-square flex items-center justify-center border border-dotted border-gray-500 lg:mx-16 relative p-4 self-stretch">
             <div className="w-full h-full relative">
               {logoUrl ? (
                 <Image
@@ -61,7 +61,7 @@ const ExperienceItem = ({
         </div>
 
         {/* Bottom section - Work Title and Button */}
-        <div className="flex flex-col items-start flex-shrink-0 p-2 ml-13 mt-2">
+        <div className="flex flex-col items-start flex-shrink-0 p-2 lg:ml-13 mt-2">
           {linkTitle && (
             <button
               onClick={handleRecommendationClick}
