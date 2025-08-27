@@ -1,9 +1,9 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useRef } from 'react';
 import EducationItem from '@/components/education/EducationItem';
+import CertificateItem from '@/components/education/CertificateItem';
 import { useEducation } from '@/hooks/storage/useEducation';
 import ContentNavbar from '@/components/ui/ContentNavbar';
 import AboutTitle from '@/components/sections/about_section/AboutTitle';
@@ -11,256 +11,340 @@ import EducationMobileItem from '@/components/education/EducationMobileItem';
 import CertificateMobileItem from '@/components/education/CertificateMobileItem';
 import { useCertificates } from '@/hooks/storage/useCertificates';
 
+interface AnimationState {
+  currentText: string;
+  targetText: string;
+  isAnimating: boolean;
+}
+
 function EducationPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const returnSection = parseInt(searchParams.get('returnTo') || '0');
-
-  const [selectedEducationTitle, setSelectedEducationTitle] =
-    useState<string>('Education');
-  const [currentInterval, setCurrentInterval] = useState<NodeJS.Timeout | null>(
-    null
-  );
   const [isDesktop, setIsDesktop] = useState(false);
-  const hoveringRef = useRef(false);
+  const [isHovering, setIsHovering] = useState(false);
 
-  // Use the education hook to get data with custom handlers
+  // Simplified animation state
+  const [animationState, setAnimationState] = useState<AnimationState>({
+    currentText: 'Education',
+    targetText: 'Education',
+    isAnimating: false,
+  });
+
+  // Mobile selection handlers
+  const handleEducationSelect = useCallback((educationName: string) => {
+    updateDisplayText(educationName);
+  }, []);
+
+  const handleEducationDeselect = useCallback(() => {
+    updateDisplayText('Education');
+  }, []);
+
+  const handleCertificateSelect = useCallback((certificateName: string) => {
+    updateDisplayText(certificateName);
+  }, []);
+
+  const handleCertificateDeselect = useCallback(() => {
+    updateDisplayText('Education');
+  }, []);
+
+  // Get data with handlers
   const {
     education: educationItems,
     loading,
     error,
-  } = useEducation(
-    (name: string) => handleEducationSelect(name), // onSelect for mobile
-    () => handleEducationDeselect() // onDeselect for mobile
-  );
+  } = useEducation(handleEducationSelect, handleEducationDeselect);
 
-  // Use the certificates hook
   const { certificates: certificateItems } = useCertificates(
-    () => {}, // onSelect for mobile
-    () => {} // onDeselect for mobile
+    handleCertificateSelect,
+    handleCertificateDeselect
   );
 
-  // Check if we're on desktop
+  // Responsive check
   useEffect(() => {
     const checkIsDesktop = () => {
-      setIsDesktop(window.innerWidth >= 768); // md breakpoint
+      const desktop = window.innerWidth >= 768;
+      setIsDesktop(desktop);
     };
 
     checkIsDesktop();
     window.addEventListener('resize', checkIsDesktop);
-
     return () => window.removeEventListener('resize', checkIsDesktop);
   }, []);
 
-  // Animation function
-  const clearCurrentInterval = (): void => {
-    if (currentInterval) {
-      clearInterval(currentInterval);
-      setCurrentInterval(null);
-    }
-  };
+  // Improved text animation with requestAnimationFrame
+  const updateDisplayText = useCallback(
+    (newText: string) => {
+      if (animationState.targetText === newText) return;
 
-  const animateText = (oldText: string, newText: string): void => {
-    clearCurrentInterval();
+      setAnimationState((prev) => ({
+        ...prev,
+        targetText: newText,
+        isAnimating: true,
+      }));
 
-    if (oldText === newText) return;
-
-    // Get the current displayed text instead of the old text parameter
-    const currentDisplayedText = selectedEducationTitle;
-
-    // If we're already animating, start from current state
-    let currentIndex = currentDisplayedText.length;
-
-    const removeInterval = setInterval(() => {
-      currentIndex--;
-      if (currentIndex <= 0) {
-        clearInterval(removeInterval);
-        setSelectedEducationTitle('');
-
-        let typeIndex = 0;
-        const typeInterval = setInterval(() => {
-          setSelectedEducationTitle(newText.slice(0, typeIndex + 1));
-          typeIndex++;
-          if (typeIndex >= newText.length) {
-            clearInterval(typeInterval);
-            setCurrentInterval(null);
-          }
-        }, 30);
-        setCurrentInterval(typeInterval);
-      } else {
-        setSelectedEducationTitle(currentDisplayedText.slice(0, currentIndex));
+      // Clear any existing animation
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
       }
-    }, 20);
-    setCurrentInterval(removeInterval);
-  };
 
-  // Handlers for mobile (click-based)
-  const handleEducationSelect = (educationName: string) => {
-    animateText(selectedEducationTitle, educationName);
-  };
+      let startTime: number | null = null;
+      const duration = 300; // Total animation duration
+      const pauseDuration = 50; // Pause between delete and type
 
-  const handleEducationDeselect = () => {
-    animateText(selectedEducationTitle, 'Education');
-  };
+      const animate = (timestamp: number) => {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
 
-  // Handlers for desktop (hover-based)
-  const handleEducationHover = (educationName: string) => {
-    if (isDesktop) {
-      hoveringRef.current = true;
-      animateText(selectedEducationTitle, educationName);
-    }
-  };
+        setAnimationState((prev) => {
+          const currentLength = prev.currentText.length;
+          const targetLength = newText.length;
 
-  const handleEducationLeave = () => {
-    if (isDesktop) {
-      hoveringRef.current = false;
-      // Add a small delay to check if we're hovering on another item
-      setTimeout(() => {
-        if (!hoveringRef.current) {
-          animateText(selectedEducationTitle, 'Education');
+          if (progress < 0.4) {
+            // Delete phase (0-40% of animation)
+            const deleteProgress = progress / 0.4;
+            const charsToKeep = Math.floor(
+              currentLength * (1 - deleteProgress)
+            );
+            return {
+              ...prev,
+              currentText: prev.currentText.slice(0, Math.max(0, charsToKeep)),
+            };
+          } else if (progress < 0.5) {
+            // Pause phase (40-50% of animation)
+            return {
+              ...prev,
+              currentText: '',
+            };
+          } else {
+            // Type phase (50-100% of animation)
+            const typeProgress = (progress - 0.5) / 0.5;
+            const charsToShow = Math.floor(targetLength * typeProgress);
+            return {
+              ...prev,
+              currentText: newText.slice(0, charsToShow),
+            };
+          }
+        });
+
+        if (progress < 1) {
+          animationFrameRef.current = requestAnimationFrame(animate);
+        } else {
+          setAnimationState((prev) => ({
+            currentText: newText,
+            targetText: newText,
+            isAnimating: false,
+          }));
+          animationFrameRef.current = null;
         }
-      }, 50);
+      };
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    },
+    [animationState.targetText]
+  );
+
+  // Debounced hover handlers for desktop
+  const handleHover = useCallback(
+    (text: string) => {
+      if (!isDesktop) return;
+
+      // Clear any existing timeout
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+
+      setIsHovering(true);
+
+      // Small delay to prevent rapid firing
+      hoverTimeoutRef.current = setTimeout(() => {
+        updateDisplayText(text);
+      }, 900);
+    },
+    [isDesktop, updateDisplayText]
+  );
+
+  const handleHoverLeave = useCallback(() => {
+    if (!isDesktop) return;
+
+    // Clear timeout if still pending
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
     }
-  };
 
-  // Cleanup interval on unmount
-  useEffect(() => {
-    return () => {
-      if (currentInterval) clearInterval(currentInterval);
-    };
-  }, [currentInterval]);
+    setIsHovering(false);
 
-  const handleGoBack = () => {
-    const sectionRoutes = ['/', '/about', '/contact'];
-    const targetRoute = sectionRoutes[returnSection];
-    const urlWithInstant = `${targetRoute}?instant=true`;
-    router.push(urlWithInstant);
-  };
+    // Delay before reverting to avoid flickering
+    hoverTimeoutRef.current = setTimeout(() => {
+      if (!isHovering) {
+        updateDisplayText('Education');
+      }
+    }, 150);
+  }, [isDesktop, isHovering, updateDisplayText]);
 
+  // Scroll animation with intersection observer for better performance
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
+    if (!scrollContainer || !isDesktop) return;
 
-    const handleScroll = () => {
-      const containerRect = scrollContainer.getBoundingClientRect();
-      const containerTop = containerRect.top;
-      const items = scrollContainer.querySelectorAll('[data-education-item]');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const element = entry.target as HTMLElement;
+          const rect = entry.boundingClientRect;
+          const containerRect = scrollContainer.getBoundingClientRect();
 
-      items.forEach((item) => {
-        const itemRect = item.getBoundingClientRect();
-        const itemTop = itemRect.top;
-        const itemHeight = itemRect.height;
+          // Check if item is near the top of the container
+          const distanceFromTop = rect.top - containerRect.top;
+          const threshold = rect.height / 40;
 
-        // Check if item is hitting the top of the scroll container
-        const distanceFromTop = itemTop - containerTop;
-        const threshold = itemHeight / 40;
+          if (distanceFromTop <= threshold && entry.isIntersecting) {
+            element.classList.add('animate-left');
+          } else {
+            element.classList.remove('animate-left');
+          }
+        });
+      },
+      {
+        root: scrollContainer,
+        rootMargin: '-10px 0px',
+        threshold: [0, 0.1, 0.5, 1],
+      }
+    );
 
-        if (distanceFromTop <= threshold) {
-          // Add class to trigger CSS animation
-          (item as HTMLElement).classList.add('animate-left');
-        } else {
-          // Remove class to reset position
-          (item as HTMLElement).classList.remove('animate-left');
-        }
-      });
-    };
-
-    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-
-    // Initial check
-    handleScroll();
+    // Observe all items
+    const items = scrollContainer.querySelectorAll(
+      '[data-education-item], [data-certificate-item]'
+    );
+    items.forEach((item) => observer.observe(item));
 
     return () => {
-      scrollContainer.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
+  }, [isDesktop, educationItems, certificateItems]);
+
+  // Navigation handler
+  const handleGoBack = useCallback(() => {
+    const sectionRoutes = ['/', '/about', '/contact'];
+    const targetRoute = sectionRoutes[returnSection] || '/';
+    router.push(`${targetRoute}?instant=true`);
+  }, [returnSection, router]);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
     };
   }, []);
+
+  // Loading and error states
+  if (loading) {
+    return (
+      <div className="h-screen bg-neutral-900 text-white flex items-center justify-center">
+        <div className="text-neutral-300">Loading education data...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen bg-neutral-900 text-white flex items-center justify-center">
+        <div className="text-red-400">Error loading education data</div>
+      </div>
+    );
+  }
 
   return (
     <>
       <ContentNavbar />
 
-      <section className="h-screen bg-neutral-900 text-white flex flex-col w-full">
+      <section className="h-screen bg-neutral-900 text-white flex flex-col w-full overflow-hidden">
         <AboutTitle
           title="About:"
-          displayText={selectedEducationTitle}
+          displayText={animationState.currentText}
           displayTextClassName="text-neutral-300"
           lineWidth="w-64 md:w-70 lg:w-90"
         />
 
-        {/* Education Gallery */}
-        <div className="flex-1 relative min-h-0 flex flex-col">
-          {/* Top gradient fade */}
-          <div className="md:absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-neutral-900 to-transparent z-10 pointer-events-none hidden" />
+        {/* Main Content Area */}
+        <div className="flex-1 relative min-h-0">
+          {/* Gradient overlays for desktop */}
+          <div className="hidden md:block absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-neutral-900 to-transparent z-10 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-neutral-900 to-transparent z-10 pointer-events-none" />
 
-          {/* Bottom gradient fade */}
-          <div className="md:absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-neutral-900 to-transparent z-10 pointer-events-none" />
-
-          {/* Mobile Education Items */}
-          <div className="flex-1 overflow-y-auto mx-4 sm:mx-8 pb-4 md:hidden pt-4">
-            <div className="space-y-4">
+          {/* Mobile Layout */}
+          <div className="md:hidden h-full overflow-y-auto mx-4 sm:mx-8 pb-4 pt-4 scrollbar-dark">
+            <div className="space-y-4 mb-8">
               {educationItems.map((education) => (
-                <EducationMobileItem
-                  key={education.id}
-                  id={education.id}
-                  startYear={education.startYear}
-                  name={education.name}
-                  nameShort={education.nameShort}
-                  degree={education.degree}
-                  specialty={education.specialty}
-                  period={education.period}
-                  descriptionShort={education.descriptionShort}
-                  logoUrl={education.logoUrl}
-                  diplomaUrl={education.diplomaUrl}
-                  onSelect={education.onSelect}
-                  onDeselect={education.onDeselect}
-                />
+                <EducationMobileItem {...education} />
               ))}
             </div>
-            <h3 className="font-metropolis text-pf-lg font-medium">
-              Certificates:
-            </h3>
-            <div className="space-y-4 mt-4  w-full">
-              {certificateItems.map((certificate) => (
-                <CertificateMobileItem
-                  id={certificate.id}
-                  name={certificate.name}
-                  provider={certificate.provider}
-                  year={certificate.year}
-                  logoUrl={certificate.logoUrl}
-                  certificateUrl={certificate.certificateUrl}
-                  onSelect={certificate.onSelect}
-                  onDeselect={certificate.onDeselect}
-                />
-              ))}
-            </div>
+
+            {certificateItems.length > 0 && (
+              <>
+                <h3 className="font-metropolis text-pf-lg font-medium mb-4">
+                  Certificates:
+                </h3>
+                <div className="space-y-4">
+                  {certificateItems.map((certificate) => (
+                    <CertificateMobileItem {...certificate} />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Desktop Education Items */}
+          {/* Desktop Layout */}
           <div
             ref={scrollContainerRef}
-            className="inset-0 flex flex-col overflow-y-auto px-20 py-4 scrollbar-black mx-px hidden md:block"
+            className="hidden md:block h-full overflow-y-auto px-20 py-4 scrollbar-black"
           >
-            {educationItems.map((education, index) => (
+            {/* Education Items */}
+            {educationItems.map((education) => (
               <div
                 key={education.id}
                 data-education-item
-                className="transition-all duration-500 ease-out [&.animate-left]:transform [&.animate-left]:-translate-x-12 [&.animate-left]:opacity-40"
-                onMouseEnter={() => handleEducationHover(education.nameShort)}
-                onMouseLeave={handleEducationLeave}
+                className="transition-all duration-500 ease-out will-change-transform"
+                style={{
+                  transform: 'translateX(0)',
+                  opacity: 1,
+                }}
+                onMouseEnter={() => handleHover(education.nameShort)}
+                onMouseLeave={handleHoverLeave}
               >
                 <EducationItem
-                  id={education.id}
-                  startYear={education.startYear}
-                  name={education.name}
-                  nameShort={education.nameShort}
-                  degree={education.degree}
-                  specialty={education.specialty}
-                  period={education.period}
-                  descriptionShort={education.descriptionShort}
-                  logoUrl={education.logoUrl}
-                  diplomaUrl={education.diplomaUrl}
-                  // Pass null functions for desktop since we handle hover at container level
+                  {...education}
+                  onSelect={() => {}}
+                  onDeselect={() => {}}
+                />
+              </div>
+            ))}
+
+            {/* Certificate Items */}
+            {certificateItems.map((certificate) => (
+              <div
+                key={certificate.id}
+                data-certificate-item
+                className="transition-all duration-500 ease-out will-change-transform"
+                style={{
+                  transform: 'translateX(0)',
+                  opacity: 1,
+                }}
+                onMouseEnter={() => handleHover(certificate.provider)}
+                onMouseLeave={handleHoverLeave}
+              >
+                <CertificateItem
+                  {...certificate}
                   onSelect={() => {}}
                   onDeselect={() => {}}
                 />
@@ -268,6 +352,14 @@ function EducationPageContent() {
             ))}
           </div>
         </div>
+
+        {/* Custom CSS for scroll animations */}
+        <style jsx>{`
+          .animate-left {
+            transform: translateX(-48px) !important;
+            opacity: 0.4 !important;
+          }
+        `}</style>
       </section>
     </>
   );
@@ -275,7 +367,13 @@ function EducationPageContent() {
 
 export default function EducationPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="h-screen bg-neutral-900 text-white flex items-center justify-center">
+          <div className="text-neutral-300">Loading...</div>
+        </div>
+      }
+    >
       <EducationPageContent />
     </Suspense>
   );

@@ -48,9 +48,9 @@ const CertificateMobileItem = ({
         onClick={handleClick}
       >
         {/* Main Content Row */}
-        <div className="flex items-center gap-3 w-full justify-start">
+        <div className="flex items-center gap-3 w-full justify-start ">
           {/* Logo/Avatar */}
-          <div className="relative w-20 h-20 flex-shrink-0">
+          <div className="relative w-20 h-20 flex-shrink-0 p-1 ">
             <div
               className={`
                 w-full h-full
@@ -61,7 +61,7 @@ const CertificateMobileItem = ({
                 overflow-hidden
                 transition-all
                 duration-[300ms]
-                p-1
+                relative
                 ${
                   logoUrl
                     ? 'bg-none'

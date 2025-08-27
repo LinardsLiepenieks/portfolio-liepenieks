@@ -166,12 +166,9 @@ const ExperienceMobileItem = ({
             linkTitle={linkTitle}
             defaultButtonText={linkTitle}
           >
-            <div
-              onClick={(e) => e.stopPropagation()} // Prevent triggering the main toggle
-              className="border border-neutral-500 px-4 py-2 border-solid text-white hover:cursor-pointer text-sm italic font-semibold !tracking-wide rounded transition-colors relative group after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:ease-out hover:after:w-full inline-block"
-            >
+            <button className="border border-neutral-500 px-4 py-2 border-solid text-white hover:cursor-pointer text-sm italic font-semibold !tracking-wide rounded transition-colors relative group after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:ease-out hover:after:w-full inline-block">
               {linkTitle}
-            </div>
+            </button>
           </A4Modal>
         )}
       </div>

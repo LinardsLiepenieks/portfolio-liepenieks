@@ -11,6 +11,7 @@ interface A4ModalProps {
   children?: React.ReactNode;
   defaultButtonText?: string;
   defaultButtonClassName?: string;
+  propagationAllowed?: boolean;
 }
 
 const A4Modal = ({
@@ -19,6 +20,7 @@ const A4Modal = ({
   children,
   defaultButtonText = 'View Document',
   defaultButtonClassName = "hover:cursor-pointer text-pf-base italic font-semibold !tracking-wide rounded transition-colors relative group after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:ease-out hover:after:w-full text-white",
+  propagationAllowed = true,
 }: A4ModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -64,33 +66,52 @@ const A4Modal = ({
     }
   }, [isOpen]);
 
-  // Trigger component
+  // Trigger component with conditional propagation control
   const Trigger = () => {
     if (children) {
-      return (
-        <div
-          onClick={(e) => {
-            // Open the modal regardless of child's stopPropagation
-            openModal();
-          }}
-          onClickCapture={(e) => {
-            // Use capture phase to ensure we get the click before child's stopPropagation
-            openModal();
-            e.stopPropagation(); // Stop it from bubbling up further
-          }}
-          className="cursor-pointer"
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
+      if (propagationAllowed) {
+        // Original behavior with capture and stopPropagation
+        return (
+          <div
+            onClick={(e) => {
               openModal();
-            }
-          }}
-        >
-          {children}
-        </div>
-      );
+            }}
+            onClickCapture={(e) => {
+              openModal();
+              e.stopPropagation();
+            }}
+            className="cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openModal();
+              }
+            }}
+          >
+            {children}
+          </div>
+        );
+      } else {
+        // Clean behavior without event interference
+        return (
+          <div
+            onClick={openModal}
+            className="cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openModal();
+              }
+            }}
+          >
+            {children}
+          </div>
+        );
+      }
     }
 
     return (
@@ -118,16 +139,16 @@ const A4Modal = ({
       aria-labelledby="modal-title"
     >
       <div
-        className={`shadow-2xl max-w-4xl w-full max-h-[90vh] bg-neutral-800/95 backdrop-blur-sm rounded-lg overflow-hidden transition-all duration-300 ease-out flex flex-col ${
+        className={`shadow-2xl max-w-4xl w-full max-h-[90vh] bg-neutral-800/95 backdrop-blur-sm rounded-lg overflow-hidden border border-neutral-700 border-2 transition-all duration-300 ease-out flex flex-col ${
           isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with close button */}
-        <div className="flex justify-between items-center p-4 border-b border-neutral-700 flex-shrink-0">
+        <div className="flex justify-between items-center px-4 py-2 lg:p-4 border-b border-neutral-700 flex-shrink-0">
           <h2
             id="modal-title"
-            className="text-white text-lg font-medium tracking-wide font-metropolis"
+            className="text-white  text-sm md:text-lg font-medium tracking-wide font-metropolis"
           >
             {linkTitle}
           </h2>
