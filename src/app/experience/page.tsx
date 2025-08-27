@@ -100,7 +100,7 @@ function ExperiencePageContent() {
 
         <div className="flex-1 min-h-0 flex flex-col">
           {/* Mobile Experience Items */}
-          <div className="flex-1 overflow-y-auto px-8 pb-4 md:hidden pt-4">
+          <div className="flex-1 overflow-y-auto mx-4 sm:mx-8 pb-4 md:hidden pt-4">
             <div className="space-y-4">
               {experiences.map((experience) => (
                 <ExperienceMobileItem

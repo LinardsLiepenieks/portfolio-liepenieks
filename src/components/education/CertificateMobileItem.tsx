@@ -47,11 +47,6 @@ const CertificateMobileItem = ({
         `}
         onClick={handleClick}
       >
-        {/* Title */}
-        <div className="text-pf-sm font-medium  text-neutral-100 w-full ">
-          {provider}
-        </div>
-
         {/* Main Content Row */}
         <div className="flex items-center gap-3 w-full justify-start">
           {/* Logo/Avatar */}
