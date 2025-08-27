@@ -20,8 +20,8 @@ function EducationPageContent() {
   const [currentInterval, setCurrentInterval] = useState<NodeJS.Timeout | null>(
     null
   );
-  const [hasSetInitialTitle, setHasSetInitialTitle] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const hoveringRef = useRef(false);
 
   // Use the education hook to get data with custom handlers
   const {
@@ -29,8 +29,8 @@ function EducationPageContent() {
     loading,
     error,
   } = useEducation(
-    (name: string) => handleEducationSelect(name), // onSelect
-    () => handleEducationDeselect() // onDeselect
+    (name: string) => handleEducationSelect(name), // onSelect for mobile
+    () => handleEducationDeselect() // onDeselect for mobile
   );
 
   // Check if we're on desktop
@@ -45,17 +45,6 @@ function EducationPageContent() {
     return () => window.removeEventListener('resize', checkIsDesktop);
   }, []);
 
-  useEffect(() => {
-    // Only set initial title on desktop and if we haven't set it yet
-    if (!hasSetInitialTitle && educationItems.length > 0 && isDesktop) {
-      animateText(
-        'Education',
-        educationItems[0].nameShort || educationItems[0].name
-      );
-      setHasSetInitialTitle(true);
-    }
-  }, [educationItems, hasSetInitialTitle, isDesktop]);
-
   // Animation function
   const clearCurrentInterval = (): void => {
     if (currentInterval) {
@@ -69,12 +58,17 @@ function EducationPageContent() {
 
     if (oldText === newText) return;
 
-    let currentIndex = oldText.length;
+    // Get the current displayed text instead of the old text parameter
+    const currentDisplayedText = selectedEducationTitle;
+
+    // If we're already animating, start from current state
+    let currentIndex = currentDisplayedText.length;
+
     const removeInterval = setInterval(() => {
-      setSelectedEducationTitle(oldText.slice(0, currentIndex - 1));
       currentIndex--;
       if (currentIndex <= 0) {
         clearInterval(removeInterval);
+        setSelectedEducationTitle('');
 
         let typeIndex = 0;
         const typeInterval = setInterval(() => {
@@ -86,17 +80,40 @@ function EducationPageContent() {
           }
         }, 30);
         setCurrentInterval(typeInterval);
+      } else {
+        setSelectedEducationTitle(currentDisplayedText.slice(0, currentIndex));
       }
     }, 20);
     setCurrentInterval(removeInterval);
   };
 
+  // Handlers for mobile (click-based)
   const handleEducationSelect = (educationName: string) => {
     animateText(selectedEducationTitle, educationName);
   };
 
   const handleEducationDeselect = () => {
     animateText(selectedEducationTitle, 'Education');
+  };
+
+  // Handlers for desktop (hover-based)
+  const handleEducationHover = (educationName: string) => {
+    if (isDesktop) {
+      hoveringRef.current = true;
+      animateText(selectedEducationTitle, educationName);
+    }
+  };
+
+  const handleEducationLeave = () => {
+    if (isDesktop) {
+      hoveringRef.current = false;
+      // Add a small delay to check if we're hovering on another item
+      setTimeout(() => {
+        if (!hoveringRef.current) {
+          animateText(selectedEducationTitle, 'Education');
+        }
+      }, 50);
+    }
   };
 
   // Cleanup interval on unmount
@@ -129,7 +146,7 @@ function EducationPageContent() {
 
         // Check if item is hitting the top of the scroll container
         const distanceFromTop = itemTop - containerTop;
-        const threshold = itemHeight * 0.15; // Fixed threshold back to reasonable value
+        const threshold = itemHeight * 0.15;
 
         if (distanceFromTop <= threshold) {
           // Add class to trigger CSS animation
@@ -194,15 +211,18 @@ function EducationPageContent() {
             </div>
           </div>
 
+          {/* Desktop Education Items */}
           <div
             ref={scrollContainerRef}
-            className=" inset-0 flex flex-col overflow-y-auto px-20 py-4 scrollbar-black mx-px hidden md:block bg-red-500"
+            className="inset-0 flex flex-col overflow-y-auto px-20 py-4 scrollbar-black mx-px hidden md:block"
           >
             {educationItems.map((education, index) => (
               <div
                 key={education.id}
                 data-education-item
                 className="transition-all duration-500 ease-out [&.animate-left]:transform [&.animate-left]:-translate-x-12 [&.animate-left]:opacity-40"
+                onMouseEnter={() => handleEducationHover(education.nameShort)}
+                onMouseLeave={handleEducationLeave}
               >
                 <EducationItem
                   id={education.id}
@@ -215,8 +235,9 @@ function EducationPageContent() {
                   descriptionShort={education.descriptionShort}
                   logoUrl={education.logoUrl}
                   diplomaUrl={education.diplomaUrl}
-                  onSelect={education.onSelect}
-                  onDeselect={education.onDeselect}
+                  // Pass null functions for desktop since we handle hover at container level
+                  onSelect={() => {}}
+                  onDeselect={() => {}}
                 />
               </div>
             ))}
