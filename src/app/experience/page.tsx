@@ -11,11 +11,12 @@ function ExperiencePageContent() {
   const { experiences } = useExperience();
   const [selectedExperienceTitle, setSelectedExperienceTitle] =
     useState<string>('Experience');
-  const [currentInterval, setCurrentInterval] = useState<NodeJS.Timeout | null>(
-    null
-  );
-  const [hasSetInitialTitle, setHasSetInitialTitle] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('selectedExperienceTitle changed to:', selectedExperienceTitle);
+  }, [selectedExperienceTitle]);
 
   // Check if we're on desktop
   useEffect(() => {
@@ -29,63 +30,26 @@ function ExperiencePageContent() {
     return () => window.removeEventListener('resize', checkIsDesktop);
   }, []);
 
+  // Only manage mobile state - desktop is handled by ExperienceGallery
   useEffect(() => {
-    // Only set initial title on desktop and if we haven't set it yet
-    if (!hasSetInitialTitle && experiences.length > 0 && isDesktop) {
-      animateText('Experience', experiences[0].title);
-      setHasSetInitialTitle(true);
+    console.log('isDesktop changed:', isDesktop);
+
+    if (!isDesktop) {
+      console.log('Mobile: Setting to Experience');
+      setSelectedExperienceTitle('Experience');
     }
-  }, [experiences, hasSetInitialTitle, isDesktop]);
-
-  // Animation function
-  const clearCurrentInterval = (): void => {
-    if (currentInterval) {
-      clearInterval(currentInterval);
-      setCurrentInterval(null);
-    }
-  };
-
-  const animateText = (oldText: string, newText: string): void => {
-    clearCurrentInterval();
-
-    if (oldText === newText) return;
-
-    let currentIndex = oldText.length;
-    const removeInterval = setInterval(() => {
-      setSelectedExperienceTitle(oldText.slice(0, currentIndex - 1));
-      currentIndex--;
-      if (currentIndex <= 0) {
-        clearInterval(removeInterval);
-
-        let typeIndex = 0;
-        const typeInterval = setInterval(() => {
-          setSelectedExperienceTitle(newText.slice(0, typeIndex + 1));
-          typeIndex++;
-          if (typeIndex >= newText.length) {
-            clearInterval(typeInterval);
-            setCurrentInterval(null);
-          }
-        }, 30);
-        setCurrentInterval(typeInterval);
-      }
-    }, 20);
-    setCurrentInterval(removeInterval);
-  };
+    // Desktop: Do nothing - ExperienceGallery will handle it
+  }, [isDesktop]);
 
   const handleExperienceSelect = (experienceTitle: string) => {
-    animateText(selectedExperienceTitle, experienceTitle);
+    console.log('handleExperienceSelect called with:', experienceTitle);
+    setSelectedExperienceTitle(experienceTitle);
   };
 
   const handleExperienceDeselect = () => {
-    animateText(selectedExperienceTitle, 'Experience');
+    console.log('handleExperienceDeselect called');
+    setSelectedExperienceTitle('Experience');
   };
-
-  // Cleanup interval on unmount
-  useEffect(() => {
-    return () => {
-      if (currentInterval) clearInterval(currentInterval);
-    };
-  }, [currentInterval]);
 
   return (
     <>

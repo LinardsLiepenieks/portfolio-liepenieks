@@ -11,45 +11,33 @@ import EducationMobileItem from '@/components/education/EducationMobileItem';
 import CertificateMobileItem from '@/components/education/CertificateMobileItem';
 import { useCertificates } from '@/hooks/storage/useCertificates';
 
-interface AnimationState {
-  currentText: string;
-  targetText: string;
-  isAnimating: boolean;
-}
-
 function EducationPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const animationFrameRef = useRef<number | null>(null);
+
+  // Simplified timeout refs for hover management
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const returnSection = parseInt(searchParams.get('returnTo') || '0');
   const [isDesktop, setIsDesktop] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
-
-  // Simplified animation state
-  const [animationState, setAnimationState] = useState<AnimationState>({
-    currentText: 'Education',
-    targetText: 'Education',
-    isAnimating: false,
-  });
+  const [displayText, setDisplayText] = useState<string>('Education');
 
   // Mobile selection handlers
   const handleEducationSelect = useCallback((educationName: string) => {
-    updateDisplayText(educationName);
+    setDisplayText(educationName);
   }, []);
 
   const handleEducationDeselect = useCallback(() => {
-    updateDisplayText('Education');
+    setDisplayText('Education');
   }, []);
 
   const handleCertificateSelect = useCallback((certificateName: string) => {
-    updateDisplayText(certificateName);
+    setDisplayText(certificateName);
   }, []);
 
   const handleCertificateDeselect = useCallback(() => {
-    updateDisplayText('Education');
+    setDisplayText('Education');
   }, []);
 
   // Get data with handlers
@@ -76,116 +64,38 @@ function EducationPageContent() {
     return () => window.removeEventListener('resize', checkIsDesktop);
   }, []);
 
-  // Improved text animation with requestAnimationFrame
-  const updateDisplayText = useCallback(
-    (newText: string) => {
-      if (animationState.targetText === newText) return;
-
-      setAnimationState((prev) => ({
-        ...prev,
-        targetText: newText,
-        isAnimating: true,
-      }));
-
-      // Clear any existing animation
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-
-      let startTime: number | null = null;
-      const duration = 300; // Total animation duration
-      const pauseDuration = 50; // Pause between delete and type
-
-      const animate = (timestamp: number) => {
-        if (!startTime) startTime = timestamp;
-        const elapsed = timestamp - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        setAnimationState((prev) => {
-          const currentLength = prev.currentText.length;
-          const targetLength = newText.length;
-
-          if (progress < 0.4) {
-            // Delete phase (0-40% of animation)
-            const deleteProgress = progress / 0.4;
-            const charsToKeep = Math.floor(
-              currentLength * (1 - deleteProgress)
-            );
-            return {
-              ...prev,
-              currentText: prev.currentText.slice(0, Math.max(0, charsToKeep)),
-            };
-          } else if (progress < 0.5) {
-            // Pause phase (40-50% of animation)
-            return {
-              ...prev,
-              currentText: '',
-            };
-          } else {
-            // Type phase (50-100% of animation)
-            const typeProgress = (progress - 0.5) / 0.5;
-            const charsToShow = Math.floor(targetLength * typeProgress);
-            return {
-              ...prev,
-              currentText: newText.slice(0, charsToShow),
-            };
-          }
-        });
-
-        if (progress < 1) {
-          animationFrameRef.current = requestAnimationFrame(animate);
-        } else {
-          setAnimationState((prev) => ({
-            currentText: newText,
-            targetText: newText,
-            isAnimating: false,
-          }));
-          animationFrameRef.current = null;
-        }
-      };
-
-      animationFrameRef.current = requestAnimationFrame(animate);
-    },
-    [animationState.targetText]
-  );
-
-  // Debounced hover handlers for desktop
+  // Simplified hover handlers
   const handleHover = useCallback(
     (text: string) => {
       if (!isDesktop) return;
 
-      // Clear any existing timeout
+      // Clear any pending timeout
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
       }
 
-      setIsHovering(true);
-
-      // Small delay to prevent rapid firing
-      hoverTimeoutRef.current = setTimeout(() => {
-        updateDisplayText(text);
-      }, 50);
+      // Update text immediately on hover
+      setDisplayText(text);
     },
-    [isDesktop, updateDisplayText]
+    [isDesktop]
   );
 
   const handleHoverLeave = useCallback(() => {
     if (!isDesktop) return;
 
-    // Clear timeout if still pending
+    // Clear any pending timeout
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
     }
 
-    setIsHovering(false);
-
-    // Delay before reverting to avoid flickering
+    // Use a short delay to prevent flickering when moving between elements
     hoverTimeoutRef.current = setTimeout(() => {
-      if (!isHovering) {
-        updateDisplayText('Education');
-      }
-    }, 90);
-  }, [isDesktop, isHovering, updateDisplayText]);
+      setDisplayText('Education');
+      hoverTimeoutRef.current = null;
+    }, 100);
+  }, [isDesktop]);
 
   // Scroll animation with intersection observer for better performance
   useEffect(() => {
@@ -201,7 +111,7 @@ function EducationPageContent() {
 
           // Check if item is near the top of the container
           const distanceFromTop = rect.top - containerRect.top;
-          const threshold = rect.height / 40;
+          const threshold = rect.height * 0.05;
 
           if (distanceFromTop <= threshold && entry.isIntersecting) {
             element.classList.add('animate-left');
@@ -238,9 +148,6 @@ function EducationPageContent() {
   // Cleanup
   useEffect(() => {
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
       }
@@ -271,9 +178,11 @@ function EducationPageContent() {
       <section className="h-screen bg-neutral-900 text-white flex flex-col w-full overflow-hidden">
         <AboutTitle
           title="About:"
-          displayText={animationState.currentText}
+          displayText={displayText}
           displayTextClassName="text-neutral-300"
           lineWidth="w-64 md:w-70 lg:w-90"
+          removeSpeed={20}
+          typeSpeed={30}
         />
 
         {/* Main Content Area */}
@@ -344,11 +253,13 @@ function EducationPageContent() {
                 <div
                   key={certificate.id}
                   data-certificate-item
-                  className="transition-all duration-500 ease-out will-change-transform "
+                  className="transition-all duration-500 ease-out will-change-transform"
                   style={{
                     transform: 'translateX(0)',
                     opacity: 1,
                   }}
+                  onMouseEnter={() => handleHover(certificate.provider)}
+                  onMouseLeave={handleHoverLeave}
                 >
                   <CertificateItem
                     {...certificate}

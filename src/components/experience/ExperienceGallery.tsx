@@ -8,7 +8,7 @@ import { ExperienceComponentProps } from '@/types/ExperienceItemType';
 
 interface ExperienceGalleryProps {
   experienceItems: (ExperienceComponentProps & { startYear: number })[];
-  onSelectExperience: (title: string) => void; // accepts a string
+  onSelectExperience: (title: string) => void;
 }
 
 export default function ExperienceGallery({
@@ -19,17 +19,54 @@ export default function ExperienceGallery({
   const [visibleIndex, setVisibleIndex] = useState(0);
   const [animatedLines, setAnimatedLines] = useState<Set<number>>(new Set());
   const previousIndexRef = useRef(0);
+  const lastSelectedTitleRef = useRef<string>('');
+  const isInitializedRef = useRef(false);
 
   // Horizontal scroll hook
   const { currentItem, containerRef, itemRefs, scrollToItem } =
     useHorizontalScrollContainer({
       totalItems: experienceItems.length,
       updateActiveItem: (index: number) => {
+        console.log('🔥 updateActiveItem called:', {
+          index,
+          title: experienceItems[index]?.title,
+          isInitialized: isInitializedRef.current,
+          currentItem,
+        });
+
+        // Validate index
+        if (index < 0 || index >= experienceItems.length) {
+          console.warn('❌ Invalid index:', index);
+          return;
+        }
+
         const previousIndex = previousIndexRef.current;
         const isScrollingRight = index > previousIndex;
+        const currentTitle = experienceItems[index].title;
 
         setVisibleIndex(index);
-        onSelectExperience(experienceItems[index].title); // 🔥 Trigger animation
+
+        // Only update if initialized and title actually changed
+        if (
+          isInitializedRef.current &&
+          currentTitle !== lastSelectedTitleRef.current
+        ) {
+          console.log(
+            '✅ Updating title from',
+            lastSelectedTitleRef.current,
+            'to',
+            currentTitle
+          );
+          onSelectExperience(currentTitle);
+          lastSelectedTitleRef.current = currentTitle;
+        } else if (!isInitializedRef.current) {
+          console.log('🚀 Initializing with title:', currentTitle);
+          onSelectExperience(currentTitle);
+          lastSelectedTitleRef.current = currentTitle;
+          isInitializedRef.current = true;
+        } else {
+          console.log('⏭️ Title unchanged, skipping');
+        }
 
         // Animate line of the CURRENT item when it's scrolled into view from the right
         if (isScrollingRight && index < experienceItems.length - 1) {
@@ -54,6 +91,20 @@ export default function ExperienceGallery({
       setAnimatedLines((prev) => new Set([...prev, 0]));
     }
   }, [experienceItems.length]);
+
+  // Initialize with first experience on mount (only once)
+  useEffect(() => {
+    if (experienceItems.length > 0 && !isInitializedRef.current) {
+      const firstTitle = experienceItems[0].title;
+      console.log(
+        '🚀 Initial page load - setting first experience:',
+        firstTitle
+      );
+      onSelectExperience(firstTitle);
+      lastSelectedTitleRef.current = firstTitle;
+      isInitializedRef.current = true;
+    }
+  }, [experienceItems, onSelectExperience]);
 
   const handlePrev = () => scrollToItem(currentItem - 1);
   const handleNext = () => scrollToItem(currentItem + 1);

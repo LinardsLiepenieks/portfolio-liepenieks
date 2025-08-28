@@ -10,9 +10,6 @@ import { useHorizontalScrollContainer } from '@/hooks/scroll-container/useHorizo
 const AboutSection = () => {
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
   const [displayText, setDisplayText] = useState<string>('');
-  const [currentInterval, setCurrentInterval] = useState<NodeJS.Timeout | null>(
-    null
-  );
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const router = useRouter();
 
@@ -51,86 +48,34 @@ const AboutSection = () => {
     useHorizontalScrollContainer({
       totalItems: buttons.length,
       updateActiveItem: (index: number) => {
-        // On mobile, sync the text animation with scroll view
+        // On mobile, sync the text with scroll view
         if (isMobile) {
-          handleViewChange(buttons[index].name);
+          setDisplayText(buttons[index].name);
         }
       },
     });
-
-  const clearCurrentInterval = (): void => {
-    if (currentInterval) {
-      clearInterval(currentInterval);
-      setCurrentInterval(null);
-    }
-  };
-
-  const animateText = (text: string, isEntering: boolean): void => {
-    clearCurrentInterval();
-
-    if (isEntering) {
-      setDisplayText('');
-      let currentIndex = 0;
-      const typeInterval = setInterval(() => {
-        setDisplayText(text.slice(0, currentIndex + 1));
-        currentIndex++;
-        if (currentIndex >= text.length) {
-          clearInterval(typeInterval);
-          setCurrentInterval(null);
-        }
-      }, 30);
-      setCurrentInterval(typeInterval);
-    } else {
-      let currentIndex = text.length;
-      const removeInterval = setInterval(() => {
-        setDisplayText(text.slice(0, currentIndex - 1));
-        currentIndex--;
-        if (currentIndex <= 0) {
-          clearInterval(removeInterval);
-          setCurrentInterval(null);
-          setDisplayText('');
-        }
-      }, 20);
-      setCurrentInterval(removeInterval);
-    }
-  };
 
   // Detect if device is mobile/touch device
   const isMobileDevice = (): boolean => {
     return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   };
 
-  // Handle view change (for mobile scroll-based text updates)
-  const handleViewChange = (name: string): void => {
-    if (displayText !== name) {
-      if (displayText) {
-        // Clear current text first, then show new text
-        animateText(displayText, false);
-        setTimeout(() => {
-          animateText(name, true);
-        }, displayText.length * 20 + 50); // Wait for clear animation to finish
-      } else {
-        animateText(name, true);
-      }
-    }
-  };
-
   // Handle desktop hover interactions
   const handleInteractionStart = (name: string, id: string): void => {
     if (!isMobile) {
       setHoveredButton(id);
-      animateText(name, true);
+      setDisplayText(name);
     }
   };
 
-  const handleInteractionEnd = (name: string): void => {
-    if (!isMobile && hoveredButton && displayText) {
-      animateText(name, false);
+  const handleInteractionEnd = (): void => {
+    if (!isMobile && hoveredButton) {
+      setDisplayText('');
       setHoveredButton(null);
     }
   };
 
-  // Handle mobile touch interactions (only for navigation, not text animation)
+  // Handle mobile touch interactions (only for visual feedback)
   const handleTouchStart = (name: string, id: string): void => {
     if (isMobile) {
       setHoveredButton(id);
@@ -167,14 +112,19 @@ const AboutSection = () => {
   // Initialize with first item on mobile
   useEffect(() => {
     if (isMobile && !displayText && buttons.length > 0) {
-      animateText(buttons[currentItem].name, true);
+      setDisplayText(buttons[currentItem].name);
     }
-  }, [isMobile, currentItem]);
+  }, [isMobile, currentItem, displayText, buttons]);
 
   return (
     <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis">
-      {/* Title Section - Now using the extracted component */}
-      <AboutTitle title="About:" displayText={displayText} />
+      {/* Title Section - Now with built-in animation */}
+      <AboutTitle
+        title="About:"
+        displayText={displayText}
+        removeSpeed={20}
+        typeSpeed={30}
+      />
 
       {/* Horizontal Scroll Gallery */}
       <div
@@ -205,7 +155,7 @@ const AboutSection = () => {
                   onMouseEnter={() =>
                     handleInteractionStart(button.name, button.id)
                   }
-                  onMouseLeave={() => handleInteractionEnd(button.name)}
+                  onMouseLeave={handleInteractionEnd}
                   onClick={() => handleButtonClick(button.id, index)}
                 />
               </div>
