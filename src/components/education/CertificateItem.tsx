@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import Image from 'next/image';
 import A4Modal from '../modals/A4Modal';
 import { CertificateComponentProps } from '@/types/CertificateItemType';
@@ -36,12 +36,19 @@ const CertificateItem = ({
 
   const providerInitial = provider?.charAt(0)?.toUpperCase() || '?';
 
-  return (
-    <A4Modal
-      propagationAllowed={false}
-      image={certificateUrl}
-      linkTitle={`${name} Certificate`}
-    >
+  // Memoize the modal props to prevent re-creation
+  const modalProps = useMemo(
+    () => ({
+      propagationAllowed: false,
+      image: certificateUrl,
+      linkTitle: `${name} Certificate`,
+    }),
+    [certificateUrl, name]
+  );
+
+  // Memoize the certificate content to prevent re-renders
+  const certificateContent = useMemo(
+    () => (
       <div
         ref={itemRef}
         className={`group mx-auto font-metropolis p-3 my-1 cursor-pointer inline-block ${className}`}
@@ -276,8 +283,21 @@ const CertificateItem = ({
           )}
         </div>
       </div>
-    </A4Modal>
+    ),
+    [
+      className,
+      handleClick,
+      name,
+      provider,
+      year,
+      logoUrl,
+      certificateUrl,
+      providerInitial,
+      isAnimatingBack,
+    ]
   );
+
+  return <A4Modal {...modalProps}>{certificateContent}</A4Modal>;
 };
 
 export default CertificateItem;
