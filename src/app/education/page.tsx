@@ -286,7 +286,9 @@ function EducationPageContent() {
           <div className="md:hidden h-full overflow-y-auto mx-4 sm:mx-8 pb-4 pt-4 scrollbar-dark">
             <div className="space-y-4 mb-8">
               {educationItems.map((education) => (
-                <EducationMobileItem {...education} />
+                <div key={education.id}>
+                  <EducationMobileItem {...education} />
+                </div>
               ))}
             </div>
 
@@ -297,7 +299,9 @@ function EducationPageContent() {
                 </h3>
                 <div className="space-y-4">
                   {certificateItems.map((certificate) => (
-                    <CertificateMobileItem {...certificate} />
+                    <div key={certificate.id}>
+                      <CertificateMobileItem {...certificate} />
+                    </div>
                   ))}
                 </div>
               </>
