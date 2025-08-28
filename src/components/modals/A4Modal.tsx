@@ -12,6 +12,8 @@ interface A4ModalProps {
   defaultButtonText?: string;
   defaultButtonClassName?: string;
   propagationAllowed?: boolean;
+  onModalOpen?: () => void;
+  onModalClose?: () => void;
 }
 
 const A4Modal = ({
@@ -21,12 +23,21 @@ const A4Modal = ({
   defaultButtonText = 'View Document',
   defaultButtonClassName = "hover:cursor-pointer text-pf-base italic font-semibold !tracking-wide rounded transition-colors relative group after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:ease-out hover:after:w-full text-white",
   propagationAllowed = true,
+  onModalOpen,
+  onModalClose,
 }: A4ModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  const openModal = () => setIsOpen(true);
-  const closeModal = () => setIsOpen(false);
+  const openModal = () => {
+    setIsOpen(true);
+    onModalOpen?.();
+  };
+
+  const closeModal = () => {
+    setIsOpen(false);
+    onModalClose?.();
+  };
 
   useEffect(() => {
     setMounted(true);

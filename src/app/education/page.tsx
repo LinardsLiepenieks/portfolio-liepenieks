@@ -164,7 +164,7 @@ function EducationPageContent() {
       // Small delay to prevent rapid firing
       hoverTimeoutRef.current = setTimeout(() => {
         updateDisplayText(text);
-      }, 900);
+      }, 50);
     },
     [isDesktop, updateDisplayText]
   );
@@ -184,7 +184,7 @@ function EducationPageContent() {
       if (!isHovering) {
         updateDisplayText('Education');
       }
-    }, 150);
+    }, 90);
   }, [isDesktop, isHovering, updateDisplayText]);
 
   // Scroll animation with intersection observer for better performance
@@ -335,25 +335,29 @@ function EducationPageContent() {
             ))}
 
             {/* Certificate Items */}
-            {certificateItems.map((certificate) => (
-              <div
-                key={certificate.id}
-                data-certificate-item
-                className="transition-all duration-500 ease-out will-change-transform"
-                style={{
-                  transform: 'translateX(0)',
-                  opacity: 1,
-                }}
-                onMouseEnter={() => handleHover(certificate.provider)}
-                onMouseLeave={handleHoverLeave}
-              >
-                <CertificateItem
-                  {...certificate}
-                  onSelect={() => {}}
-                  onDeselect={() => {}}
-                />
-              </div>
-            ))}
+            <div className="flex flex-col items-start">
+              <h3 className="font-metropolis text-pf-2xl font-medium mb-4">
+                Certificates:
+              </h3>
+
+              {certificateItems.map((certificate) => (
+                <div
+                  key={certificate.id}
+                  data-certificate-item
+                  className="transition-all duration-500 ease-out will-change-transform "
+                  style={{
+                    transform: 'translateX(0)',
+                    opacity: 1,
+                  }}
+                >
+                  <CertificateItem
+                    {...certificate}
+                    onSelect={() => {}}
+                    onDeselect={() => {}}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
