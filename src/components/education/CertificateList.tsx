@@ -1,23 +1,36 @@
 import CertificateItem from '@/components/education/CertificateItem';
-import { memo } from 'react';
+import { CertificateComponentProps } from '@/types/CertificateItemType';
 interface CertificateListProps {
-  certificates: any[];
-  onHover: (certificate: any) => void;
+  certificates: CertificateComponentProps[];
+  onHover: (certificate: CertificateComponentProps) => void;
   onHoverLeave: () => void;
-  onClick: (certificate: any) => void;
+  onClick: (certificate: CertificateComponentProps) => void;
 }
 
-const CertificateList = memo(
-  ({ certificates, onHover, onHoverLeave, onClick }: CertificateListProps) => {
-    return (
-      <div className="flex flex-col items-start">
-        <h3 className="font-metropolis text-pf-2xl font-medium mb-4">
-          Certificates:
-        </h3>
+const CertificateList = ({
+  certificates,
+  onHover,
+  onHoverLeave,
+  onClick,
+}: CertificateListProps) => {
+  return (
+    <div className="flex flex-col items-start">
+      <h3
+        className="font-metropolis text-pf-2xl font-medium mb-4"
+        id="certificates-heading"
+      >
+        Certificates:
+      </h3>
+      <div
+        role="list"
+        aria-labelledby="certificates-heading"
+        className="w-full"
+      >
         {certificates.map((certificate) => (
           <div
             key={certificate.id}
-            className="transition-all duration-500 ease-out will-change-transform"
+            role="listitem"
+            className="transition-all duration-500 ease-out will-change-transform focus-within:outline-2 focus-within:outline-blue-500 focus-within:outline-offset-2 rounded-md"
             onMouseEnter={() => onHover(certificate)}
             onMouseLeave={onHoverLeave}
           >
@@ -28,9 +41,9 @@ const CertificateList = memo(
           </div>
         ))}
       </div>
-    );
-  }
-);
+    </div>
+  );
+};
 
 CertificateList.displayName = 'CertificateList';
 

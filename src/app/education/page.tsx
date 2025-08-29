@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useRef, useCallback, useMemo } from 'react';
+import { Suspense, useState, useRef, useEffect } from 'react';
 import EducationItem from '@/components/education/EducationItem';
 import CertificateList from '@/components/education/CertificateList';
 import { useEducation } from '@/hooks/storage/useEducation';
@@ -10,67 +10,81 @@ import EducationMobileItem from '@/components/education/EducationMobileItem';
 import CertificateMobileItem from '@/components/education/CertificateMobileItem';
 import { useCertificates } from '@/hooks/storage/useCertificates';
 
+interface Education {
+  id: string | number;
+  name: string;
+  nameShort?: string;
+}
+
+interface Certificate {
+  id: string | number;
+  name: string;
+  provider?: string;
+}
+
 function EducationPageContent() {
   const [displayText, setDisplayText] = useState('Education');
-  const [selectedEducationId, setSelectedEducationId] = useState<string | null>(
-    null
-  );
+  const [selectedEducationId, setSelectedEducationId] = useState<
+    string | number | null
+  >(null);
   const [selectedCertificateId, setSelectedCertificateId] = useState<
-    string | null
+    string | number | null
   >(null);
   const hoverTimeoutRef = useRef<number | null>(null);
-
-  // Use refs to store current values without triggering re-renders
-  const selectedEducationIdRef = useRef(selectedEducationId);
-  const selectedCertificateIdRef = useRef(selectedCertificateId);
-
-  // Update refs when state changes
-  selectedEducationIdRef.current = selectedEducationId;
-  selectedCertificateIdRef.current = selectedCertificateId;
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // Data hooks
   const { education: educationItems } = useEducation();
   const { certificates: certificateItems } = useCertificates();
 
-  // Store items in refs to avoid dependencies in callbacks
-  const educationItemsRef = useRef(educationItems);
-  const certificateItemsRef = useRef(certificateItems);
-  educationItemsRef.current = educationItems;
-  certificateItemsRef.current = certificateItems;
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        contentRef.current &&
+        !contentRef.current.contains(event.target as Node)
+      ) {
+        setSelectedEducationId(null);
+        setSelectedCertificateId(null);
+        setDisplayText('Education');
+      }
+    };
 
-  // Stable event handlers with minimal dependencies
-  const handleEducationHover = useCallback((education: any) => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const clearHoverTimeout = () => {
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
     }
+  };
+
+  const handleEducationHover = (education: Education) => {
+    clearHoverTimeout();
     setDisplayText(education.nameShort || education.name);
-  }, []); // No dependencies
+  };
 
-  const handleCertificateHover = useCallback((certificate: any) => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
+  const handleCertificateHover = (certificate: Certificate) => {
+    clearHoverTimeout();
     setDisplayText(certificate.provider || certificate.name);
-  }, []); // No dependencies
+  };
 
-  const handleHoverLeave = useCallback(() => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
+  const handleHoverLeave = () => {
+    clearHoverTimeout();
 
     hoverTimeoutRef.current = window.setTimeout(() => {
-      // Use refs to get current values without dependencies
-      if (selectedEducationIdRef.current) {
-        const selected = educationItemsRef.current.find(
-          (item) => item.id === selectedEducationIdRef.current
+      if (selectedEducationId) {
+        const selected = educationItems.find(
+          (item) => item.id === selectedEducationId
         );
         setDisplayText(selected?.nameShort || selected?.name || 'Education');
-      } else if (selectedCertificateIdRef.current) {
-        const selected = certificateItemsRef.current.find(
-          (item) => item.id === selectedCertificateIdRef.current
+      } else if (selectedCertificateId) {
+        const selected = certificateItems.find(
+          (item) => item.id === selectedCertificateId
         );
         setDisplayText(selected?.provider || selected?.name || 'Education');
       } else {
@@ -78,70 +92,48 @@ function EducationPageContent() {
       }
       hoverTimeoutRef.current = null;
     }, 100);
-  }, []); // No dependencies
+  };
 
-  const handleEducationClick = useCallback(
-    (education: any) => {
-      if (selectedEducationIdRef.current === education.id) {
-        setSelectedEducationId(null);
-        setSelectedCertificateId(null);
-        setDisplayText('Education');
-      } else {
-        setSelectedEducationId(education.id);
-        setSelectedCertificateId(null);
-        setDisplayText(education.nameShort || education.name);
-      }
-    },
-    [] // Remove selectedEducationId dependency
-  );
+  const handleEducationClick = (education: Education) => {
+    if (selectedEducationId === education.id) {
+      setSelectedEducationId(null);
+      setSelectedCertificateId(null);
+      setDisplayText('Education');
+    } else {
+      setSelectedEducationId(education.id);
+      setSelectedCertificateId(null);
+      setDisplayText(education.nameShort || education.name);
+    }
+  };
 
-  const handleCertificateClick = useCallback(
-    (certificate: any) => {
-      if (selectedCertificateIdRef.current === certificate.id) {
-        setSelectedCertificateId(null);
-        setSelectedEducationId(null);
-        setDisplayText('Education');
-      } else {
-        setSelectedCertificateId(certificate.id);
-        setSelectedEducationId(null);
-        setDisplayText(certificate.provider || certificate.name);
-      }
-    },
-    [] // Remove selectedCertificateId dependency
-  );
-
-  // Memoize the AboutTitle props to prevent unnecessary re-renders
-  const aboutTitleProps = useMemo(
-    () => ({
-      title: 'About:',
-      displayText,
-      displayTextClassName: 'text-neutral-300',
-      lineWidth: 'w-64 md:w-70 lg:w-90',
-      removeSpeed: 20,
-      typeSpeed: 30,
-    }),
-    [displayText]
-  );
-
-  // Create stable references to prevent re-renders
-  const stableHandlers = useMemo(
-    () => ({
-      handleCertificateHover,
-      handleHoverLeave,
-      handleCertificateClick,
-    }),
-    [handleCertificateHover, handleHoverLeave, handleCertificateClick]
-  );
+  const handleCertificateClick = (certificate: Certificate) => {
+    if (selectedCertificateId === certificate.id) {
+      setSelectedCertificateId(null);
+      setSelectedEducationId(null);
+      setDisplayText('Education');
+    } else {
+      setSelectedCertificateId(certificate.id);
+      setSelectedEducationId(null);
+      setDisplayText(certificate.provider || certificate.name);
+    }
+  };
 
   return (
     <>
       <ContentNavbar />
 
       <section className="h-screen bg-neutral-900 text-white flex flex-col w-full overflow-hidden">
-        <AboutTitle {...aboutTitleProps} />
+        <AboutTitle
+          title="About:"
+          displayText={displayText}
+          displayTextClassName="text-neutral-300"
+          lineWidth="w-64 md:w-70 lg:w-90"
+          removeSpeed={20}
+          typeSpeed={30}
+        />
 
         {/* Main Content Area */}
-        <div className="flex-1 relative min-h-0">
+        <div className="flex-1 relative min-h-0" ref={contentRef}>
           {/* Gradient overlays for desktop */}
           <div className="hidden md:block absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-neutral-900 to-transparent z-10 pointer-events-none" />
           <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-neutral-900 to-transparent z-10 pointer-events-none" />
@@ -196,9 +188,9 @@ function EducationPageContent() {
             {certificateItems.length > 0 && (
               <CertificateList
                 certificates={certificateItems}
-                onHover={stableHandlers.handleCertificateHover}
-                onHoverLeave={stableHandlers.handleHoverLeave}
-                onClick={stableHandlers.handleCertificateClick}
+                onHover={handleCertificateHover}
+                onHoverLeave={handleHoverLeave}
+                onClick={handleCertificateClick}
               />
             )}
           </div>
