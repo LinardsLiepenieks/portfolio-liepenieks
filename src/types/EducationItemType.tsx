@@ -33,7 +33,6 @@ export interface EducationItemType {
 
 export interface EducationComponentProps {
   id: string | number;
-  key?: string | number;
   name: string;
   nameShort: string;
   degree: string;

@@ -51,7 +51,7 @@ const CertificateItem = ({
     () => (
       <div
         ref={itemRef}
-        className={`group mx-auto font-metropolis p-3 my-1 cursor-pointer inline-block ${className}`}
+        className={`group  font-metropolis  my-6 cursor-pointer inline-block focus:outline-none ${className}`}
         onClick={handleClick}
         role="button"
         tabIndex={0}
@@ -188,17 +188,28 @@ const CertificateItem = ({
             animation: bgBack 0.3s ease-out forwards;
             transition: none !important;
           }
+
+          /* Remove focus outline */
+          .certificate-item:focus {
+            outline: none !important;
+          }
+
+          /* Optional: Add a custom focus indicator if you want */
+          .certificate-item:focus-visible {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+            border-radius: 8px;
+          }
         `}</style>
 
         <div
-          className={`flex gap-6 p-2 transform transition-transform duration-300 ease-out scale-100 ${
+          className={`flex gap-6  pr-4 transform transition-transform duration-300 ease-out scale-100 ${
             isAnimatingBack ? 'animate-scale-back' : 'group-hover:scale-108'
           }`}
         >
-          {/* Logo Container */}
+          {/* Logo Container - ASPECT RATIO PRESERVED */}
           <div className="flex-shrink-0">
             <div
-              className={`w-30 h-30 relative overflow-hidden rounded-lg flex items-center justify-center border border-solid border-gray-600 transform transition-transform duration-300 ease-out rotate-0 ${
+              className={`w-30 h-30 relative overflow-hidden rounded-lg flex items-center justify-center border border-solid border-neutral-700 transform transition-transform duration-300 ease-out rotate-0 ${
                 isAnimatingBack
                   ? 'animate-rotate-back'
                   : 'group-hover:-rotate-[8deg]'
@@ -209,7 +220,7 @@ const CertificateItem = ({
                   src={logoUrl}
                   alt={`${provider} logo`}
                   fill
-                  className="object-cover"
+                  className="object-contain" // Maintains aspect ratio and fits within container
                   sizes="120px"
                   unoptimized // Since it's from Vercel Blob storage
                 />
@@ -225,10 +236,10 @@ const CertificateItem = ({
           </div>
 
           {/* Content Container */}
-          <div className="flex-grow min-w-0 flex flex-col justify-center gap-2">
+          <div className="flex-grow min-w-0 flex flex-col justify-center gap-1">
             {/* Certificate Name */}
             <h3
-              className={`text-pf-xl italic font-medium transition-colors duration-300 ease-out text-neutral-200 ${
+              className={`text-pf-lg italic font-medium transition-colors duration-300 ease-out text-neutral-200 ${
                 isAnimatingBack
                   ? 'animate-color-back'
                   : 'group-hover:text-neutral-100'
@@ -238,9 +249,9 @@ const CertificateItem = ({
             </h3>
 
             {/* Provider and Year Row */}
-            <div className="flex items-center gap-4 relative px-2">
+            <div className="flex items-center gap-3 relative text-neutral-200">
               <p
-                className={`text-pf-sm font-semibold transition-colors duration-300 ease-out text-neutral-200 ${
+                className={`text-pf-sm font-semibold transition-colors duration-300 ease-out  ${
                   isAnimatingBack
                     ? 'animate-color-back'
                     : 'group-hover:text-neutral-100'
@@ -249,7 +260,7 @@ const CertificateItem = ({
                 {provider}
               </p>
               <p
-                className={`text-pf-sm font-semibold transition-colors duration-300 ease-out text-neutral-200 ${
+                className={`text-pf-sm font-semibold transition-colors duration-300 ease-out  ${
                   isAnimatingBack
                     ? 'animate-color-back'
                     : 'group-hover:text-neutral-100'
@@ -259,28 +270,6 @@ const CertificateItem = ({
               </p>
             </div>
           </div>
-
-          {/* Certificate link indicator */}
-          {certificateUrl && (
-            <div className="flex-shrink-0 flex items-center">
-              <div
-                className={`w-6 h-6 rounded-full transition-colors duration-300 ease-out flex items-center justify-center bg-neutral-700 ${
-                  isAnimatingBack
-                    ? 'animate-bg-back'
-                    : 'group-hover:bg-neutral-600'
-                }`}
-                aria-label="Certificate available"
-              >
-                <span
-                  className="text-xs text-neutral-300"
-                  role="img"
-                  aria-label="trophy"
-                >
-                  🏆
-                </span>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     ),

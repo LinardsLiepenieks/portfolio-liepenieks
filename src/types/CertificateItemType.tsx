@@ -20,7 +20,6 @@ export interface CertificateItemType {
 
 export interface CertificateComponentProps {
   id: string | number;
-  key?: string | number;
   name: string;
   provider: string;
   year: number;

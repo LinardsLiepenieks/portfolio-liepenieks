@@ -17,7 +17,6 @@ export function useCertificates(
   const certificateProps =
     certificates?.map((certificate) => ({
       id: certificate.id,
-      key: certificate.id,
       name: certificate.name,
       provider: certificate.provider,
       year: certificate.year,

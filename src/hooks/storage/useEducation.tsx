@@ -17,7 +17,6 @@ export function useEducation(
   const educationProps =
     education?.map((edu) => ({
       id: edu.id,
-      key: edu.id,
       name: edu.name,
       nameShort: edu.name_short,
       degree: edu.degree,

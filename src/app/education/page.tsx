@@ -9,18 +9,8 @@ import AboutTitle from '@/components/sections/about_section/AboutTitle';
 import EducationMobileItem from '@/components/education/EducationMobileItem';
 import CertificateMobileItem from '@/components/education/CertificateMobileItem';
 import { useCertificates } from '@/hooks/storage/useCertificates';
-
-interface Education {
-  id: string | number;
-  name: string;
-  nameShort?: string;
-}
-
-interface Certificate {
-  id: string | number;
-  name: string;
-  provider?: string;
-}
+import { EducationComponentProps } from '@/types/EducationItemType';
+import { CertificateComponentProps } from '@/types/CertificateItemType';
 
 function EducationPageContent() {
   const [displayText, setDisplayText] = useState('Education');
@@ -63,12 +53,12 @@ function EducationPageContent() {
     }
   };
 
-  const handleEducationHover = (education: Education) => {
+  const handleEducationHover = (education: EducationComponentProps) => {
     clearHoverTimeout();
     setDisplayText(education.nameShort || education.name);
   };
 
-  const handleCertificateHover = (certificate: Certificate) => {
+  const handleCertificateHover = (certificate: CertificateComponentProps) => {
     clearHoverTimeout();
     setDisplayText(certificate.provider || certificate.name);
   };
@@ -94,7 +84,7 @@ function EducationPageContent() {
     }, 100);
   };
 
-  const handleEducationClick = (education: Education) => {
+  const handleEducationClick = (education: EducationComponentProps) => {
     if (selectedEducationId === education.id) {
       setSelectedEducationId(null);
       setSelectedCertificateId(null);
@@ -106,7 +96,7 @@ function EducationPageContent() {
     }
   };
 
-  const handleCertificateClick = (certificate: Certificate) => {
+  const handleCertificateClick = (certificate: CertificateComponentProps) => {
     if (selectedCertificateId === certificate.id) {
       setSelectedCertificateId(null);
       setSelectedEducationId(null);
@@ -141,16 +131,17 @@ function EducationPageContent() {
           {/* Mobile Layout */}
           <div className="md:hidden h-full overflow-y-auto mx-4 sm:mx-8 pb-4 pt-4 scrollbar-dark">
             <div className="space-y-4 mb-8">
-              {educationItems.map((education) => (
+              {educationItems.map(({ id, ...educationProps }) => (
                 <div
-                  key={education.id}
-                  onClick={() => handleEducationClick(education)}
+                  key={id}
+                  onClick={() =>
+                    handleEducationClick({ id, ...educationProps })
+                  }
                 >
-                  <EducationMobileItem {...education} />
+                  <EducationMobileItem id={id} {...educationProps} />
                 </div>
               ))}
             </div>
-
             {certificateItems.length > 0 && (
               <>
                 <h3 className="font-metropolis text-pf-lg font-medium mb-4">
@@ -159,8 +150,8 @@ function EducationPageContent() {
                 <div className="space-y-4">
                   {certificateItems.map((certificate) => (
                     <div
-                      key={certificate.id}
                       onClick={() => handleCertificateClick(certificate)}
+                      key={certificate.id}
                     >
                       <CertificateMobileItem {...certificate} />
                     </div>
@@ -171,19 +162,21 @@ function EducationPageContent() {
           </div>
 
           {/* Desktop Layout */}
-          <div className="hidden md:block h-full overflow-y-auto px-20 py-4 scrollbar-black">
+          <div className="hidden md:flex h-full overflow-y-auto px-20 py-4 scrollbar-black flex-col gap-16 ">
             {/* Education Items */}
-            {educationItems.map((education) => (
-              <div
-                key={education.id}
-                className="transition-all duration-500 ease-out will-change-transform"
-                onMouseEnter={() => handleEducationHover(education)}
-                onMouseLeave={handleHoverLeave}
-              >
-                <EducationItem {...education} />
-              </div>
-            ))}
-
+            {educationItems.map((education) => {
+              const { id, ...educationProps } = education;
+              return (
+                <div
+                  key={id}
+                  className="transition-all duration-500 ease-out will-change-transform"
+                  onMouseEnter={() => handleEducationHover(education)}
+                  onMouseLeave={handleHoverLeave}
+                >
+                  <EducationItem id={id} {...educationProps} />
+                </div>
+              );
+            })}
             {/* Certificate Items */}
             {certificateItems.length > 0 && (
               <CertificateList
