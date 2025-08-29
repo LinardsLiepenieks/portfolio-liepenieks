@@ -11,6 +11,7 @@ import CertificateMobileItem from '@/components/education/CertificateMobileItem'
 import { useCertificates } from '@/hooks/storage/useCertificates';
 import { EducationComponentProps } from '@/types/EducationItemType';
 import { CertificateComponentProps } from '@/types/CertificateItemType';
+import { useCallback } from 'react';
 
 function EducationPageContent() {
   const [displayText, setDisplayText] = useState('Education');
@@ -20,12 +21,49 @@ function EducationPageContent() {
   const [selectedCertificateId, setSelectedCertificateId] = useState<
     string | number | null
   >(null);
+  const [hiddenEducationIds, setHiddenEducationIds] = useState<
+    Set<string | number>
+  >(new Set());
+  const [hiddenCertificateIds, setHiddenCertificateIds] = useState<
+    Set<string | number>
+  >(new Set());
+  const [isDesktop, setIsDesktop] = useState(false);
   const hoverTimeoutRef = useRef<number | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const desktopScrollContainerRef = useRef<HTMLDivElement>(null); // New ref for desktop container
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const educationRefs = useRef<Map<string | number, HTMLDivElement>>(new Map());
+  const certificateRefs = useRef<Map<string | number, HTMLDivElement>>(
+    new Map()
+  );
 
   // Data hooks
   const { education: educationItems } = useEducation();
   const { certificates: certificateItems } = useCertificates();
+
+  // Check if desktop on mount and resize
+  useEffect(() => {
+    const checkIsDesktop = () => {
+      const newIsDesktop = window.innerWidth >= 768;
+      setIsDesktop(newIsDesktop);
+    };
+
+    let timeoutId: number;
+    const debouncedCheckIsDesktop = () => {
+      clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(checkIsDesktop, 150);
+    };
+
+    checkIsDesktop();
+    window.addEventListener('resize', debouncedCheckIsDesktop, {
+      passive: true,
+    });
+
+    return () => {
+      window.removeEventListener('resize', debouncedCheckIsDesktop);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   // Click outside handler
   useEffect(() => {
@@ -40,30 +78,225 @@ function EducationPageContent() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside, {
+      passive: true,
+    });
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
-  const clearHoverTimeout = () => {
+  // Optimized Intersection Observer for both education and certificates
+  useEffect(() => {
+    if (!isDesktop) {
+      setHiddenEducationIds(new Set());
+      setHiddenCertificateIds(new Set());
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+      return;
+    }
+
+    // Wait for the desktop scroll container to be available
+    if (!desktopScrollContainerRef.current) {
+      return;
+    }
+
+    // Create observer only once with optimized configuration
+    if (!observerRef.current) {
+      // Use requestIdleCallback for non-essential work (recommended by W3C spec)
+      const deferredCallback = (entries: IntersectionObserverEntry[]) => {
+        const educationUpdates = new Map<string | number, boolean>();
+        const certificateUpdates = new Map<string | number, boolean>();
+
+        entries.forEach((entry) => {
+          const element = entry.target as HTMLElement;
+          const educationId = element.dataset.educationId;
+          const certificateId = element.dataset.certificateId;
+          const isVisible = entry.isIntersecting;
+
+          if (educationId) {
+            const id = isNaN(Number(educationId))
+              ? educationId
+              : Number(educationId);
+            educationUpdates.set(id, isVisible);
+          } else if (certificateId) {
+            const id = isNaN(Number(certificateId))
+              ? certificateId
+              : Number(certificateId);
+            certificateUpdates.set(id, isVisible);
+          }
+        });
+
+        // Use requestIdleCallback to defer state updates during idle time
+        const updateStates = () => {
+          // Update education items
+          if (educationUpdates.size > 0) {
+            setHiddenEducationIds((prev) => {
+              const newSet = new Set(prev);
+              let hasChanges = false;
+
+              educationUpdates.forEach((isVisible, id) => {
+                const wasHidden = prev.has(id);
+
+                if (!isVisible && !wasHidden) {
+                  // Item is no longer intersecting (hidden from top due to negative rootMargin)
+                  newSet.add(id);
+                  hasChanges = true;
+                  console.log(
+                    `Education item ${id} is now hidden from the top`
+                  );
+                } else if (isVisible && wasHidden) {
+                  // Item is intersecting again (visible)
+                  newSet.delete(id);
+                  hasChanges = true;
+                  console.log(`Education item ${id} is now visible again`);
+                }
+              });
+
+              return hasChanges ? newSet : prev;
+            });
+          }
+
+          // Update certificate items
+          if (certificateUpdates.size > 0) {
+            setHiddenCertificateIds((prev) => {
+              const newSet = new Set(prev);
+              let hasChanges = false;
+
+              certificateUpdates.forEach((isVisible, id) => {
+                const wasHidden = prev.has(id);
+
+                if (!isVisible && !wasHidden) {
+                  // Item is no longer intersecting (hidden from top due to negative rootMargin)
+                  newSet.add(id);
+                  hasChanges = true;
+                  console.log(
+                    `Certificate item ${id} is now hidden from the top`
+                  );
+                } else if (isVisible && wasHidden) {
+                  // Item is intersecting again (visible)
+                  newSet.delete(id);
+                  hasChanges = true;
+                  console.log(`Certificate item ${id} is now visible again`);
+                }
+              });
+
+              return hasChanges ? newSet : prev;
+            });
+          }
+        };
+
+        if (
+          (educationUpdates.size > 0 || certificateUpdates.size > 0) &&
+          'requestIdleCallback' in window
+        ) {
+          window.requestIdleCallback(updateStates);
+        } else {
+          updateStates();
+        }
+      };
+
+      observerRef.current = new IntersectionObserver(deferredCallback, {
+        // Use default threshold 0 - triggers when any part enters/leaves
+        threshold: 0.6,
+        // CRITICAL: Use negative bottom margin to prevent bottom-side triggers
+        // This shrinks the intersection area from the bottom, creating a "dead zone"
+        // Format: "top right bottom left" - we only want to shrink from bottom
+        rootMargin: '0px 0px 100% 0px',
+        root: desktopScrollContainerRef.current, // Use the desktop scroll container as root
+      });
+    }
+
+    // Observe all current education elements
+    educationRefs.current.forEach((element) => {
+      if (element && observerRef.current) {
+        observerRef.current.observe(element);
+      }
+    });
+
+    // Observe all current certificate elements
+    certificateRefs.current.forEach((element) => {
+      if (element && observerRef.current) {
+        observerRef.current.observe(element);
+      }
+    });
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+    };
+  }, [isDesktop, educationItems.length, certificateItems.length]);
+
+  // Optimized ref callback for education items
+  const setEducationRef = useCallback(
+    (id: string | number) => (el: HTMLDivElement | null) => {
+      if (el) {
+        educationRefs.current.set(id, el);
+        // Observe immediately if desktop and observer exists
+        if (isDesktop && observerRef.current) {
+          observerRef.current.observe(el);
+        }
+      } else {
+        // Clean up when element is removed
+        const existingElement = educationRefs.current.get(id);
+        if (existingElement && observerRef.current) {
+          observerRef.current.unobserve(existingElement);
+        }
+        educationRefs.current.delete(id);
+      }
+    },
+    [isDesktop]
+  );
+
+  // Optimized ref callback for certificate items
+  const setCertificateRef = useCallback(
+    (id: string | number) => (el: HTMLDivElement | null) => {
+      if (el) {
+        certificateRefs.current.set(id, el);
+        // Observe immediately if desktop and observer exists
+        if (isDesktop && observerRef.current) {
+          observerRef.current.observe(el);
+        }
+      } else {
+        // Clean up when element is removed
+        const existingElement = certificateRefs.current.get(id);
+        if (existingElement && observerRef.current) {
+          observerRef.current.unobserve(existingElement);
+        }
+        certificateRefs.current.delete(id);
+      }
+    },
+    [isDesktop]
+  );
+
+  const clearHoverTimeout = useCallback(() => {
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
     }
-  };
+  }, []);
 
-  const handleEducationHover = (education: EducationComponentProps) => {
-    clearHoverTimeout();
-    setDisplayText(education.nameShort || education.name);
-  };
+  const handleEducationHover = useCallback(
+    (education: EducationComponentProps) => {
+      clearHoverTimeout();
+      setDisplayText(education.nameShort || education.name);
+    },
+    [clearHoverTimeout]
+  );
 
-  const handleCertificateHover = (certificate: CertificateComponentProps) => {
-    clearHoverTimeout();
-    setDisplayText(certificate.provider || certificate.name);
-  };
+  const handleCertificateHover = useCallback(
+    (certificate: CertificateComponentProps) => {
+      clearHoverTimeout();
+      setDisplayText(certificate.provider || certificate.name);
+    },
+    [clearHoverTimeout]
+  );
 
-  const handleHoverLeave = () => {
+  const handleHoverLeave = useCallback(() => {
     clearHoverTimeout();
 
     hoverTimeoutRef.current = window.setTimeout(() => {
@@ -82,31 +315,43 @@ function EducationPageContent() {
       }
       hoverTimeoutRef.current = null;
     }, 100);
-  };
+  }, [
+    selectedEducationId,
+    selectedCertificateId,
+    educationItems,
+    certificateItems,
+    clearHoverTimeout,
+  ]);
 
-  const handleEducationClick = (education: EducationComponentProps) => {
-    if (selectedEducationId === education.id) {
-      setSelectedEducationId(null);
-      setSelectedCertificateId(null);
-      setDisplayText('Education');
-    } else {
-      setSelectedEducationId(education.id);
-      setSelectedCertificateId(null);
-      setDisplayText(education.nameShort || education.name);
-    }
-  };
+  const handleEducationClick = useCallback(
+    (education: EducationComponentProps) => {
+      if (selectedEducationId === education.id) {
+        setSelectedEducationId(null);
+        setSelectedCertificateId(null);
+        setDisplayText('Education');
+      } else {
+        setSelectedEducationId(education.id);
+        setSelectedCertificateId(null);
+        setDisplayText(education.nameShort || education.name);
+      }
+    },
+    [selectedEducationId]
+  );
 
-  const handleCertificateClick = (certificate: CertificateComponentProps) => {
-    if (selectedCertificateId === certificate.id) {
-      setSelectedCertificateId(null);
-      setSelectedEducationId(null);
-      setDisplayText('Education');
-    } else {
-      setSelectedCertificateId(certificate.id);
-      setSelectedEducationId(null);
-      setDisplayText(certificate.provider || certificate.name);
-    }
-  };
+  const handleCertificateClick = useCallback(
+    (certificate: CertificateComponentProps) => {
+      if (selectedCertificateId === certificate.id) {
+        setSelectedCertificateId(null);
+        setSelectedEducationId(null);
+        setDisplayText('Education');
+      } else {
+        setSelectedCertificateId(certificate.id);
+        setSelectedEducationId(null);
+        setDisplayText(certificate.provider || certificate.name);
+      }
+    },
+    [selectedCertificateId]
+  );
 
   return (
     <>
@@ -162,14 +407,23 @@ function EducationPageContent() {
           </div>
 
           {/* Desktop Layout */}
-          <div className="hidden md:flex h-full overflow-y-auto px-20 py-4 scrollbar-black flex-col gap-16 ">
+          <div
+            ref={desktopScrollContainerRef} // Add ref to desktop scroll container
+            className="hidden md:flex h-full overflow-y-auto px-20 pt-12 pb-4 scrollbar-black flex-col gap-12 "
+          >
             {/* Education Items */}
             {educationItems.map((education) => {
               const { id, ...educationProps } = education;
+              const isHidden = hiddenEducationIds.has(id);
+
               return (
                 <div
                   key={id}
-                  className="transition-all duration-500 ease-out will-change-transform"
+                  ref={setEducationRef(id)}
+                  data-education-id={id}
+                  className={`transition-all relative duration-300 ease ${
+                    isHidden ? '-left-4 opacity-70' : 'left-0 opacity-100'
+                  }`}
                   onMouseEnter={() => handleEducationHover(education)}
                   onMouseLeave={handleHoverLeave}
                 >
@@ -184,6 +438,8 @@ function EducationPageContent() {
                 onHover={handleCertificateHover}
                 onHoverLeave={handleHoverLeave}
                 onClick={handleCertificateClick}
+                hiddenCertificateIds={hiddenCertificateIds}
+                setCertificateRef={setCertificateRef}
               />
             )}
           </div>

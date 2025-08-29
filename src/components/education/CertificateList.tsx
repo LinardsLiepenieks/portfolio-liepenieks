@@ -6,6 +6,10 @@ interface CertificateListProps {
   onHover: (certificate: CertificateComponentProps) => void;
   onHoverLeave: () => void;
   onClick: (certificate: CertificateComponentProps) => void;
+  hiddenCertificateIds: Set<string | number>;
+  setCertificateRef: (
+    id: string | number
+  ) => (el: HTMLDivElement | null) => void;
 }
 
 const CertificateList = ({
@@ -13,36 +17,40 @@ const CertificateList = ({
   onHover,
   onHoverLeave,
   onClick,
+  hiddenCertificateIds,
+  setCertificateRef,
 }: CertificateListProps) => {
   return (
-    <div className="flex flex-col items-start ">
-      <h3
-        className="font-metropolis text-pf-2xl font-medium mb-2"
-        id="certificates-heading"
-      >
+    <>
+      <h3 className="font-metropolis text-pf-lg font-medium mb-4">
         Certificates:
       </h3>
-      <div
-        role="list"
-        aria-labelledby="certificates-heading"
-        className="w-full"
-      >
-        {certificates.map((certificate) => (
-          <div
-            key={certificate.id}
-            role="listitem"
-            className="transition-all duration-500 ease-out will-change-transform rounded-md"
-            onMouseEnter={() => onHover(certificate)}
-            onMouseLeave={onHoverLeave}
-          >
-            <CertificateItem
-              {...certificate}
-              onClick={() => onClick(certificate)}
-            />
-          </div>
-        ))}
+      <div className="space-y-4">
+        {certificates.map((certificate) => {
+          const isHidden = hiddenCertificateIds.has(certificate.id);
+
+          return (
+            <div
+              key={certificate.id}
+              ref={setCertificateRef(certificate.id)}
+              data-certificate-id={certificate.id}
+              className={`transition-transform duration-300 ease-out ${
+                isHidden
+                  ? '-translate-x-4 opacity-70'
+                  : 'translate-x-0 opacity-100'
+              }`}
+              onMouseEnter={() => onHover(certificate)}
+              onMouseLeave={onHoverLeave}
+            >
+              <CertificateItem
+                {...certificate}
+                onClick={() => onClick(certificate)}
+              />
+            </div>
+          );
+        })}
       </div>
-    </div>
+    </>
   );
 };
 
