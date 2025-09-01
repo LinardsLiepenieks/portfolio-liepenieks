@@ -144,14 +144,10 @@ function EducationPageContent() {
                   // Item is no longer intersecting (hidden from top due to negative rootMargin)
                   newSet.add(id);
                   hasChanges = true;
-                  console.log(
-                    `Education item ${id} is now hidden from the top`
-                  );
                 } else if (isVisible && wasHidden) {
                   // Item is intersecting again (visible)
                   newSet.delete(id);
                   hasChanges = true;
-                  console.log(`Education item ${id} is now visible again`);
                 }
               });
 
@@ -374,8 +370,8 @@ function EducationPageContent() {
           <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-neutral-900 to-transparent z-10 pointer-events-none" />
 
           {/* Mobile Layout */}
-          <div className="md:hidden h-full overflow-y-auto mx-4 sm:mx-8 pb-4 pt-4 scrollbar-dark">
-            <div className="space-y-4 mb-8">
+          <div className="md:hidden h-full overflow-y-auto mx-4 sm:mx-8 pb-4 pt-8 scrollbar-dark">
+            <div className="space-y-3 mb-4">
               {educationItems.map(({ id, ...educationProps }) => (
                 <div
                   key={id}
@@ -389,7 +385,7 @@ function EducationPageContent() {
             </div>
             {certificateItems.length > 0 && (
               <>
-                <h3 className="font-metropolis text-pf-lg font-medium mb-4">
+                <h3 className="font-metropolis text-pf-lg font-semibold text-neutral-100 mb-2">
                   Certificates:
                 </h3>
                 <div className="space-y-4">
@@ -409,7 +405,7 @@ function EducationPageContent() {
           {/* Desktop Layout */}
           <div
             ref={desktopScrollContainerRef} // Add ref to desktop scroll container
-            className="hidden md:flex h-full overflow-y-auto px-20 pt-12 pb-4 scrollbar-black flex-col gap-12 "
+            className="hidden md:flex h-full overflow-y-auto px-20 pt-12 xl:pt-4 pb-4 scrollbar-black flex-col gap-8 "
           >
             {/* Education Items */}
             {educationItems.map((education) => {
@@ -421,8 +417,8 @@ function EducationPageContent() {
                   key={id}
                   ref={setEducationRef(id)}
                   data-education-id={id}
-                  className={`transition-all relative duration-300 ease ${
-                    isHidden ? '-left-4 opacity-70' : 'left-0 opacity-100'
+                  className={`transition-all relative duration-300 ease-in-out ${
+                    isHidden ? '-left-8 opacity-60' : 'left-0 opacity-100'
                   }`}
                   onMouseEnter={() => handleEducationHover(education)}
                   onMouseLeave={handleHoverLeave}
@@ -433,14 +429,16 @@ function EducationPageContent() {
             })}
             {/* Certificate Items */}
             {certificateItems.length > 0 && (
-              <CertificateList
-                certificates={certificateItems}
-                onHover={handleCertificateHover}
-                onHoverLeave={handleHoverLeave}
-                onClick={handleCertificateClick}
-                hiddenCertificateIds={hiddenCertificateIds}
-                setCertificateRef={setCertificateRef}
-              />
+              <div className="flex flex-col ">
+                <CertificateList
+                  certificates={certificateItems}
+                  onHover={handleCertificateHover}
+                  onHoverLeave={handleHoverLeave}
+                  onClick={handleCertificateClick}
+                  hiddenCertificateIds={hiddenCertificateIds}
+                  setCertificateRef={setCertificateRef}
+                />
+              </div>
             )}
           </div>
         </div>

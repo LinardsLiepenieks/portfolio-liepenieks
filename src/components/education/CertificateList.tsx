@@ -22,10 +22,10 @@ const CertificateList = ({
 }: CertificateListProps) => {
   return (
     <>
-      <h3 className="font-metropolis text-pf-lg font-medium mb-4">
+      <h3 className="font-metropolis text-pf-xl lg:text-pf-2xl font-medium mb-4 lg:mb-2">
         Certificates:
       </h3>
-      <div className="space-y-4">
+      <div className="flex flex-col lg:gap-2 items-start">
         {certificates.map((certificate) => {
           const isHidden = hiddenCertificateIds.has(certificate.id);
 
@@ -34,10 +34,8 @@ const CertificateList = ({
               key={certificate.id}
               ref={setCertificateRef(certificate.id)}
               data-certificate-id={certificate.id}
-              className={`transition-transform duration-300 ease-out ${
-                isHidden
-                  ? '-translate-x-4 opacity-70'
-                  : 'translate-x-0 opacity-100'
+              className={`transition-transform duration-300 ease-in-out inline  ${
+                isHidden ? '-left-8 opacity-60' : 'left-0 opacity-100'
               }`}
               onMouseEnter={() => onHover(certificate)}
               onMouseLeave={onHoverLeave}

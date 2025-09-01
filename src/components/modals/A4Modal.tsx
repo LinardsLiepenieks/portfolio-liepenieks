@@ -3,10 +3,10 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { IoClose } from 'react-icons/io5';
+import { IoClose, IoChevronBack, IoChevronForward } from 'react-icons/io5';
 
 interface A4ModalProps {
-  image?: string | null;
+  image?: string | string[] | null;
   linkTitle?: string;
   children?: React.ReactNode;
   defaultButtonText?: string;
@@ -29,9 +29,19 @@ const A4Modal = React.memo(
   }: A4ModalProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    // Convert image prop to array for consistent handling
+    const images = useMemo(() => {
+      if (!image) return [];
+      return Array.isArray(image) ? image : [image];
+    }, [image]);
+
+    const hasMultipleImages = images.length > 1;
 
     const openModal = useCallback(() => {
       setIsOpen(true);
+      setCurrentImageIndex(0); // Reset to first image when opening
       onModalOpen?.();
     }, [onModalOpen]);
 
@@ -39,6 +49,22 @@ const A4Modal = React.memo(
       setIsOpen(false);
       onModalClose?.();
     }, [onModalClose]);
+
+    const goToPreviousImage = useCallback(() => {
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? images.length - 1 : prev - 1
+      );
+    }, [images.length]);
+
+    const goToNextImage = useCallback(() => {
+      setCurrentImageIndex((prev) =>
+        prev === images.length - 1 ? 0 : prev + 1
+      );
+    }, [images.length]);
+
+    const goToImage = useCallback((index: number) => {
+      setCurrentImageIndex(index);
+    }, []);
 
     useEffect(() => {
       setMounted(true);
@@ -72,9 +98,13 @@ const A4Modal = React.memo(
       (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
           closeModal();
+        } else if (e.key === 'ArrowLeft' && hasMultipleImages) {
+          goToPreviousImage();
+        } else if (e.key === 'ArrowRight' && hasMultipleImages) {
+          goToNextImage();
         }
       },
-      [closeModal]
+      [closeModal, goToPreviousImage, goToNextImage, hasMultipleImages]
     );
 
     useEffect(() => {
@@ -182,9 +212,14 @@ const A4Modal = React.memo(
             <div className="flex justify-between items-center px-4 py-2 lg:p-4 border-b border-neutral-700 flex-shrink-0">
               <h2
                 id="modal-title"
-                className="text-white  text-sm md:text-lg font-medium tracking-wide font-metropolis"
+                className="text-white text-sm md:text-lg font-medium tracking-wide font-metropolis"
               >
                 {linkTitle}
+                {hasMultipleImages && (
+                  <span className="text-neutral-400 text-xs md:text-sm ml-2">
+                    ({currentImageIndex + 1} of {images.length})
+                  </span>
+                )}
               </h2>
               <button
                 onClick={closeModal}
@@ -197,11 +232,11 @@ const A4Modal = React.memo(
 
             {/* Content area */}
             <div className="flex-1 overflow-auto bg-neutral-900 min-h-0 scrollbar-dark">
-              {image ? (
+              {images.length > 0 ? (
                 <div className="w-full min-h-full flex justify-center">
                   <Image
-                    src={image}
-                    alt={linkTitle}
+                    src={images[currentImageIndex]}
+                    alt={`${linkTitle} - Page ${currentImageIndex + 1}`}
                     fill
                     className="!relative h-full w-auto max-w-full object-contain object-top"
                     unoptimized
@@ -217,10 +252,60 @@ const A4Modal = React.memo(
                 </div>
               )}
             </div>
+
+            {/* Navigation controls for multiple images */}
+            {hasMultipleImages && (
+              <div className="flex justify-center items-center gap-4 p-4 border-t border-neutral-700 bg-neutral-800/95">
+                {/* Previous button */}
+                <button
+                  onClick={goToPreviousImage}
+                  className="p-2 rounded-full text-neutral-300 hover:text-white hover:bg-neutral-700 hover:cursor-pointer transition-colors duration-200"
+                  aria-label="Previous image"
+                >
+                  <IoChevronBack size={20} />
+                </button>
+
+                {/* Dots navigation */}
+                <div className="flex justify-center items-center gap-2">
+                  {images.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => goToImage(index)}
+                      className={`h-1 transition-all duration-300 ease-out rounded-full ${
+                        currentImageIndex === index
+                          ? 'w-8 bg-white'
+                          : 'w-4 bg-white/40 hover:bg-white/60'
+                      }`}
+                      aria-label={`Go to image ${index + 1}`}
+                    />
+                  ))}
+                </div>
+
+                {/* Next button */}
+                <button
+                  onClick={goToNextImage}
+                  className="p-2 rounded-full text-neutral-300 hover:text-white hover:bg-neutral-700 hover:cursor-pointer transition-colors duration-200"
+                  aria-label="Next image"
+                >
+                  <IoChevronForward size={20} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ),
-      [isOpen, handleOverlayClick, linkTitle, closeModal, image]
+      [
+        isOpen,
+        handleOverlayClick,
+        linkTitle,
+        closeModal,
+        images,
+        currentImageIndex,
+        hasMultipleImages,
+        goToPreviousImage,
+        goToNextImage,
+        goToImage,
+      ]
     );
 
     // Only render if mounted (client-side)

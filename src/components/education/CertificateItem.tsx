@@ -12,7 +12,7 @@ const CertificateItem = ({
   provider,
   year,
   logoUrl,
-  certificateUrl,
+  certificateUrls,
   className = '',
   onClick,
   onSelect,
@@ -40,10 +40,10 @@ const CertificateItem = ({
   const modalProps = useMemo(
     () => ({
       propagationAllowed: false,
-      image: certificateUrl,
+      image: certificateUrls?.map((cert) => cert.url).filter(Boolean) || [],
       linkTitle: `${name} Certificate`,
     }),
-    [certificateUrl, name]
+    [certificateUrls, name]
   );
 
   // Memoize the certificate content to prevent re-renders
@@ -51,7 +51,7 @@ const CertificateItem = ({
     () => (
       <div
         ref={itemRef}
-        className={`group  font-metropolis  my-6 cursor-pointer inline-block focus:outline-none ${className}`}
+        className={`group  font-metropolis  my-4 cursor-pointer inline-block focus:outline-none ${className}`}
         onClick={handleClick}
         role="button"
         tabIndex={0}
@@ -236,10 +236,10 @@ const CertificateItem = ({
           </div>
 
           {/* Content Container */}
-          <div className="flex-grow min-w-0 flex flex-col justify-center gap-1">
+          <div className="flex-grow min-w-0 flex flex-col justify-center gap-1 lg:gap-0">
             {/* Certificate Name */}
             <h3
-              className={`text-pf-lg italic font-medium transition-colors duration-300 ease-out text-neutral-200 ${
+              className={`text-pf-lg xl:text-pf-xl  italic font-medium  transition-colors duration-300 ease-out text-neutral-200  ${
                 isAnimatingBack
                   ? 'animate-color-back'
                   : 'group-hover:text-neutral-100'
@@ -249,9 +249,9 @@ const CertificateItem = ({
             </h3>
 
             {/* Provider and Year Row */}
-            <div className="flex items-center gap-3 relative text-neutral-200">
+            <div className="flex items-center gap-2 relative text-neutral-200">
               <p
-                className={`text-pf-sm font-semibold transition-colors duration-300 ease-out  ${
+                className={`text-pf-sm font-semibold transition-colors duration-300 ease-out   xl:text-pf-base   ${
                   isAnimatingBack
                     ? 'animate-color-back'
                     : 'group-hover:text-neutral-100'
@@ -260,7 +260,7 @@ const CertificateItem = ({
                 {provider}
               </p>
               <p
-                className={`text-pf-sm font-semibold transition-colors duration-300 ease-out  ${
+                className={`text-pf-sm font-semibold transition-colors duration-300 ease-out    xl:text-pf-base  ${
                   isAnimatingBack
                     ? 'animate-color-back'
                     : 'group-hover:text-neutral-100'
@@ -280,7 +280,7 @@ const CertificateItem = ({
       provider,
       year,
       logoUrl,
-      certificateUrl,
+      certificateUrls,
       providerInitial,
       isAnimatingBack,
     ]

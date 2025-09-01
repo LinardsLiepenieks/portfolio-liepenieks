@@ -1,30 +1,29 @@
 export interface CertificateItemType {
-  /** Unique identifier */
   id: string | number;
-
-  /** Certificate or course name */
   name: string;
-
-  /** Organization or platform that issued the certificate */
   provider: string;
-
-  /** Year the certificate was obtained */
   year: number;
-
-  /** Optional logo URL of the provider */
   logo_url: string;
-
-  /** URL to the certificate document/verification */
-  certificate_url: string;
+  // Array of multiple URLs for this certificate
+  certificate_urls: Array<{
+    id: number;
+    certificate_id: number;
+    url: string;
+  }>;
 }
-
 export interface CertificateComponentProps {
   id: string | number;
   name: string;
   provider: string;
   year: number;
   logoUrl?: string;
-  certificateUrl?: string;
+
+  // Array of all certificate images/URLs for this certificate
+  certificateUrls?: Array<{
+    id: number;
+    certificate_id: number;
+    url: string;
+  }>;
 
   // Optional callbacks for UI interactions
   className?: string;

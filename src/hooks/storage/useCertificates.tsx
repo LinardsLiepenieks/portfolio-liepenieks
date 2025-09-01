@@ -13,7 +13,6 @@ export function useCertificates(
     error,
   } = useDatabase<CertificateItemType>('/api/certificates');
 
-  // Map raw data to component props format
   const certificateProps =
     certificates?.map((certificate) => ({
       id: certificate.id,
@@ -21,7 +20,7 @@ export function useCertificates(
       provider: certificate.provider,
       year: certificate.year,
       logoUrl: certificate.logo_url,
-      certificateUrl: certificate.certificate_url,
+      certificateUrls: certificate.certificate_urls || [],
       onSelect: () => onSelect?.(certificate.name),
       onDeselect: onDeselect,
     })) || [];
