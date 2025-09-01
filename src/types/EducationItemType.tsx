@@ -1,34 +1,21 @@
 // types/EducationItemType.ts
 export interface EducationItemType {
-  /** Unique identifier */
   id: string | number;
-
-  /** Institution name */
   name: string;
-
-  /** Short version of institution name */
   name_short: string;
-
-  /** Degree/qualification obtained */
   degree: string;
-
-  /** Start year of education */
   start_year: number;
-
-  /** End year of education */
-  end_year: number;
-
-  /** Field of study/specialty */
-  specialty: string;
-
-  /** Brief description of the education */
-  description_short: string;
-
-  /** Optional diploma/certificate URL */
-  diploma_url?: string;
-
-  /** Optional institution logo URL */
+  end_year?: number;
+  specialty?: string;
+  description_short?: string;
+  attachment_name?: string;
   logo_url?: string;
+  education_urls: Array<{
+    id: number;
+    education_id: number;
+    url: string;
+    attachment_name: string;
+  }>;
 }
 
 export interface EducationComponentProps {
@@ -36,14 +23,18 @@ export interface EducationComponentProps {
   name: string;
   nameShort: string;
   degree: string;
-  specialty: string;
-  period: string; // formatted string like "2020-2024"
+  specialty?: string;
+  period: string; // e.g. "2020-2024"
   startYear: number;
-  descriptionShort: string;
+  descriptionShort?: string;
   logoUrl?: string;
-  diplomaUrl?: string;
-
-  // Optional callbacks for UI interactions
+  educationUrls: Array<{
+    id: number;
+    education_id: number;
+    url: string;
+    attachment_name: string;
+  }>;
+  attachmentName?: string;
   className?: string;
   onClick?: () => void;
   onSelect?: () => void;

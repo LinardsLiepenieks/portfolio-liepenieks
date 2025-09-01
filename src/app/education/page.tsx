@@ -420,7 +420,10 @@ function EducationPageContent() {
                   className={`transition-all relative duration-300 ease-in-out ${
                     isHidden ? '-left-8 opacity-60' : 'left-0 opacity-100'
                   }`}
-                  onMouseEnter={() => handleEducationHover(education)}
+                  onMouseEnter={() => {
+                    handleEducationHover(education);
+                    console.log(education);
+                  }}
                   onMouseLeave={handleHoverLeave}
                 >
                   <EducationItem id={id} {...educationProps} />

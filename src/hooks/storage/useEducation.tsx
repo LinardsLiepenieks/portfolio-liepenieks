@@ -13,7 +13,6 @@ export function useEducation(
     error,
   } = useDatabase<EducationItemType>('/api/education');
 
-  // Map raw data to component props format
   const educationProps =
     education?.map((edu) => ({
       id: edu.id,
@@ -25,7 +24,8 @@ export function useEducation(
       startYear: edu.start_year,
       descriptionShort: edu.description_short,
       logoUrl: edu.logo_url,
-      diplomaUrl: edu.diploma_url,
+      educationUrls: edu.education_urls || [],
+      attachmentName: edu.attachment_name,
       onSelect: () => onSelect?.(edu.name_short || edu.name),
       onDeselect: onDeselect,
     })) || [];

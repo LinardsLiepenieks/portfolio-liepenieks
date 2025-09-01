@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import A4Modal from '../modals/A4Modal';
 import { EducationComponentProps } from '@/types/EducationItemType';
 
 export default function EducationMobileItem({
@@ -11,10 +12,10 @@ export default function EducationMobileItem({
   degree,
   specialty,
   period,
-  startYear,
+  attachmentName,
   descriptionShort,
   logoUrl,
-  diplomaUrl,
+  educationUrls, // Changed from diplomaUrl to match desktop version
   className = '',
   onClick,
   onSelect,
@@ -36,6 +37,10 @@ export default function EducationMobileItem({
     // Call the general onClick handler
     onClick?.();
   };
+
+  // Extract URLs and attachment names for A4Modal (same as desktop version)
+  const documentUrls =
+    educationUrls?.map((doc) => doc.url).filter(Boolean) || [];
 
   return (
     <div
@@ -175,17 +180,15 @@ export default function EducationMobileItem({
           </p>
         </div>
 
-        {/* Optional action button/link */}
-        {diplomaUrl && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              // Handle diploma action
-            }}
-            className="border border-neutral-500 px-4 py-2 border-solid text-white hover:cursor-pointer text-sm italic font-semibold !tracking-wide rounded transition-colors relative group after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:ease-out hover:after:w-full"
-          >
-            View Diploma
-          </button>
+        {/* A4Modal Button - Mobile version */}
+        {documentUrls.length > 0 && (
+          <A4Modal
+            image={documentUrls}
+            linkTitle={`${name} ${attachmentName}`}
+            propagationAllowed={false}
+            defaultButtonText={`View ${attachmentName}`}
+            defaultButtonClassName="border border-neutral-500 px-4 py-2 border-solid text-neutral-200 hover:text-white hover:border-neutral-400 hover:cursor-pointer text-sm italic font-semibold tracking-wide rounded transition-all duration-300 relative group/btn"
+          />
         )}
       </div>
     </div>

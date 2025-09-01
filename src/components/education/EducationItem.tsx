@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import A4Modal from '../modals/A4Modal';
 import { EducationComponentProps } from '@/types/EducationItemType';
 
 export default function EducationItem({
@@ -13,7 +14,8 @@ export default function EducationItem({
   period,
   descriptionShort,
   logoUrl,
-  diplomaUrl,
+  attachmentName,
+  educationUrls,
   className,
   onClick,
   onSelect,
@@ -35,6 +37,10 @@ export default function EducationItem({
     // Call the general onClick handler
     onClick?.();
   };
+
+  // Extract URLs and attachment names for A4Modal
+  const documentUrls =
+    educationUrls?.map((doc) => doc.url).filter(Boolean) || [];
 
   return (
     <div
@@ -115,19 +121,23 @@ export default function EducationItem({
 
             {/* Description - always visible on lg+ screens, expandable below lg */}
             {descriptionShort && (
-              <div className="px-2 -mt-1.5 lg:block hidden">
+              <div className="px-2 -mt-1.5 lg:block hidden ">
                 <p className="text-pf-sm text-neutral-300 group-hover:text-neutral-200 transition-colors duration-200 font-medium">
                   {descriptionShort}
                 </p>
               </div>
             )}
-          </div>
 
-          {/* Optional diploma link indicator */}
-          <div className="flex-shrink-0 flex items-center">
-            {diplomaUrl && (
-              <div className="w-6 h-6 rounded-full bg-neutral-700 group-hover:bg-neutral-600 transition-colors duration-200 flex items-center justify-center">
-                <span className="text-xs text-neutral-300">📜</span>
+            {/* A4Modal Button - Large screens only */}
+            {documentUrls.length > 0 && (
+              <div className="px-2 mt-1 hidden lg:block">
+                <A4Modal
+                  image={documentUrls}
+                  linkTitle={`${name} ${attachmentName}`}
+                  propagationAllowed={false}
+                  defaultButtonText={`View ${attachmentName}`}
+                  defaultButtonClassName="border border-neutral-500 px-3 py-1.5 border-solid text-neutral-200 hover:text-white hover:border-neutral-400 hover:cursor-pointer text-sm italic font-semibold tracking-wide rounded transition-all duration-300 relative group/btn"
+                />
               </div>
             )}
           </div>
@@ -194,18 +204,15 @@ export default function EducationItem({
             </div>
           )}
 
-          {/* Optional diploma action button */}
-          {diplomaUrl && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                // Handle diploma action - you can add your logic here
-                window.open(diplomaUrl, '_blank');
-              }}
-              className="border border-neutral-500 px-4 py-2 border-solid text-neutral-200 hover:text-white hover:border-neutral-400 hover:cursor-pointer text-sm italic font-semibold tracking-wide rounded transition-all duration-300 relative group/btn after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:ease-out hover:after:w-full"
-            >
-              View Diploma
-            </button>
+          {/* A4Modal Button - Mobile/Small screens */}
+          {documentUrls.length > 0 && (
+            <A4Modal
+              image={documentUrls}
+              linkTitle={`${name} ${attachmentName}`}
+              propagationAllowed={false}
+              defaultButtonText={`View ${attachmentName}`}
+              defaultButtonClassName="border border-neutral-500 px-4 py-2 border-solid text-neutral-200 hover:text-white hover:border-neutral-400 hover:cursor-pointer text-sm italic font-semibold tracking-wide rounded transition-all duration-300 relative group/btn"
+            />
           )}
         </div>
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Image from 'next/image';
 import A4Modal from '../modals/A4Modal';
 import { CertificateComponentProps } from '@/types/CertificateItemType';
@@ -12,7 +12,7 @@ const CertificateMobileItem = ({
   provider,
   year,
   logoUrl,
-  certificateUrl,
+  certificateUrls, // Changed from certificateUrl to certificateUrls to match desktop
   className = '',
   onClick,
   onSelect,
@@ -24,8 +24,26 @@ const CertificateMobileItem = ({
     onSelect?.();
   };
 
-  return (
-    <A4Modal image={certificateUrl} linkTitle={`${name} Certificate`}>
+  // Extract URLs from certificateUrls array (same pattern as desktop)
+  const documentUrls = useMemo(
+    () => certificateUrls?.map((cert) => cert.url).filter(Boolean) || [],
+    [certificateUrls]
+  );
+
+  // Memoize the modal props to prevent re-creation (same pattern as desktop)
+  const modalProps = useMemo(
+    () => ({
+      propagationAllowed: false,
+      image: documentUrls,
+      linkTitle: `${name} Certificate`,
+    }),
+    [documentUrls, name]
+  );
+
+  const providerInitial = provider?.charAt(0)?.toUpperCase() || '?';
+
+  const certificateContent = useMemo(
+    () => (
       <div
         className={`
           font-metropolis
@@ -48,9 +66,9 @@ const CertificateMobileItem = ({
         onClick={handleClick}
       >
         {/* Main Content Row */}
-        <div className="flex items-center gap-3 w-full justify-start ">
+        <div className="flex items-center gap-3 w-full justify-start">
           {/* Logo/Avatar */}
-          <div className="relative w-20 h-20 flex-shrink-0 p-1 ">
+          <div className="relative w-20 h-20 flex-shrink-0 p-1">
             <div
               className={`
                 w-full h-full
@@ -79,7 +97,7 @@ const CertificateMobileItem = ({
                 />
               ) : (
                 <span className="text-white font-bold text-base">
-                  {provider.charAt(0).toUpperCase()}
+                  {providerInitial}
                 </span>
               )}
             </div>
@@ -90,12 +108,17 @@ const CertificateMobileItem = ({
             <div className="text-base text-neutral-300 font-semibold">
               {name}
             </div>
-            <div className="text-sm font-medium text-neutral-400">{year}</div>
+            <div className="text-sm font-medium text-neutral-400">
+              {provider} • {year}
+            </div>
           </div>
         </div>
       </div>
-    </A4Modal>
+    ),
+    [className, handleClick, name, provider, year, logoUrl, providerInitial]
   );
+
+  return <A4Modal {...modalProps}>{certificateContent}</A4Modal>;
 };
 
 export default CertificateMobileItem;
