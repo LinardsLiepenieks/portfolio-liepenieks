@@ -49,8 +49,8 @@ const Navbar: React.FC<NavbarProps> = ({ routes = [], onNavigate }) => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-sm shadow-sm">
-      <div className="flex sm:justify-end items-center px-9 py-4 justify-center">
+    <nav className="fixed top-0  left-0 right-0 z-50 bg-neutral-900/50 backdrop-blur-sm shadow-sm">
+      <div className="flex sm:justify-end items-center px-9 py-6 justify-center pt-7">
         <div className="flex space-x-6">
           {navItems.map((item, index) => (
             <NavbarLink

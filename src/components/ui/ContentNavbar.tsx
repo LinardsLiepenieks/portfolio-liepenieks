@@ -92,8 +92,8 @@ export function ContentNavbar({
     <>
       <nav
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-sm shadow-sm',
-          'flex items-center justify-between px-9 py-4 pt-4.5',
+          'fixed top-0 left-0 right-0 z-50 bg-neutral-900/50 backdrop-blur-sm shadow-sm',
+          'flex items-center justify-between px-9 py-6 pt-7 pt-4.5',
           className
         )}
         role="navigation"
@@ -108,7 +108,7 @@ export function ContentNavbar({
             }}
             size="sm"
             onClick={handleBackClick}
-            className="bg-transparent hover:bg-neutral-800"
+            className="bg-transparent hover:bg-neutral-800 p-4"
           />
         )}
 
@@ -131,7 +131,7 @@ export function ContentNavbar({
         <button
           onClick={toggleMenu}
           className={cn(
-            'flex items-center justify-center w-10 h-10 rounded-md md:hidden',
+            'flex items-center justify-center w-10 h-10  md:hidden rounded-3xl',
             'text-white transition-colors duration-200 hover:bg-white/10',
             'focus:outline-none'
           )}
@@ -139,27 +139,27 @@ export function ContentNavbar({
           aria-expanded={isMenuOpen}
           aria-controls="mobile-menu"
         >
-          <div className="relative w-6 h-6">
+          <div className="relative w-6 h-6 hover:cursor-pointer  flex items-center justify-center p-4 ">
             <IoMenu
               className={cn(
-                'absolute inset-0 w-6 h-6 transition-all duration-300',
+                'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 transition-all duration-300',
                 isMenuOpen ? 'opacity-0 rotate-90' : 'opacity-100 rotate-0'
               )}
             />
             <IoClose
               className={cn(
-                'absolute inset-0 w-6 h-6 transition-all duration-300',
+                'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 transition-all duration-300',
                 isMenuOpen ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'
               )}
             />
-          </div>
+          </div>{' '}
         </button>
       </nav>
 
       {/* Mobile Menu Overlay - only on lg and below */}
       <div
         className={cn(
-          'fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 lg:hidden',
+          'fixed inset-0 z-40 bg-neutral-900/50 transition-opacity duration-300 lg:hidden',
           isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         )}
         onClick={() => setIsMenuOpen(false)}
@@ -170,7 +170,7 @@ export function ContentNavbar({
       <div
         id="mobile-menu"
         className={cn(
-          'fixed top-16 left-0 right-0 z-40 bg-neutral-900 border-b border-neutral-800 lg:hidden',
+          'fixed top-16 left-0 right-0 z-40 bg-neutral-900 border-b border-neutral-700 lg:hidden',
           'transform transition-all duration-300 ease-out shadow-xl',
           isMenuOpen
             ? 'translate-y-0 opacity-100'
@@ -181,10 +181,10 @@ export function ContentNavbar({
         aria-labelledby="menu-button"
       >
         <nav className="py-2">
-          <ul className="divide-y divide-neutral-800" role="none">
+          <ul className="flex flex-col items-start" role="none">
             {navigationItems.map((item, index) => (
               <li key={item.href} role="none">
-                <div className="px-2 py-2">
+                <div className="px-4 ">
                   <NavbarLink
                     href={item.href}
                     label={item.name}

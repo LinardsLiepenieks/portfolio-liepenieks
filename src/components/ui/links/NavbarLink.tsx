@@ -22,7 +22,7 @@ const NavbarLink: React.FC<NavbarLinkProps> = ({ href, label, onClick }) => {
       href={href}
       onClick={handleClick}
       className={`
-        relative px-4  lg:px-3 lg:py-1.5 lg:mb-1.5 text-white font-metropolis font-semibold text-pf-sm lg:text-pf-sm
+        relative px-4  lg:px-3  lg:mb-1.5 text-white font-metropolis font-semibold text-pf-sm lg:text-pf-sm
         transition-all duration-200 ease-in-out
         hover:text-white/90 cursor-pointer group
       `}
