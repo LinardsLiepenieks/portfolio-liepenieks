@@ -52,7 +52,6 @@ function ExperiencePageContent() {
           title="About:"
           displayText={selectedExperienceTitle}
           displayTextClassName="text-neutral-300"
-          lineWidth="w-64 md:w-70 lg:w-90"
         />
 
         <div className="flex-1 min-h-0 flex flex-col">
