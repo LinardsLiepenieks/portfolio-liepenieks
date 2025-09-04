@@ -358,7 +358,6 @@ function EducationPageContent() {
           title="About:"
           displayText={displayText}
           displayTextClassName="text-neutral-300"
-          lineWidth="w-64 md:w-70 lg:w-90"
           removeSpeed={20}
           typeSpeed={30}
         />
