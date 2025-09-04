@@ -7,9 +7,10 @@ interface AboutTitleProps {
   titleClassName?: string;
   displayTextClassName?: string;
   lineClassName?: string;
-  lineWidth?: string;
+  minLineWidth?: string;
   typeSpeed?: number;
   removeSpeed?: number;
+  transitionDuration?: string;
 }
 
 const AboutTitle = ({
@@ -19,9 +20,10 @@ const AboutTitle = ({
   titleClassName = '',
   displayTextClassName = '',
   lineClassName = '',
-  lineWidth = 'w-64 md:w-80',
+  minLineWidth = 'min-w-40',
   typeSpeed = 30,
   removeSpeed = 20,
+  transitionDuration = 'duration-300',
 }: AboutTitleProps) => {
   const [currentText, setCurrentText] = useState('');
   const currentTextRef = useRef('');
@@ -65,24 +67,28 @@ const AboutTitle = ({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [displayText, typeSpeed, removeSpeed]); // Removed currentText from dependencies
+  }, [displayText, typeSpeed, removeSpeed]);
 
   return (
     <div className={`mt-16 mx-4 sm:mx-8 lg:mt-24 lg:mx-16 ${className}`}>
-      <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mb-8 xl:mt-4 xl:mx-12">
+      <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mb-8 xl:mt-4 xl:mx-12 ">
         <h2
           className={`text-pf-lg font-medium font-metropolis text-white lg:text-pf-2xl xl:text-pf-3xl ${titleClassName}`}
         >
           {title}
         </h2>
-        <div
-          className={`h-px bg-white ${lineWidth} relative mt-10 lg:-bottom-5 xl:-bottom-11 ${lineClassName}`}
-        >
-          <span
-            className={`absolute -bottom-2 left-0 text-white text-pf-xl font-metropolis font-semibold tracking-wide lg:text-pf-xl xl:text-pf-2xl ${displayTextClassName}`}
-          >
-            {currentText}
-          </span>
+        <div className="relative mt-3">
+          {/* Text container with pseudo-element line and smooth transitions */}
+          <div className={`relative min-w-80 transition-all duration-300 `}>
+            {/* Invisible text to set container width */}
+            <span
+              className={`whitespace-nowrap text-white text-pf-xl font-metropolis font-semibold tracking-wide lg:text-pf-xl xl:text-pf-2xl ${displayTextClassName} `}
+              aria-hidden="true"
+            >
+              {currentText || '\u00A0'}
+            </span>
+            <span className="bg-neutral-100 h-px absolute w-full left-0 bottom-1 transition-all"></span>
+          </div>
         </div>
       </div>
     </div>

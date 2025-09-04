@@ -124,6 +124,7 @@ const AboutSection = () => {
         displayText={displayText}
         removeSpeed={20}
         typeSpeed={30}
+        minLineWidth="min-w-40"
       />
 
       {/* Horizontal Scroll Gallery */}

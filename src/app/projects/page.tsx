@@ -137,7 +137,7 @@ function ProjectsPageContent() {
   };
 
   return (
-    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis pt-8 h-screen">
+    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis pt-8 h-screen ">
       <ContentNavbar />
 
       <div className="">
@@ -147,7 +147,6 @@ function ProjectsPageContent() {
           displayTextClassName="text-neutral-300"
           removeSpeed={20}
           typeSpeed={30}
-          lineWidth="w-64 md:w-70 lg:w-90"
         />
       </div>
 
@@ -196,28 +195,28 @@ function ProjectsPageContent() {
       </div>
 
       {/* Mobile/Tablet Gallery Layout - Only show below lg */}
-      <div className="md:hidden flex flex-col ">
+      <div className="md:hidden flex flex-col items-center  py-8">
         {/* Horizontal Scroll Gallery for All Projects */}
         <div
           ref={containerRef}
-          className="w-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden flex-1"
+          className="w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden "
         >
-          <div className="flex mt-14 md:mt-28 lg:mt-16 2xl:mt-24">
+          <div className="flex">
             {allProjects.map((project, index) => (
               <div
                 key={project.id}
                 ref={(el) => {
                   itemRefs.current[index] = el;
                 }}
-                className="w-full flex-shrink-0 flex flex-col justify-center items-center snap-center snap-always px-6 md:px-8"
+                className="min-w-full flex flex-col  "
               >
-                <div className="touch-none  flex justify-center flex-col items-center ">
+                <div className="touch-none flex justify-center flex-col items-center w-full px-4 ">
                   {/* Project Title - Only show on mobile above the image */}
-                  <div className="md:hidden mb-4 text-left  w-full">
-                    <h3 className="text-pf-xl font-medium text-white/90">
+                  <div className="md:hidden mb-4 text-left w-full  max-w-80">
+                    <h3 className="text-pf-base font-medium text-neutral-100/88">
                       {project.name}
                     </h3>
-                    <p className="text-pf-base text-neutral-100/60 -mt-2">
+                    <p className="text-pf-sm font-medium text-neutral-100/60 -mb-1">
                       {project.year}
                     </p>
                   </div>
@@ -243,7 +242,7 @@ function ProjectsPageContent() {
         </div>
 
         {/* Navigation controls - Like ExperienceGallery - Only on mobile/tablet */}
-        <div className="flex justify-center items-center gap-4 mt-8 pb-4">
+        <div className="flex justify-center items-center gap-4 py-4">
           {/* Prev button */}
           <button
             onClick={handlePreviousClick}

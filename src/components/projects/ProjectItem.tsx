@@ -19,7 +19,10 @@ export default function ProjectItem({
 }: ProjectItemProps) {
   return (
     <div
-      className="w-80 h-80 border-white border-4 relative group hover:cursor-pointer"
+      className="
+        w-full max-w-80 md:w-80 md:h-80 aspect-square
+        border-white border-4 relative group hover:cursor-pointer
+      "
       style={{ backgroundColor }}
       onClick={onClick}
     >
@@ -37,7 +40,7 @@ export default function ProjectItem({
       )}
 
       <div className="absolute top-0 w-full h-full opacity-0 group-hover:opacity-100 transition-all duration-350 ease-in-out bg-gray-400/0 backdrop-blur-xs flex flex-col items-center justify-center gap-4">
-        <h3 className="text-pf-lg scale-80 group-hover:scale-100 transition-all duration-350 ease-in-out text-neutral-200 group-hover:text-white font-medium italic">
+        <h3 className="px-2 text-center text-pf-lg scale-80 group-hover:scale-100 transition-all duration-350 ease-in-out text-neutral-200 group-hover:text-white font-medium italic">
           {title}
         </h3>
         <h4 className="text-pf-lg scale-80 group-hover:scale-100 transition-all duration-350 ease-in-out text-neutral-300 group-hover:text-neutral-100 font-semibold">
