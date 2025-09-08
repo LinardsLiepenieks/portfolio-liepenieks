@@ -47,7 +47,7 @@ const ExperienceItem = ({
 
         {/* Description */}
         <div className="flex-1 overflow-y-auto scrollbar-darker py-0 my-0">
-          <p className="text-pf-base text-medium text-gray-200 py-0 px-1">
+          <p className="text-pf-base text-medium text-gray-200 py-0 px-1 whitespace-pre-line">
             {description}
           </p>
         </div>

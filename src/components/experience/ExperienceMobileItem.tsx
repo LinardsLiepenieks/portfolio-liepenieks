@@ -157,7 +157,7 @@ const ExperienceMobileItem = ({
           }
         `}
       >
-        <div className="mb-3">{description}</div>
+        <div className="mb-3 whitespace-pre-line">{description}</div>
 
         {/* Recommendation Link - only show if URL exists */}
         {recommendationUrl && (
