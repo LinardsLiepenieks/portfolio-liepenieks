@@ -27,16 +27,8 @@ export default function ExperienceGallery({
     useHorizontalScrollContainer({
       totalItems: experienceItems.length,
       updateActiveItem: (index: number) => {
-        console.log('🔥 updateActiveItem called:', {
-          index,
-          title: experienceItems[index]?.title,
-          isInitialized: isInitializedRef.current,
-          currentItem,
-        });
-
         // Validate index
         if (index < 0 || index >= experienceItems.length) {
-          console.warn('❌ Invalid index:', index);
           return;
         }
 
@@ -51,21 +43,12 @@ export default function ExperienceGallery({
           isInitializedRef.current &&
           currentTitle !== lastSelectedTitleRef.current
         ) {
-          console.log(
-            '✅ Updating title from',
-            lastSelectedTitleRef.current,
-            'to',
-            currentTitle
-          );
           onSelectExperience(currentTitle);
           lastSelectedTitleRef.current = currentTitle;
         } else if (!isInitializedRef.current) {
-          console.log('🚀 Initializing with title:', currentTitle);
           onSelectExperience(currentTitle);
           lastSelectedTitleRef.current = currentTitle;
           isInitializedRef.current = true;
-        } else {
-          console.log('⏭️ Title unchanged, skipping');
         }
 
         // Animate line of the CURRENT item when it's scrolled into view from the right
@@ -96,10 +79,6 @@ export default function ExperienceGallery({
   useEffect(() => {
     if (experienceItems.length > 0 && !isInitializedRef.current) {
       const firstTitle = experienceItems[0].title;
-      console.log(
-        '🚀 Initial page load - setting first experience:',
-        firstTitle
-      );
       onSelectExperience(firstTitle);
       lastSelectedTitleRef.current = firstTitle;
       isInitializedRef.current = true;
@@ -146,7 +125,7 @@ export default function ExperienceGallery({
               ref={(el) => {
                 itemRefs.current[index] = el;
               }}
-              className="flex-shrink-0 w-[100vw] flex items-center justify-center h-full "
+              className="flex-shrink-0 w-[100vw] flex items-center justify-center h-full"
             >
               <div className="w-full justify-center flex h-full">
                 {/* Left line - hidden for first item */}
@@ -155,14 +134,12 @@ export default function ExperienceGallery({
                     isFirstItem(index) ? 'invisible' : ''
                   }`}
                 >
-                  <span className="h-px border-neutral-500 w-full border-dashed border"></span>
+                  <span className="h-px border-neutral-500 w-full border-dashed border anti-blur"></span>
                 </div>
 
                 <div
-                  className={`h-full transition-all duration-700 ease-out transform justify-center flex  items-center  ${
-                    isVisible
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-5'
+                  className={`anti-blur h-full transition-all duration-700 ease-out justify-center flex items-center ${
+                    isVisible ? 'opacity-100 ' : 'opacity-0 '
                   }`}
                 >
                   <ExperienceItem
@@ -186,17 +163,17 @@ export default function ExperienceGallery({
                 >
                   <div className="w-full flex items-center gap-1">
                     <span
-                      className={`h-px border-neutral-500 border-dashed border transition-all duration-600 delay-300 ease-out block ${
+                      className={`anti-blur h-px border-neutral-500 border-dashed border transition-all duration-[800ms] delay-300 ease-out block ${
                         shouldAnimateLine ? 'w-full' : 'w-0'
                       }`}
                     ></span>
                     {nextExperienceYear && (
                       <button
                         onClick={() => handleYearClick(index)}
-                        className="text-pf-base font-metropolis text-neutral-300 font-medium hover:text-white hover:cursor-pointer transition-colors duration-200 relative group mx-4"
+                        className="group anti-blur text-pf-base font-metropolis text-neutral-300 font-medium hover:text-white hover:cursor-pointer transition-colors duration-200 relative mx-4"
                       >
                         {nextExperienceYear}
-                        <span className="absolute bottom-1 left-0 w-0 h-0.5 bg-neutral-300 transition-all duration-300 ease-out group-hover:w-full"></span>
+                        <span className="absolute bottom-1 left-0 h-0.5 bg-neutral-300 transition-all duration-300 ease-out w-0 group-hover:w-full"></span>
                       </button>
                     )}
                   </div>
@@ -213,10 +190,10 @@ export default function ExperienceGallery({
         <button
           onClick={handlePrev}
           disabled={currentItem === 0}
-          className={`p-2 rounded-full  ${
+          className={`anti-blur p-2 rounded-full transition-all duration-200 ease-out hover:scale-105 ${
             currentItem === 0
-              ? 'text-neutral-600 cursor-not-allowed'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-700 hover:cursor-pointer '
+              ? 'text-neutral-600 cursor-not-allowed hover:scale-100'
+              : 'text-neutral-300 hover:text-white hover:bg-neutral-700 hover:cursor-pointer'
           }`}
         >
           <IoChevronBack size={20} />
@@ -228,7 +205,7 @@ export default function ExperienceGallery({
             <button
               key={index}
               onClick={() => scrollToItem(index)}
-              className={`h-1 transition-all duration-300 ease-out rounded-full ${
+              className={`anti-blur h-1 rounded-full transition-all duration-300 ease-out ${
                 currentItem === index
                   ? 'w-8 bg-white'
                   : 'w-4 bg-white/40 hover:bg-white/60'
@@ -242,9 +219,9 @@ export default function ExperienceGallery({
         <button
           onClick={handleNext}
           disabled={currentItem === experienceItems.length - 1}
-          className={`p-2 rounded-full ${
+          className={`anti-blur p-2 rounded-full transition-all duration-200 ease-out hover:scale-105 ${
             currentItem === experienceItems.length - 1
-              ? 'text-neutral-600 cursor-not-allowed'
+              ? 'text-neutral-600 cursor-not-allowed hover:scale-100'
               : 'text-neutral-300 hover:text-white hover:bg-neutral-700 hover:cursor-pointer'
           }`}
         >
