@@ -53,6 +53,14 @@ const metropolis = localFont({
   ],
   variable: '--font-metropolis',
   display: 'swap',
+  preload: true,
+  fallback: [
+    'ui-sans-serif',
+    'system-ui',
+    '-apple-system',
+    'BlinkMacSystemFont',
+    'sans-serif',
+  ],
 });
 
 export default function RootLayout({

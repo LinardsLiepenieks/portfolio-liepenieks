@@ -22,13 +22,10 @@ const CertificateItem = ({
   const [isAnimatingBack, setIsAnimatingBack] = useState(false);
 
   const handleClick = () => {
-    // Trigger the animation back to default
     setIsAnimatingBack(true);
-
-    // Reset after animation completes
     setTimeout(() => {
       setIsAnimatingBack(false);
-    }, 300); // Match the animation duration
+    }, 300);
 
     onClick?.();
     onSelect?.();
@@ -36,7 +33,6 @@ const CertificateItem = ({
 
   const providerInitial = provider?.charAt(0)?.toUpperCase() || '?';
 
-  // Memoize the modal props to prevent re-creation
   const modalProps = useMemo(
     () => ({
       propagationAllowed: false,
@@ -46,12 +42,11 @@ const CertificateItem = ({
     [certificateUrls, name]
   );
 
-  // Memoize the certificate content to prevent re-renders
   const certificateContent = useMemo(
     () => (
       <div
         ref={itemRef}
-        className={`group  font-metropolis  my-4 cursor-pointer inline-block focus:outline-none ${className}`}
+        className={`group font-metropolis my-4 cursor-pointer inline-block focus:outline-none ${className}`}
         onClick={handleClick}
         role="button"
         tabIndex={0}
@@ -64,155 +59,140 @@ const CertificateItem = ({
         aria-label={`View ${name} certificate from ${provider}, ${year}`}
       >
         <style jsx>{`
-          @keyframes scaleBack {
+          /* Anti-blur and anti-snap keyframes using scale3d and translate3d */
+          @keyframes scaleBackSmooth {
             0% {
-              transform: scale(1.08);
-              transition: none;
+              transform: scale3d(1.08, 1.08, 1) translate3d(0, 0, 0);
             }
             100% {
-              transform: scale(1);
-              transition: none;
+              transform: scale3d(1, 1, 1) translate3d(0, 0, 0);
             }
           }
 
-          @keyframes rotateBack {
+          @keyframes rotateBackSmooth {
             0% {
-              transform: rotate(-8deg);
-              transition: none;
+              transform: rotate(-8deg) translate3d(0, 0, 0);
             }
             100% {
-              transform: rotate(0deg);
-              transition: none;
+              transform: rotate(0deg) translate3d(0, 0, 0);
             }
           }
 
-          @keyframes colorBack {
+          @keyframes colorBackSmooth {
             0% {
               color: rgb(245, 245, 245);
-              transition: none;
             }
             100% {
               color: rgb(229, 229, 229);
-              transition: none;
-            }
-          }
-
-          @keyframes bgBack {
-            0% {
-              background-color: rgb(82, 82, 91);
-              transition: none;
-            }
-            100% {
-              background-color: rgb(64, 64, 70);
-              transition: none;
             }
           }
 
           /* Webkit prefixes for older browsers */
-          @-webkit-keyframes scaleBack {
+          @-webkit-keyframes scaleBackSmooth {
             0% {
-              -webkit-transform: scale(1.08);
-              transform: scale(1.08);
-              -webkit-transition: none;
-              transition: none;
+              -webkit-transform: scale3d(1.08, 1.08, 1) translate3d(0, 0, 0);
+              transform: scale3d(1.08, 1.08, 1) translate3d(0, 0, 0);
             }
             100% {
-              -webkit-transform: scale(1);
-              transform: scale(1);
-              -webkit-transition: none;
-              transition: none;
+              -webkit-transform: scale3d(1, 1, 1) translate3d(0, 0, 0);
+              transform: scale3d(1, 1, 1) translate3d(0, 0, 0);
             }
           }
 
-          @-webkit-keyframes rotateBack {
+          @-webkit-keyframes rotateBackSmooth {
             0% {
-              -webkit-transform: rotate(-8deg);
-              transform: rotate(-8deg);
-              -webkit-transition: none;
-              transition: none;
+              -webkit-transform: rotate(-8deg) translate3d(0, 0, 0);
+              transform: rotate(-8deg) translate3d(0, 0, 0);
             }
             100% {
-              -webkit-transform: rotate(0deg);
-              transform: rotate(0deg);
-              -webkit-transition: none;
-              transition: none;
+              -webkit-transform: rotate(0deg) translate3d(0, 0, 0);
+              transform: rotate(0deg) translate3d(0, 0, 0);
             }
           }
 
-          @-webkit-keyframes colorBack {
-            0% {
-              color: rgb(245, 245, 245);
-              -webkit-transition: none;
-              transition: none;
-            }
-            100% {
-              color: rgb(229, 229, 229);
-              -webkit-transition: none;
-              transition: none;
-            }
-          }
-
-          @-webkit-keyframes bgBack {
-            0% {
-              background-color: rgb(82, 82, 91);
-              -webkit-transition: none;
-              transition: none;
-            }
-            100% {
-              background-color: rgb(64, 64, 70);
-              -webkit-transition: none;
-              transition: none;
-            }
-          }
-
-          .animate-scale-back {
-            -webkit-animation: scaleBack 0.3s ease-out forwards;
-            animation: scaleBack 0.3s ease-out forwards;
+          /* Anti-blur animation classes */
+          .animate-scale-back-smooth {
+            -webkit-animation: scaleBackSmooth 0.3s ease-out forwards;
+            animation: scaleBackSmooth 0.3s ease-out forwards;
             transition: none !important;
           }
 
-          .animate-rotate-back {
-            -webkit-animation: rotateBack 0.3s ease-out forwards;
-            animation: rotateBack 0.3s ease-out forwards;
+          .animate-rotate-back-smooth {
+            -webkit-animation: rotateBackSmooth 0.3s ease-out forwards;
+            animation: rotateBackSmooth 0.3s ease-out forwards;
             transition: none !important;
           }
 
-          .animate-color-back {
-            -webkit-animation: colorBack 0.3s ease-out forwards;
-            animation: colorBack 0.3s ease-out forwards;
+          .animate-color-back-smooth {
+            -webkit-animation: colorBackSmooth 0.3s ease-out forwards;
+            animation: colorBackSmooth 0.3s ease-out forwards;
             transition: none !important;
           }
 
-          .animate-bg-back {
-            -webkit-animation: bgBack 0.3s ease-out forwards;
-            animation: bgBack 0.3s ease-out forwards;
-            transition: none !important;
+          /* Base anti-blur classes */
+          .certificate-container {
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            will-change: transform;
+            transform-origin: center center;
           }
 
-          /* Remove focus outline */
+          .logo-container {
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            will-change: transform;
+            transform-origin: center center;
+          }
+
+          .text-container {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: geometricPrecision;
+            position: relative;
+            z-index: 1;
+          }
+
+          /* Hover states using scale3d - applied via group-hover */
+          .group:hover .certificate-container:not(.animate-scale-back-smooth) {
+            transform: scale3d(1.08, 1.08, 1) translate3d(0, 0, 0);
+          }
+
+          .group:hover .logo-container:not(.animate-rotate-back-smooth) {
+            transform: rotate(-8deg) translate3d(0, 0, 0);
+          }
+
+          /* Focus styles */
           .certificate-item:focus {
             outline: none !important;
           }
 
-          /* Optional: Add a custom focus indicator if you want */
           .certificate-item:focus-visible {
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
             border-radius: 8px;
           }
+
+          /* High DPI optimizations */
+          @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .text-container {
+              -webkit-font-smoothing: subpixel-antialiased;
+            }
+          }
         `}</style>
 
         <div
-          className={`flex gap-6  pr-4 transform transition-transform duration-300 ease-out scale-100 ${
-            isAnimatingBack ? 'animate-scale-back' : 'group-hover:scale-108'
+          className={`certificate-container flex gap-6 pr-4 transition-transform duration-300 ease-out ${
+            isAnimatingBack ? 'animate-scale-back-smooth' : ''
           }`}
         >
-          {/* Logo Container - ASPECT RATIO PRESERVED */}
+          {/* Logo Container with anti-blur fixes */}
           <div className="flex-shrink-0">
             <div
-              className={`w-30 h-30 relative overflow-hidden rounded-lg flex items-center justify-center border border-solid border-neutral-700 transform transition-transform duration-300 ease-out rotate-0 ${
-                isAnimatingBack
-                  ? 'animate-rotate-back'
-                  : 'group-hover:-rotate-[8deg]'
+              className={`logo-container w-30 h-30 relative overflow-hidden rounded-lg flex items-center justify-center transition-transform duration-300 ease-out ${
+                isAnimatingBack ? 'animate-rotate-back-smooth' : ''
               }`}
             >
               {logoUrl ? (
@@ -220,13 +200,17 @@ const CertificateItem = ({
                   src={logoUrl}
                   alt={`${provider} logo`}
                   fill
-                  className="object-contain" // Maintains aspect ratio and fits within container
+                  className="object-contain"
                   sizes="120px"
-                  unoptimized // Since it's from Vercel Blob storage
+                  quality={95}
+                  priority={false}
+                  style={{
+                    imageRendering: 'auto',
+                  }}
                 />
               ) : (
                 <div
-                  className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 border border-gray-700 flex items-center justify-center text-white text-xs font-bold"
+                  className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 border border-gray-700 flex items-center justify-center text-white text-xs font-bold text-container"
                   aria-label={`${provider} logo placeholder`}
                 >
                   {providerInitial}
@@ -235,13 +219,13 @@ const CertificateItem = ({
             </div>
           </div>
 
-          {/* Content Container */}
+          {/* Content Container with anti-blur text */}
           <div className="flex-grow min-w-0 flex flex-col justify-center gap-1 lg:gap-0">
             {/* Certificate Name */}
             <h3
-              className={`text-pf-lg xl:text-pf-xl  italic font-medium  transition-colors duration-300 ease-out text-neutral-200  ${
+              className={`text-container text-pf-lg xl:text-pf-xl italic font-medium transition-colors duration-300 ease-out text-neutral-200 ${
                 isAnimatingBack
-                  ? 'animate-color-back'
+                  ? 'animate-color-back-smooth'
                   : 'group-hover:text-neutral-100'
               }`}
             >
@@ -249,20 +233,20 @@ const CertificateItem = ({
             </h3>
 
             {/* Provider and Year Row */}
-            <div className="flex items-center gap-2 relative text-neutral-200">
+            <div className="text-container flex items-center gap-2 relative text-neutral-200">
               <p
-                className={`text-pf-sm font-semibold transition-colors duration-300 ease-out   xl:text-pf-base   ${
+                className={`text-pf-sm font-semibold transition-colors duration-300 ease-out xl:text-pf-base ${
                   isAnimatingBack
-                    ? 'animate-color-back'
+                    ? 'animate-color-back-smooth'
                     : 'group-hover:text-neutral-100'
                 }`}
               >
                 {provider}
               </p>
               <p
-                className={`text-pf-sm font-semibold transition-colors duration-300 ease-out    xl:text-pf-base  ${
+                className={`text-pf-sm font-semibold transition-colors duration-300 ease-out xl:text-pf-base ${
                   isAnimatingBack
-                    ? 'animate-color-back'
+                    ? 'animate-color-back-smooth'
                     : 'group-hover:text-neutral-100'
                 }`}
               >
