@@ -130,9 +130,9 @@ const AboutSection = () => {
       {/* Horizontal Scroll Gallery */}
       <div
         ref={containerRef}
-        className="w-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        className="w-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden  "
       >
-        <div className="flex w-max md:w-full md:justify-center md:gap-4 mt-14 lg:gap-32 md:mt-28 lg:mt-16 2xl:mt-24">
+        <div className="flex w-max md:w-full md:justify-center md:gap-4 mt-16  lg:gap-24 md:mt-28 lg:mt-24 xl:gap-32 2xl:gap-40">
           {buttons.map((button, index) => (
             <div
               key={button.id}
@@ -152,7 +152,7 @@ const AboutSection = () => {
                     component: button.icon,
                   }}
                   text={button.name}
-                  size="xxxl"
+                  size="xxxxl"
                   onMouseEnter={() =>
                     handleInteractionStart(button.name, button.id)
                   }

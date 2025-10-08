@@ -8,7 +8,7 @@ interface IconProps {
 interface AdaptiveIconProps {
   type: 'react-icons';
   component: React.ComponentType<IconProps>;
-  size: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
+  size: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl' | 'xxxxl' | 'xxxxxl';
   className?: string;
 }
 
@@ -26,6 +26,8 @@ const AdaptiveIcon: React.FC<AdaptiveIconProps> = ({
     xl: 57, // 43 × 1.333 ≈ 57
     xxl: 76, // 57 × 1.333 ≈ 76
     xxxl: 101, // 76 × 1.333 ≈ 101
+    xxxxl: 135, // 76 × 1.333 ≈ 101
+    xxxxxl: 180, // 76 × 1.333 ≈ 101
   };
 
   const iconSize = sizeMap[size];

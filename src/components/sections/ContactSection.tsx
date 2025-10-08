@@ -38,12 +38,12 @@ const ContactSection = () => {
   return (
     <section className="flex relative flex-col w-full h-full bg-neutral-900 font-metropolis mx-auto max-w-[3200px]">
       {/* Title Section */}
-      <div className="mt-12 mx-8 lg:mx-16 mb-2 text-neutral-100 lg:mt-24 2xl:mb-8 ">
-        <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mb-8 xl:mt-4 xl:mx-12 2xl:mt-8">
-          <h2 className="text-pf-2xl font-light font-metropolis md:text-pf-3xl xl:text-pf-4xl">
+      <div className="mt-20 mb-12 mx-8 lg:mx-16 text-neutral-100">
+        <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mt-4 xl:mx-12 2xl:mt-8">
+          <h2 className="text-pf-xl font-bold tracking-wide font-metropolis md:text-pf-3xl xl:text-pf-4xl">
             Contact me!
           </h2>
-          <div className="text-pf-base font-light tracking-wider md:hidden">
+          <div className="text-pf-sm font-light tracking-wider md:hidden">
             <CopyLink
               text="linardsliepenieks@gmail.com"
               copyValue="linardsliepenieks@gmail.com"
@@ -78,7 +78,7 @@ const ContactSection = () => {
                   component: SiLinkedin,
                 }}
                 text="LinkedIn"
-                size={isXlScreen ? 'md' : 'sm'}
+                size={'md'}
                 hideText={true}
                 onClick={() =>
                   window.open('https://www.linkedin.com/in/linards-liepenieks')

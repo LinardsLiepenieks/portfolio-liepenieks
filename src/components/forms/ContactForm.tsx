@@ -245,18 +245,18 @@ const ContactForm: React.FC<ContactFormProps> = ({
   // Get submit button styling based on state
   const getSubmitButtonClass = () => {
     const baseClass =
-      'group relative px-4 py-2.5 border-2 hover:cursor-pointer font-semibold rounded-lg overflow-hidden disabled:opacity-70 transition-all duration-300';
+      'group relative px-4 md:px-6 py-2 border-2 hover:cursor-pointer font-semibold rounded-lg overflow-hidden disabled:opacity-70 transition-all duration-300';
 
     if (submitStatus === 'error') {
       return `${baseClass} bg-red-500 border-red-500 text-white`;
     }
-    return `${baseClass} bg-white border-white text-black`;
+    return `${baseClass} bg-neutral-100 border-neutral-200 text-neutral-900`;
   };
 
   return (
     <>
       <div className="w-full">
-        <h2 className="text-pf-lg font-medium text-neutral-100 mb-4 sm:mb-2 tracking-wide lg:text-pf-lg xl:text-pf-2xl xl:font-normal">
+        <h2 className="text-pf-lg text-neutral-200 mb-2 sm:mb-4 tracking-wide lg:text-pf-lg xl:text-pf-xl xl:font-normal">
           Send <span className="hidden md:inline">me</span> an email:
         </h2>
 
@@ -271,10 +271,10 @@ const ContactForm: React.FC<ContactFormProps> = ({
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-2 md:space-y-4 max-w-xl xl:max-w-2xl"
+          className="space-y-4 md:space-y-8 max-w-xl xl:max-w-2xl"
         >
           {/* Email and Subject Inputs */}
-          <div className="sm:flex-row gap-2 flex flex-col">
+          <div className="sm:flex-row gap-4 flex flex-col justify-center ">
             <input
               type="email"
               name="email"
@@ -283,7 +283,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
               onChange={handleInputChange}
               required
               disabled={isSubmitting}
-              className="w-full px-4 mb-2 bg-transparent border-b-1 sm:border-2 sm:mb-0 sm:py-2 sm:rounded-lg border-neutral-300 placeholder:font-metropolis text-pf-sm lg:text-pf-base text-neutral-100 placeholder-neutral-300 focus:outline-none focus:border-neutral-200 transition-colors disabled:opacity-50"
+              className="flex-1 mb-2 sm:px-4 bg-transparent border-b-1 sm:border-2 sm:mb-0 sm:py-2 sm:rounded-lg border-neutral-400 placeholder:font-metropolis text-pf-sm lg:text-pf-base text-neutral-100 placeholder-neutral-300 focus:outline-none focus:border-neutral-200 transition-colors disabled:opacity-50"
             />
 
             <input
@@ -294,7 +294,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
               onChange={handleInputChange}
               required
               disabled={isSubmitting}
-              className="w-full px-4 py-2 bg-transparent border-2 border-neutral-300 placeholder:font-metropolis text-pf-sm rounded-lg lg:text-pf-base text-neutral-100 placeholder-neutral-300 focus:outline-none focus:border-neutral-200 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-transparent border-2 border-neutral-400 placeholder:font-metropolis text-pf-sm rounded-lg lg:text-pf-base text-neutral-100 placeholder-neutral-300 focus:outline-none focus:border-neutral-200 transition-colors disabled:opacity-50"
             />
           </div>
 
@@ -308,11 +308,11 @@ const ContactForm: React.FC<ContactFormProps> = ({
             required
             rows={6}
             disabled={isSubmitting}
-            className="w-full px-4 py-3 scrollbar-dark bg-transparent text-pf-sm border-2 border-neutral-300 rounded-lg text-white placeholder-gray-300 lg:text-pf-base focus:outline-none focus:border-neutral-200 transition-colors resize-none disabled:opacity-50"
+            className="w-full px-4 py-3 scrollbar-dark bg-transparent text-pf-sm border-2 border-neutral-400 rounded-lg text-white placeholder-gray-300 lg:text-pf-base focus:outline-none focus:border-neutral-200 transition-colors resize-none disabled:opacity-50"
           />
 
           {/* Submit Button Row */}
-          <div className="flex gap-6 items-center 2xl:mt-2">
+          <div className="flex gap-4 -mt-2 md:-mt-4 items-center">
             <button
               type="submit"
               disabled={isSubmitting}

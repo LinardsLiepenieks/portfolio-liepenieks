@@ -113,15 +113,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
 
       {/* Main Content Container */}
       <div className="relative z-20  w-full px-8 lg:px-20 xl:px-32  h-full flex flex-col justify-between pt-12 max-w-[3200px]">
-        <div className=" ">
-          <div className="flex flex-col gap-1 items-start pt-14">
+        <div className="mt-24">
+          <div className="flex flex-col items-start pt-12 gap-4">
             <HoverFollowCard
               maxMove={40}
               sensitivity={0.1}
               moveSpeed={1}
               returnSpeed={1.2}
             >
-              <h1 className="text-pf-xl md:text-pf-2xl lg:text-pf-3xl xl:text-pf-5xl  bg-neutral-900 px-4 text-neutral-200">
+              <h1 className="text-pf-xl md:text-pf-2xl lg:text-pf-3xl xl:text-pf-5xl  bg-neutral-900 px-4 text-neutral-100/99 leading-tight font-extralight select-none">
                 Linards
               </h1>
             </HoverFollowCard>
@@ -131,40 +131,20 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
               moveSpeed={1}
               returnSpeed={1.2}
             >
-              <h1 className="text-pf-xl md:text-pf-2xl lg:text-pf-3xl xl:text-pf-5xl bg-neutral-900 px-4 text-neutral-200">
+              <h1 className="text-pf-xl md:text-pf-2xl lg:text-pf-3xl xl:text-pf-5xl bg-neutral-900 px-4 text-neutral-100/99 leading-tight font-extralight select-none">
                 Liepenieks
               </h1>
             </HoverFollowCard>
           </div>
-          <div className="flex flex-col gap-1 items-start  mt-4">
+          <div className="flex flex-col gap-1 items-start  mt-24">
             <HoverFollowCard
               maxMove={40}
               sensitivity={0.1}
               moveSpeed={1}
               returnSpeed={1.2}
             >
-              <h2 className="text-pf-base lg:text-pf-lg xl:text-pf-xl bg-neutral-900 px-4 text-neutral-200 ">
-                Software engineer
-              </h2>
-            </HoverFollowCard>
-            <HoverFollowCard
-              maxMove={40}
-              sensitivity={0.1}
-              moveSpeed={1}
-              returnSpeed={1.2}
-            >
-              <h2 className="text-pf-base lg:text-pf-lg xl:text-pf-xl bg-neutral-900 px-4 text-neutral-200">
-                &
-              </h2>
-            </HoverFollowCard>
-            <HoverFollowCard
-              maxMove={40}
-              sensitivity={0.1}
-              moveSpeed={1}
-              returnSpeed={1.2}
-            >
-              <h2 className="text-pf-base lg:text-pf-lg xl:text-pf-xl bg-neutral-900 px-4 text-neutral-200">
-                Educator
+              <h2 className="text-pf-base lg:text-pf-lg xl:text-pf-xl bg-neutral-900 px-4 text-neutral-200 font-medium select-none">
+                Cloud engineer & Educator
               </h2>
             </HoverFollowCard>
           </div>

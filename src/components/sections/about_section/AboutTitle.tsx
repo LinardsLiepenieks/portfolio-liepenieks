@@ -70,24 +70,26 @@ const AboutTitle = ({
   }, [displayText, typeSpeed, removeSpeed]);
 
   return (
-    <div className={`mt-16 mx-4 sm:mx-8 lg:mt-24 lg:mx-16 ${className}`}>
+    <div className={`mt-16 mx-4 sm:mx-8 lg:mt-24 lg:mx-16 ${className} `}>
       <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mb-8 xl:mt-4 xl:mx-12 ">
         <h2
-          className={`text-pf-lg font-medium font-metropolis text-white lg:text-pf-2xl xl:text-pf-3xl ${titleClassName}`}
+          className={`text-pf-lg font-medium font-metropolis text-white lg:text-pf-2xl xl:text-pf-3xl ${titleClassName} mr-8`}
         >
           {title}
         </h2>
-        <div className="relative mt-3">
+        <div className="relative w-full sm:w-auto pr-4 xl:pr-0">
           {/* Text container with pseudo-element line and smooth transitions */}
-          <div className={`relative min-w-80 transition-all duration-300 `}>
+          <div
+            className={`relative    sm:min-w-120 transition-all duration-300  `}
+          >
             {/* Invisible text to set container width */}
             <span
-              className={`whitespace-nowrap text-white text-pf-xl font-metropolis font-semibold tracking-wide lg:text-pf-xl xl:text-pf-2xl ${displayTextClassName} `}
+              className={`whitespace-nowrap text-white font-extralight text-pf-xl font-metropolis  tracking-wide lg:text-pf-2xl xl:text-pf-3xl ${displayTextClassName} `}
               aria-hidden="true"
             >
               {currentText || '\u00A0'}
             </span>
-            <span className="bg-neutral-100 h-px absolute w-full left-0 bottom-1 transition-all"></span>
+            <span className="bg-neutral-100 h-px absolute w-full left-0 bottom-0 transition-all"></span>
           </div>
         </div>
       </div>

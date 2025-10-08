@@ -8,6 +8,8 @@
   --text-pf-3xl: 4.209rem;
   --text-pf-4xl: 5.61rem;
   --text-pf-5xl: 7.478rem;
+  --text-pf-5xxl: 8.642rem;
+  --text-pf-6xl: 9.969rem;
 
   --font-metropolis: var(--font-metropolis), sans-serif;
 }
