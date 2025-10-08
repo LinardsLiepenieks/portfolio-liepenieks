@@ -39,11 +39,11 @@ export default function ProjectItem({
       )}
 
       {/* Background overlay */}
-      <div className="absolute top-0 w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-450 ease-in-out  bg-neutral-900/60 backdrop-blur-sm"></div>
+      <div className="absolute top-0 w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-350 ease-in-out  bg-neutral-900/60 backdrop-blur-sm"></div>
 
       {/* Text content */}
       <div className="absolute top-0 w-full h-full flex flex-col items-center justify-center gap-4 pointer-events-none font-metropolis">
-        <h4 className="text-pf-2xl  opacity-0 group-hover:opacity-100 transition-all duration-450 ease-in-out text-neutral-300 group-hover:text-neutral-100 font-medium">
+        <h4 className="text-pf-2xl  opacity-0 group-hover:opacity-100 transition-all duration-350 ease-in-out text-neutral-300 group-hover:text-neutral-100 font-medium">
           {year}
         </h4>
       </div>
