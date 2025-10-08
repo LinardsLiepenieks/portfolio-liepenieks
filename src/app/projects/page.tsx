@@ -1,8 +1,7 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useRef } from 'react';
+import { Suspense, useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 import ProjectItem from '@/components/projects/ProjectItem';
 import ContentNavbar from '@/components/ui/ContentNavbar';
@@ -14,12 +13,13 @@ function ProjectsPageContent() {
   const [displayText, setDisplayText] = useState<string>('');
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
+  const router = useRouter();
 
   const { projects } = useProjects();
 
   const handleProjectClick = (projectId: string | number) => {
-    // Handle project click - navigate to project detail or open modal
-    console.log('Project clicked:', projectId);
+    // Handle project click
+    router.push(`/projects/${projectId}`);
   };
 
   // Handle project hover for desktop
@@ -35,31 +35,8 @@ function ProjectsPageContent() {
     }
   };
 
-  // Check if device is mobile
-  useEffect(() => {
-    const checkMobile = (): void => {
-      const wasMobile = isMobile;
-      const currentlyMobile = window.innerWidth < 768; // md breakpoint
-
-      setIsMobile(currentlyMobile);
-
-      // Handle text changes when switching between mobile and desktop
-      if (wasMobile && !currentlyMobile) {
-        // Switching from mobile to desktop - show "Projects"
-        setDisplayText('Projects');
-      } else if (!wasMobile && currentlyMobile && allProjects.length > 0) {
-        // Switching from desktop to mobile - show current project's category
-        setDisplayText(allProjects[currentItem].categoryName);
-      }
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, [isMobile]);
-
-  // Organize projects by category
-  const categorizeProjects = () => {
+  // Memoize categorized projects to avoid recalculating on every render
+  const { categories, categorizedProjects, allProjects } = useMemo(() => {
     // Group projects by category
     const categorizedProjects = projects.reduce((acc, project) => {
       const categoryName = project.categoryName || 'Uncategorized';
@@ -94,8 +71,7 @@ function ProjectsPageContent() {
     );
 
     return { categories, categorizedProjects, allProjects };
-  };
-  const { categories, categorizedProjects, allProjects } = categorizeProjects();
+  }, [projects]);
 
   // Use horizontal scroll for all projects
   const { currentItem, containerRef, itemRefs, scrollToItem } =
@@ -109,6 +85,29 @@ function ProjectsPageContent() {
         }
       },
     });
+
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = (): void => {
+      const wasMobile = isMobile;
+      const currentlyMobile = window.innerWidth < 768; // md breakpoint
+
+      setIsMobile(currentlyMobile);
+
+      // Handle text changes when switching between mobile and desktop
+      if (wasMobile && !currentlyMobile) {
+        // Switching from mobile to desktop - show "Projects"
+        setDisplayText('Projects');
+      } else if (!wasMobile && currentlyMobile && allProjects.length > 0) {
+        // Switching from desktop to mobile - show current project's category
+        setDisplayText(allProjects[currentItem].categoryName);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [isMobile, allProjects, currentItem]);
 
   // Initialize with first project's category on mobile, or "Projects" on desktop
   useEffect(() => {
@@ -137,7 +136,7 @@ function ProjectsPageContent() {
   };
 
   return (
-    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis pt-8 h-screen ">
+    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis pt-4 h-screen ">
       <ContentNavbar />
 
       <div className="">
@@ -155,7 +154,7 @@ function ProjectsPageContent() {
         <div className="hidden md:block absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-neutral-900 to-transparent z-40 pointer-events-none " />
         <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-neutral-900 to-transparent z-10 pointer-events-none" />
 
-        <div className="hidden md:flex flex-col flex-1 overflow-y-auto px-8 pt-8 pb-16 lg:px-16 xl:px-28">
+        <div className="hidden md:flex flex-col flex-1 overflow-y-auto px-8 pt-4 pb-16 lg:px-16 xl:px-28">
           {categories.map((categoryName) => (
             <div key={categoryName} className="mb-12">
               {/* Category Title */}
@@ -175,15 +174,7 @@ function ProjectsPageContent() {
                     <ProjectItem
                       title={project.name}
                       year={project.year}
-                      content={
-                        project.description ? (
-                          <span
-                            dangerouslySetInnerHTML={{
-                              __html: project.description,
-                            }}
-                          />
-                        ) : undefined
-                      }
+                      backgroundImage={project.backgroundUrl}
                       onClick={() => handleProjectClick(project.id)}
                     />
                   </div>

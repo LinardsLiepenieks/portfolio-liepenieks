@@ -13,7 +13,6 @@ export default function ProjectItem({
   title,
   year,
   backgroundImage,
-  backgroundColor = '#A9ABAC',
   content,
   onClick,
 }: ProjectItemProps) {
@@ -21,9 +20,9 @@ export default function ProjectItem({
     <div
       className="
         w-full max-w-80 md:w-80 md:h-80 aspect-square
-        border-white border-4 relative group hover:cursor-pointer
+        border-neutral-500 border-4 relative group hover:cursor-pointer
+        bg-neutral-900 shadow-inner
       "
-      style={{ backgroundColor }}
       onClick={onClick}
     >
       {backgroundImage && (
@@ -31,7 +30,7 @@ export default function ProjectItem({
           src={backgroundImage}
           alt={title}
           fill
-          className="object-cover"
+          className="object-cover brightness-90 saturate-90 antialiased shadow-inner "
         />
       )}
 
@@ -39,11 +38,12 @@ export default function ProjectItem({
         <div className="absolute inset-0 p-4 text-black">{content}</div>
       )}
 
-      <div className="absolute top-0 w-full h-full opacity-0 group-hover:opacity-100 transition-all duration-350 ease-in-out bg-gray-400/0 backdrop-blur-xs flex flex-col items-center justify-center gap-4">
-        <h3 className="px-2 text-center text-pf-lg scale-80 group-hover:scale-100 transition-all duration-350 ease-in-out text-neutral-200 group-hover:text-white font-medium italic">
-          {title}
-        </h3>
-        <h4 className="text-pf-lg scale-80 group-hover:scale-100 transition-all duration-350 ease-in-out text-neutral-300 group-hover:text-neutral-100 font-semibold">
+      {/* Background overlay */}
+      <div className="absolute top-0 w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-450 ease-in-out  bg-neutral-900/60 backdrop-blur-sm"></div>
+
+      {/* Text content */}
+      <div className="absolute top-0 w-full h-full flex flex-col items-center justify-center gap-4 pointer-events-none font-metropolis">
+        <h4 className="text-pf-2xl  opacity-0 group-hover:opacity-100 transition-all duration-450 ease-in-out text-neutral-300 group-hover:text-neutral-100 font-medium">
           {year}
         </h4>
       </div>

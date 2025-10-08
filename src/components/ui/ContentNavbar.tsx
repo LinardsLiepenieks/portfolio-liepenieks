@@ -108,7 +108,7 @@ export function ContentNavbar({
             }}
             size="sm"
             onClick={handleBackClick}
-            className="bg-transparent hover:bg-neutral-800 p-4"
+            className="bg-transparent hover:bg-neutral-800 p-4 hover:cursor-pointer"
           />
         )}
 
