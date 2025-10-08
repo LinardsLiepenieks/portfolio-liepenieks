@@ -136,7 +136,7 @@ function ProjectsPageContent() {
   };
 
   return (
-    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis pt-4 h-screen ">
+    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis pt-8 lg:pt-4 h-screen px-8 lg:px-0">
       <ContentNavbar />
 
       <div className="">
@@ -186,7 +186,7 @@ function ProjectsPageContent() {
       </div>
 
       {/* Mobile/Tablet Gallery Layout - Only show below lg */}
-      <div className="md:hidden flex flex-col items-center  py-8">
+      <div className="md:hidden flex flex-col items-center  py-8 mt-4">
         {/* Horizontal Scroll Gallery for All Projects */}
         <div
           ref={containerRef}
@@ -215,15 +215,7 @@ function ProjectsPageContent() {
                   <ProjectItem
                     title={project.name}
                     year={project.year}
-                    content={
-                      project.description ? (
-                        <span
-                          dangerouslySetInnerHTML={{
-                            __html: project.description,
-                          }}
-                        />
-                      ) : undefined
-                    }
+                    backgroundImage={project.backgroundUrl}
                     onClick={() => handleProjectClick(project.id)}
                   />
                 </div>
