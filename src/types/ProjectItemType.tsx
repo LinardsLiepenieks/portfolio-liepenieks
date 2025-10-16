@@ -1,4 +1,6 @@
 // types/ProjectItemType.ts
+import { TechnologyType } from './TechnologyType';
+
 export interface ProjectItemType {
   id: string | number;
   name: string;
@@ -8,6 +10,7 @@ export interface ProjectItemType {
   logo_url?: string;
   category: number;
   category_name?: string;
+  technologies?: TechnologyType[]; // Reference to TechnologyType
 }
 
 export interface ProjectComponentProps {
@@ -19,6 +22,7 @@ export interface ProjectComponentProps {
   logoUrl?: string;
   category: number;
   categoryName?: string;
+  technologies?: TechnologyType[]; // Reference to TechnologyType
   className?: string;
   onClick?: () => void;
   onSelect?: () => void;

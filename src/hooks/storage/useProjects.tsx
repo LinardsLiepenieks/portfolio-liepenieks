@@ -12,7 +12,7 @@ export function useProjects(
     loading,
     error,
   } = useDatabase<ProjectItemType>('/api/projects');
-
+  console.log('HERE', projects);
   const projectsProps =
     projects?.map((project) => ({
       id: project.id,
