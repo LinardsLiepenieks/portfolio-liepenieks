@@ -12,7 +12,6 @@ export function useProjects(
     loading,
     error,
   } = useDatabase<ProjectItemType>('/api/projects');
-  console.log('HERE', projects);
   const projectsProps =
     projects?.map((project) => ({
       id: project.id,
@@ -21,6 +20,8 @@ export function useProjects(
       description: project.description,
       backgroundUrl: project.background_url,
       logoUrl: project.logo_url,
+      githubUrl: project.github_url,
+      sourceUrl: project.source_url,
       category: project.category,
       categoryName: project.category_name,
       onSelect: () => onSelect?.(project.name),

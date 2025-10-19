@@ -12,23 +12,68 @@ export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params?.id ? String(params.id) : '';
-
   // Use the project hook to fetch details
   const { project, loading, error } = useProject(projectId);
+  console.log(project);
 
-  // Project links
-  const projectLinks = [
-    {
-      name: 'GitHub Repository',
-      url: 'https://github.com/username/project',
-      icon: <FiGithub />,
-    },
-    {
-      name: 'Live Demo',
-      url: 'https://project-demo.com',
-      icon: <FiExternalLink />,
-    },
+  // Cast to any for flexible property access (some projects may have different shapes)
+  const pdata = project as any;
+
+  // Build project links from the loaded project data (avoid dummy hardcoded links)
+  const projectLinks: { name: string; url: string; icon: React.ReactNode }[] =
+    [];
+  const seen = new Set<string>();
+
+  const pushLink = (name: string, url?: string | null) => {
+    if (!url) return;
+    const normalized = String(url).trim();
+    if (!normalized || seen.has(normalized)) return;
+    seen.add(normalized);
+    // Prefer explicit field names first (github/source), otherwise fall back to heuristics
+    const icon =
+      (name && name.toLowerCase().includes('github')) ||
+      normalized.includes('github.com') ? (
+        <FiGithub />
+      ) : (
+        <FiExternalLink />
+      );
+    projectLinks.push({ name, url: normalized, icon });
+  };
+
+  // Prefer explicit fields if present (show these links based on these attributes)
+  pushLink('GitHub Repository', pdata?.github_url);
+  pushLink('Source', pdata?.source_url);
+
+  // If project has an explicit links array
+  if (pdata?.links && Array.isArray(pdata.links)) {
+    pdata.links.forEach((l: any) => {
+      const url = l.url ?? l.href ?? l.link;
+      const name =
+        l.name ??
+        (url && url.includes('github.com') ? 'GitHub Repository' : 'Source');
+      pushLink(name, url);
+    });
+  }
+
+  // Common single-field properties to check
+  const candidates = [
+    { field: 'github_url', name: 'GitHub Repository' },
+    { field: 'repository_url', name: 'Repository' },
+    { field: 'repo_url', name: 'Repository' },
+    { field: 'demo_url', name: 'Live Demo' },
+    { field: 'live_url', name: 'Live Demo' },
+    { field: 'url', name: 'Project Link' },
+    { field: 'project_url', name: 'Project Link' },
+    { field: 'link', name: 'Project Link' },
   ];
+
+  candidates.forEach((c) => {
+    // project shape may vary
+    pushLink(c.name, pdata?.[c.field]);
+  });
+
+  // Fallbacks
+  pushLink('Project Homepage', pdata?.homepage ?? pdata?.website);
 
   // Handle case where projectId is empty
   if (!projectId) {

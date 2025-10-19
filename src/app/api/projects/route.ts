@@ -13,6 +13,8 @@ export async function GET() {
         pi.description,
         pi.background_url,
         pi.logo_url,
+        pi.github_url,
+        pi.source_url,
         pi.category,
         pc.category_name
       FROM public.project_items pi

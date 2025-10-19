@@ -11,6 +11,9 @@ export interface ProjectItemType {
   category: number;
   category_name?: string;
   technologies?: TechnologyType[]; // Reference to TechnologyType
+  // Only expose the specific URL fields used by the UI/hook
+  github_url?: string;
+  source_url?: string;
 }
 
 export interface ProjectComponentProps {
