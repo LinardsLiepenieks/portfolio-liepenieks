@@ -140,9 +140,18 @@ export default function ProjectDetailPage() {
     { field: 'link', name: 'Project Link' },
   ];
 
+  // helper to read candidate fields without using `any`
+  function getCandidateField(
+    p: ExtendedProject | null,
+    field: CandidateField
+  ): string | undefined {
+    if (!p) return undefined;
+    const record = p as unknown as Record<CandidateField, string | undefined>;
+    return record[field];
+  }
+
   candidates.forEach((c) => {
-    // project shape may vary; use typed indexing
-    pushLink(c.name, (pdata as any)?.[c.field] as string | undefined);
+    pushLink(c.name, getCandidateField(pdata, c.field));
   });
 
   // Fallbacks
