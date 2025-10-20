@@ -1,7 +1,7 @@
 // app/projects/[id]/page.tsx
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { IoChevronBack } from 'react-icons/io5';
 import { FiGithub, FiExternalLink } from 'react-icons/fi';
@@ -9,6 +9,7 @@ import { CiGlobe } from 'react-icons/ci';
 import ContentNavbar from '@/components/ui/ContentNavbar';
 import { useProject } from '@/hooks/storage/useProject';
 import { ProjectItemType } from '@/types/ProjectItemType';
+import { ProjectImageType } from '@/types/ProjectImageType';
 import ProjectTechnology from '@/components/projects/ProjectTechnology';
 import ProjectGallery from '@/components/projects/ProjectGallery';
 import { useProjectImages } from '@/hooks/storage/useProjectImages';
@@ -66,21 +67,20 @@ export default function ProjectDetailPage() {
   );
 
   // Fetch project images via hook (keeps data fetching separated like technologies)
-  const {
-    images: projectImages,
-    loading: imagesLoading,
-    error: imagesError,
-  } = useProjectImages(projectId);
+  const { images: projectImages } = useProjectImages(projectId);
 
   const imageObjects = useMemo(() => {
-    return (
-      projectImages
-        ?.map((im: any) => ({
-          src: im.project_image ?? im.image_url ?? im.url,
-          caption: im.caption ?? undefined,
-        }))
-        .filter((x: any) => x.src) || []
-    );
+    const mapped =
+      projectImages?.map((im: ProjectImageType) => ({
+        src: im.project_image ?? im.image_url ?? im.url,
+        caption: im.caption ?? undefined,
+      })) ?? [];
+
+    // Ensure we only pass fully-resolved src strings to the gallery component
+    return mapped.filter((x) => typeof x.src === 'string') as {
+      src: string;
+      caption?: string;
+    }[];
   }, [projectImages]);
 
   // Debug: log images coming from the hook and what we pass to the gallery
