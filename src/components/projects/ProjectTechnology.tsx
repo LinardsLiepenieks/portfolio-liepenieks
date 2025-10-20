@@ -45,7 +45,7 @@ const ProjectTechnology = ({ technology }: ProjectTechnologyProps) => {
     setShowTooltip(true);
     timeoutRef.current = setTimeout(() => {
       setIsVisible(true);
-    }, 1000);
+    }, 1500);
   };
 
   const handleMouseLeave = () => {
@@ -72,7 +72,7 @@ const ProjectTechnology = ({ technology }: ProjectTechnologyProps) => {
 
   return (
     <div
-      className="relative"
+      className="relative group"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onMouseMove={handleMouseMove}
@@ -83,7 +83,7 @@ const ProjectTechnology = ({ technology }: ProjectTechnologyProps) => {
           alt={technology.technology_name}
           width={80}
           height={80}
-          className="w-20 h-20 object-contain"
+          className="w-20 h-20 object-cover group-hover:scale-105 transition-transform duration-300"
         />
       ) : (
         <div className="w-20 h-20 bg-neutral-800 flex items-center justify-center rounded-md">
@@ -99,7 +99,7 @@ const ProjectTechnology = ({ technology }: ProjectTechnologyProps) => {
           ref={tooltipRef}
           className={`fixed bg-neutral-800 text-neutral-200 text-xs px-2 py-1 
                      rounded whitespace-nowrap z-50 pointer-events-none
-                     transition-opacity duration-150 ease-in-out
+                     transition-opacity duration-300 ease-in-out
                      ${isVisible ? 'opacity-100' : 'opacity-0'}`}
           style={{
             left: `${mousePos.x + 10}px`,

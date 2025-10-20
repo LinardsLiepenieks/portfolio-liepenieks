@@ -5,16 +5,18 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { IoChevronBack } from 'react-icons/io5';
 import { FiGithub, FiExternalLink } from 'react-icons/fi';
+import { CiGlobe } from 'react-icons/ci';
 import ContentNavbar from '@/components/ui/ContentNavbar';
 import { useProject } from '@/hooks/storage/useProject';
 import { ProjectItemType } from '@/types/ProjectItemType';
 import ProjectTechnology from '@/components/projects/ProjectTechnology';
+import ProjectGallery from '@/components/projects/ProjectGallery';
+import { useProjectImages } from '@/hooks/storage/useProjectImages';
 
 export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params?.id ? String(params.id) : '';
-  // Use the project hook to fetch details
   const { project, loading, error } = useProject(projectId);
   console.log(project);
 
@@ -30,84 +32,64 @@ export default function ProjectDetailPage() {
 
   const pdata = project as ExtendedProject | null;
 
-  // Build project links from the loaded project data (avoid dummy hardcoded links)
+  // Build project links from the loaded project data
   const projectLinks: { name: string; url: string; icon: React.ReactNode }[] =
     [];
   const seen = new Set<string>();
 
-  const pushLink = (name: string, url?: string | null) => {
+  const pushLink = (
+    name: string,
+    url?: string | null,
+    iconOverride?: React.ReactNode
+  ) => {
     if (!url) return;
     const normalized = String(url).trim();
     if (!normalized || seen.has(normalized)) return;
     seen.add(normalized);
-    // Prefer explicit field names first (github/source), otherwise fall back to heuristics
     const icon =
-      (name && name.toLowerCase().includes('github')) ||
+      iconOverride ??
+      ((name && name.toLowerCase().includes('github')) ||
       normalized.includes('github.com') ? (
         <FiGithub />
       ) : (
         <FiExternalLink />
-      );
+      ));
     projectLinks.push({ name, url: normalized, icon });
   };
 
-  // Prefer explicit fields if present (show these links based on these attributes)
   pushLink('GitHub Repository', pdata?.github_url);
-  pushLink('Live demo', pdata?.source_url);
+  // If a project has a `source_url` field, prefer a globe icon for it
+  pushLink(
+    'Live demo',
+    pdata?.source_url,
+    pdata?.source_url ? <CiGlobe /> : undefined
+  );
 
-  // --- Gallery images and rotation logic -------------------------------------------------
-  const images = useMemo(() => {
-    const list: string[] = [];
-    if (pdata?.background_url) list.push(pdata.background_url);
-    if (pdata?.logo_url) list.push(pdata.logo_url);
+  // Fetch project images via hook (keeps data fetching separated like technologies)
+  const {
+    images: projectImages,
+    loading: imagesLoading,
+    error: imagesError,
+  } = useProjectImages(projectId);
 
-    // Fill with placeholder images so gallery has several items (dummy generation)
-    const placeholders = [
-      'https://picsum.photos/seed/1/1200/900',
-      'https://picsum.photos/seed/2/1200/900',
-      'https://picsum.photos/seed/3/1200/900',
-      'https://picsum.photos/seed/4/1200/900',
-      'https://picsum.photos/seed/5/1200/900',
-    ];
+  const imageObjects = useMemo(() => {
+    return (
+      projectImages
+        ?.map((im: any) => ({
+          src: im.project_image ?? im.image_url ?? im.url,
+          caption: im.caption ?? undefined,
+        }))
+        .filter((x: any) => x.src) || []
+    );
+  }, [projectImages]);
 
-    let i = 0;
-    while (list.length < 5 && i < placeholders.length) {
-      if (!list.includes(placeholders[i])) list.push(placeholders[i]);
-      i += 1;
-    }
-
-    // Ensure there's at least one image
-    return list.length > 0 ? list : placeholders;
-  }, [pdata?.background_url, pdata?.logo_url]);
-
-  const [activeIndex, setActiveIndex] = useState(0);
-  const intervalRef = useRef<number | null>(null);
-
-  const startTimer = () => {
-    if (intervalRef.current) window.clearInterval(intervalRef.current);
-    if (images.length <= 1) return;
-    intervalRef.current = window.setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % images.length);
-    }, 8000) as unknown as number;
-  };
-
+  // Debug: log images coming from the hook and what we pass to the gallery
   useEffect(() => {
-    // Reset active to first image when image list changes
-    setActiveIndex(0);
-    startTimer();
-    return () => {
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [images.join('|')]);
+    console.log('projectImages (from useProjectImages):', projectImages);
+    console.log('imageObjects (passed to ProjectGallery):', imageObjects);
+  }, [projectImages, imageObjects]);
 
-  const onThumbnailClick = (index: number) => {
-    setActiveIndex(index);
-    startTimer();
-  };
-  // --------------------------------------------------------------------------------------
-
-  // If project has an explicit links array
+  // Process links
   if (pdata?.links && Array.isArray(pdata.links)) {
     pdata.links.forEach((l: LinkObj) => {
       const url = l.url ?? l.href ?? l.link;
@@ -118,7 +100,6 @@ export default function ProjectDetailPage() {
     });
   }
 
-  // Common single-field properties to check
   type CandidateField =
     | 'github_url'
     | 'repository_url'
@@ -140,7 +121,6 @@ export default function ProjectDetailPage() {
     { field: 'link', name: 'Project Link' },
   ];
 
-  // helper to read candidate fields without using `any`
   function getCandidateField(
     p: ExtendedProject | null,
     field: CandidateField
@@ -154,7 +134,6 @@ export default function ProjectDetailPage() {
     pushLink(c.name, getCandidateField(pdata, c.field));
   });
 
-  // Fallbacks
   pushLink('Project Homepage', pdata?.homepage ?? pdata?.website);
 
   // Handle case where projectId is empty
@@ -212,15 +191,13 @@ export default function ProjectDetailPage() {
     <section className="flex flex-col w-full h-screen bg-neutral-900 font-metropolis">
       <ContentNavbar customReturnRoute="/projects" />
 
-      <div className="flex-1 overflow-y-auto relative scrollbar-dark pt-20">
-        {/* Main content container */}
-        <div className="px-8 pt-8 pb-16 lg:px-16 xl:px-28">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left column: existing content (takes 50% on lg+) */}
+      <div className="flex-1 overflow-y-auto relative scrollbar-dark pt-20 max-w-page w-full mx-auto">
+        <div className="px-8 pt-8 pb-16 lg:px-16 xl:px-28 ">
+          <div className="flex flex-col lg:flex-row gap-8 ">
+            {/* Left column */}
             <div className="lg:w-1/2">
-              {/* Project header */}
-              <div className="mb-10">
-                <h1 className="text-4xl md:text-5xl font-light tracking-wide mb-4 text-neutral-100">
+              <div className="mb-16">
+                <h1 className="text-4xl md:text-pf-3xl font-light tracking-wide mb-6 text-neutral-100">
                   {project.name}
                 </h1>
 
@@ -228,24 +205,42 @@ export default function ProjectDetailPage() {
                   <p className="text-lg">{project.year}</p>
                   {project.category_name && (
                     <>
-                      <span>•</span>
+                      <span className="text-lg">•</span>
                       <p className="text-lg">{project.category_name}</p>
                     </>
                   )}
                 </div>
               </div>
 
-              {/* Description section */}
-              <div className="mb-10 max-w-3xl">
-                <h2 className="text-xl text-neutral-200 mb-4">Description</h2>
-                <p className="text-neutral-300 leading-relaxed">
+              <div className="mb-4 max-w-3xl">
+                <h2 className="text-pf-lg font-medium text-neutral-200 mb-3">
+                  Description
+                </h2>
+                <p className="text-gray-300 leading-relaxed text-base">
                   {project.description}
                 </p>
               </div>
+              <div className="max-w-md mb-14">
+                <div className="flex flex-col space-y-3 inline-flex">
+                  {projectLinks.map((link, index) => (
+                    <a
+                      key={index}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center text-neutral-300 hover:text-white transition-colors py-3 group text-pf-base"
+                    >
+                      <span className="mr-3">{link.icon}</span>
+                      <span className="group-hover:underline">{link.name}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
 
-              {/* Technologies section - using separate component */}
               <div className="mb-10">
-                <h2 className="text-xl text-neutral-200 mb-4">Technologies</h2>
+                <h2 className="text-pf-base text-neutral-200 mb-5 font-medium">
+                  Stack
+                </h2>
                 {project.technologies && project.technologies.length > 0 ? (
                   <div className="flex flex-wrap gap-8">
                     {project.technologies.map((tech) => (
@@ -258,72 +253,15 @@ export default function ProjectDetailPage() {
                   </p>
                 )}
               </div>
-
-              {/* Links section */}
-              <div className="max-w-md">
-                <h2 className="text-xl text-neutral-200 mb-4">Links</h2>
-                <div className="flex flex-col space-y-3">
-                  {projectLinks.map((link, index) => (
-                    <a
-                      key={index}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center text-neutral-300 hover:text-white transition-colors bg-neutral-700/30 rounded-lg px-4 py-3"
-                    >
-                      <span className="mr-3">{link.icon}</span>
-                      {link.name}
-                    </a>
-                  ))}
-                </div>
-              </div>
             </div>
 
-            {/* Right column: gallery (takes 50% on lg+) */}
+            {/* Right column: gallery */}
             <div className="lg:w-1/2 flex flex-col items-center justify-start">
-              {/* Big display rectangle with crossfade images */}
-              <div className="w-full h-[60vh] border-4 border-white shadow-md relative overflow-hidden bg-neutral-700">
-                {images.map((src, idx) => (
-                  <img
-                    key={src}
-                    src={src}
-                    alt={`Gallery image ${idx + 1}`}
-                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
-                      idx === activeIndex ? 'opacity-100' : 'opacity-0'
-                    }`}
-                    draggable={false}
-                  />
-                ))}
-              </div>
-
-              {/* Thumbnails grid */}
-              <div className="mt-6 w-full flex flex-wrap gap-3">
-                {images.map((src, idx) => {
-                  const isActive = idx === activeIndex;
-                  return (
-                    <button
-                      key={src}
-                      onClick={() => onThumbnailClick(idx)}
-                      className={`overflow-hidden border ${
-                        isActive ? 'ring-2 ring-white' : ''
-                      } focus:outline-none`}
-                      style={{ flexBasis: '20%' }}
-                      aria-label={`Thumbnail ${idx + 1}`}
-                    >
-                      <img
-                        src={src}
-                        alt={`Thumbnail ${idx + 1}`}
-                        className={`w-full h-28 object-cover transition-transform duration-300 ${
-                          isActive
-                            ? 'brightness-110 scale-105'
-                            : 'brightness-75'
-                        }`}
-                        draggable={false}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
+              <ProjectGallery
+                backgroundUrl={pdata?.background_url}
+                logoUrl={pdata?.logo_url}
+                images={imageObjects}
+              />
             </div>
           </div>
         </div>
