@@ -19,7 +19,7 @@ export async function GET() {
         pc.category_name
       FROM public.project_items pi
       LEFT JOIN public.project_categories pc ON pi.category = pc.id
-      ORDER BY pi.year DESC, pi.id DESC
+      ORDER BY pi.id DESC
     `;
 
     return NextResponse.json(projects);

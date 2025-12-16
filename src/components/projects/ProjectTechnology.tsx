@@ -83,7 +83,7 @@ const ProjectTechnology = ({ technology }: ProjectTechnologyProps) => {
           alt={technology.technology_name}
           width={80}
           height={80}
-          className="w-20 h-20 object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-8 h-8 sm:h-12 sm:w-12 md:w-16 md:h-16 xl:w-20 xl:h-20 object-cover group-hover:scale-105 transition-transform duration-300"
         />
       ) : (
         <div className="w-20 h-20 bg-neutral-800 flex items-center justify-center rounded-md">

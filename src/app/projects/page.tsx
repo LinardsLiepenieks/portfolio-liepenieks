@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect, useMemo } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 import ProjectItem from '@/components/projects/ProjectItem';
@@ -10,78 +10,38 @@ import { useProjects } from '@/hooks/storage/useProjects';
 import { useHorizontalScrollContainer } from '@/hooks/scroll-container/useHorizontalScroll';
 
 function ProjectsPageContent() {
-  const [displayText, setDisplayText] = useState<string>('');
+  const [displayText, setDisplayText] = useState<string>('Projects');
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [hoveredProject, setHoveredProject] = useState<string | null>(null);
   const router = useRouter();
 
   const { projects } = useProjects();
 
   const handleProjectClick = (projectId: string | number) => {
-    // Handle project click
     router.push(`/projects/${projectId}`);
   };
 
   // Handle project hover for desktop
   const handleProjectHover = (projectName: string | null) => {
     if (!isMobile) {
-      setHoveredProject(projectName);
       if (projectName) {
         setDisplayText(projectName);
       } else {
-        // Reset to default text when not hovering
         setDisplayText('Projects');
       }
     }
   };
 
-  // Memoize categorized projects to avoid recalculating on every render
-  const { categories, categorizedProjects, allProjects } = useMemo(() => {
-    // Group projects by category
-    const categorizedProjects = projects.reduce((acc, project) => {
-      const categoryName = project.categoryName || 'Uncategorized';
-
-      if (!acc[categoryName]) {
-        acc[categoryName] = [];
-      }
-      acc[categoryName].push(project);
-      return acc;
-    }, {} as Record<string, typeof projects>);
-
-    // Sort projects within each category by year (descending)
-    Object.keys(categorizedProjects).forEach((categoryName) => {
-      categorizedProjects[categoryName].sort((a, b) => {
-        const yearA = parseInt(a.year) || 0;
-        const yearB = parseInt(b.year) || 0;
-        return yearB - yearA;
-      });
-    });
-
-    // Sort categories by number of items (descending - most items first)
-    const categories = Object.keys(categorizedProjects).sort((a, b) => {
-      return categorizedProjects[b].length - categorizedProjects[a].length;
-    });
-
-    // Flatten all projects into a single array with category info
-    const allProjects = categories.flatMap((categoryName) =>
-      categorizedProjects[categoryName].map((project) => ({
-        ...project,
-        categoryName,
-      }))
-    );
-
-    return { categories, categorizedProjects, allProjects };
-  }, [projects]);
+  // Projects are already ordered by updated_at/id DESC from the API
+  const allProjects = projects;
 
   // Use horizontal scroll for all projects
   const { currentItem, containerRef, itemRefs, scrollToItem } =
     useHorizontalScrollContainer({
       totalItems: allProjects.length,
       updateActiveItem: (itemIndex: number) => {
-        // Update category name in AboutTitle when project changes
         const currentProject = allProjects[itemIndex];
         if (currentProject && isMobile) {
-          setDisplayText(currentProject.categoryName);
+          setDisplayText(currentProject.name);
         }
       },
     });
@@ -89,34 +49,20 @@ function ProjectsPageContent() {
   // Check if device is mobile
   useEffect(() => {
     const checkMobile = (): void => {
-      const wasMobile = isMobile;
-      const currentlyMobile = window.innerWidth < 768; // md breakpoint
-
+      const currentlyMobile = window.innerWidth < 768;
       setIsMobile(currentlyMobile);
 
-      // Handle text changes when switching between mobile and desktop
-      if (wasMobile && !currentlyMobile) {
-        // Switching from mobile to desktop - show "Projects"
+      if (!currentlyMobile) {
         setDisplayText('Projects');
-      } else if (!wasMobile && currentlyMobile && allProjects.length > 0) {
-        // Switching from desktop to mobile - show current project's category
-        setDisplayText(allProjects[currentItem].categoryName);
+      } else if (allProjects.length > 0) {
+        setDisplayText(allProjects[currentItem]?.name || 'Projects');
       }
     };
 
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, [isMobile, allProjects, currentItem]);
-
-  // Initialize with first project's category on mobile, or "Projects" on desktop
-  useEffect(() => {
-    if (isMobile && !displayText && allProjects.length > 0) {
-      setDisplayText(allProjects[currentItem].categoryName);
-    } else if (!isMobile && !displayText) {
-      setDisplayText('Projects');
-    }
-  }, [isMobile, currentItem, displayText, allProjects]);
+  }, [allProjects, currentItem]);
 
   const handleProjectIndicatorClick = (index: number): void => {
     scrollToItem(index);
@@ -149,39 +95,31 @@ function ProjectsPageContent() {
         />
       </div>
 
-      {/* Desktop Grid Layout - Only show on lg+ */}
+      {/* Desktop Grid Layout - Only show on md+ */}
       <div className="hidden md:flex flex-1 overflow-y-auto relative scrollbar-dark">
         <div className="hidden md:block absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-neutral-900 to-transparent z-40 pointer-events-none " />
         <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-neutral-900 to-transparent z-10 pointer-events-none" />
 
         <div className="hidden md:flex flex-col flex-1 overflow-y-auto px-8 pt-4 pb-16 lg:px-16 xl:px-28">
-          {categories.map((categoryName) => (
-            <div key={categoryName} className="mb-12">
-              {/* Category Title */}
-              <h2 className="text-pf-xl font-light tracking-wide mb-6 uppercase text-neutral-300">
-                {categoryName}
-              </h2>
-
-              {/* Projects Grid */}
-              <div className="flex flex-wrap gap-8 justify-start">
-                {categorizedProjects[categoryName].map((project) => (
-                  <div
-                    key={project.id}
-                    className="flex-shrink-0"
-                    onMouseEnter={() => handleProjectHover(project.name)}
-                    onMouseLeave={() => handleProjectHover(null)}
-                  >
-                    <ProjectItem
-                      title={project.name}
-                      year={project.year}
-                      backgroundImage={project.backgroundUrl}
-                      onClick={() => handleProjectClick(project.id)}
-                    />
-                  </div>
-                ))}
+          {/* Projects Grid */}
+          <div className="flex flex-wrap gap-8 justify-start">
+            {allProjects.map((project) => (
+              <div
+                key={project.id}
+                className="flex-shrink-0"
+                onMouseEnter={() => handleProjectHover(project.name)}
+                onMouseLeave={() => handleProjectHover(null)}
+              >
+                <ProjectItem
+                  title={project.name}
+                  year={project.year}
+                  backgroundImage={project.backgroundUrl}
+                  categoryName={project.categoryName}
+                  onClick={() => handleProjectClick(project.id)}
+                />
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
@@ -216,6 +154,7 @@ function ProjectsPageContent() {
                     title={project.name}
                     year={project.year}
                     backgroundImage={project.backgroundUrl}
+                    categoryName={project.categoryName}
                     onClick={() => handleProjectClick(project.id)}
                   />
                 </div>
