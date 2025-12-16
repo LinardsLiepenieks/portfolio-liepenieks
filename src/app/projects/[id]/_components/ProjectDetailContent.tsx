@@ -178,7 +178,7 @@ export default function ProjectDetailContent({
       <ContentNavbar customReturnRoute="/projects" />
 
       <div className="flex-1  relative  pt-16 lg:pt-20 max-w-page w-full mx-auto">
-        <div className="px-6 pt-8 pb-16 md:px-12 xl:px-28">
+        <div className="px-6 pt-12 md:pt-8 pb-16 md:px-12 xl:px-28">
           <div className="flex flex-col xl:flex-row gap-8 ">
             {/* Left column */}
             <div className="xl:w-1/2">
