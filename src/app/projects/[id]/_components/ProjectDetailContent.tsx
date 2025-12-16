@@ -50,8 +50,7 @@ export default function ProjectDetailContent({
   useEffect(() => {
     if (!project || !contentRef.current || !paragraphRef.current) return;
 
-    // Delay measurement to ensure DOM is fully rendered
-    const timer = setTimeout(() => {
+    const calculateHeights = () => {
       const element = contentRef.current;
       const paragraph = paragraphRef.current;
       if (!element || !paragraph) return;
@@ -73,9 +72,18 @@ export default function ProjectDetailContent({
         // Restore line-clamp
         paragraph.classList.add('line-clamp-3');
       });
-    }, 100);
+    };
 
-    return () => clearTimeout(timer);
+    // Initial calculation
+    const timer = setTimeout(calculateHeights, 100);
+
+    // Recalculate on window resize
+    window.addEventListener('resize', calculateHeights);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', calculateHeights);
+    };
   }, [project]);
 
   const currentMaxHeight = isDescriptionExpanded
@@ -166,14 +174,14 @@ export default function ProjectDetailContent({
   }, [projectImages]);
 
   return (
-    <section className="flex flex-col w-full h-screen bg-neutral-900 font-metropolis">
+    <section className="flex flex-col w-full h-screen bg-neutral-900 font-metropolis overflow-y-auto scrollbar-dark">
       <ContentNavbar customReturnRoute="/projects" />
 
-      <div className="flex-1 overflow-y-auto relative scrollbar-dark pt-16 lg:pt-20 max-w-page w-full mx-auto">
+      <div className="flex-1  relative  pt-16 lg:pt-20 max-w-page w-full mx-auto">
         <div className="px-6 pt-8 pb-16 md:px-12 xl:px-28">
-          <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex flex-col xl:flex-row gap-8 ">
             {/* Left column */}
-            <div className="lg:w-1/2">
+            <div className="xl:w-1/2">
               <div className="mb-8 sm:mb-12 ">
                 <h1 className="text-4xl sm:text-pf-2xl text-4xl xl:text-pf-3xl  font-light tracking-wide mb-2 lg:mb-6 xl:mb-4 text-neutral-100">
                   {project.name}
@@ -195,7 +203,7 @@ export default function ProjectDetailContent({
                   Description
                 </h2>
                 <div className="relative">
-                  <div className="lg:hidden">
+                  <div className="2xl:hidden">
                     <div
                       style={{
                         maxHeight: `${currentMaxHeight}px`,
@@ -234,21 +242,12 @@ export default function ProjectDetailContent({
                       ) : null}
                     </div>
                   </div>
-                  <div className="hidden lg:block">
+                  <div className="hidden 2xl:block">
                     <p className="text-gray-300 leading-relaxed text-base">
                       {project.description}
                     </p>
                   </div>
                 </div>
-              </div>
-
-              {/* Gallery on mobile */}
-              <div className="lg:hidden mb-4 sm:mb-6 lg:mb-8">
-                <ProjectGallery
-                  backgroundUrl={pdata?.background_url}
-                  logoUrl={pdata?.logo_url}
-                  images={imageObjects}
-                />
               </div>
 
               <div className="max-w-md mb-6">
@@ -267,6 +266,16 @@ export default function ProjectDetailContent({
                   ))}
                 </div>
               </div>
+
+              {/* Gallery on mobile */}
+              <div className="xl:hidden mb-8 sm:mb-12 lg:mb-8">
+                <ProjectGallery
+                  backgroundUrl={pdata?.background_url}
+                  logoUrl={pdata?.logo_url}
+                  images={imageObjects}
+                />
+              </div>
+
               <div className="mb-10">
                 <h2 className="text-pf-base sm:text-pf-lg text-neutral-200 mb-2 lg:mb-5 font-medium">
                   Stack
@@ -286,7 +295,7 @@ export default function ProjectDetailContent({
             </div>
 
             {/* Right column: gallery - desktop only */}
-            <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-start mt-2">
+            <div className="hidden xl:flex xl:w-1/2 flex-col items-center justify-start mt-4">
               <ProjectGallery
                 backgroundUrl={pdata?.background_url}
                 logoUrl={pdata?.logo_url}
