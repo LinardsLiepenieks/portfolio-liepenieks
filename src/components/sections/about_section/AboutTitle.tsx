@@ -70,7 +70,9 @@ const AboutTitle = ({
   }, [displayText, typeSpeed, removeSpeed]);
 
   return (
-    <div className={`mt-16 mx-4 sm:mx-8 lg:mt-24 lg:mx-16 ${className} `}>
+    <div
+      className={`mt-16 mx-4 sm:mx-8 lg:mt-20 lg:pb-16 xl:mt-22 lg:mx-16 xl:-mb-12 ${className} `}
+    >
       <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-4 xl:mb-8 xl:mt-4 xl:mx-12 ">
         <h2
           className={`text-pf-lg font-medium font-metropolis text-white lg:text-pf-2xl xl:text-pf-2xl ${titleClassName} mr-8`}
