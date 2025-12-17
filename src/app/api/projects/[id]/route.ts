@@ -6,7 +6,7 @@ const sql = neon(process.env.DATABASE_URL!);
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> } // Change type to Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Await the params object before accessing properties
   const { id } = await params;
@@ -16,7 +16,7 @@ export async function GET(
   }
 
   try {
-    // Get the project details
+    // Get the project details with multiple categories aggregated
     const projectResult = await sql`
       SELECT 
         pi.id,
@@ -27,11 +27,21 @@ export async function GET(
         pi.logo_url,
         pi.github_url,
         pi.source_url,
-        pi.category,
-        pc.category_name
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', pc.id,
+              'name', pc.category_name
+            ) ORDER BY pc.category_name
+          ) FILTER (WHERE pc.id IS NOT NULL),
+          '[]'
+        ) as categories
       FROM public.project_items pi
-      LEFT JOIN public.project_categories pc ON pi.category = pc.id
+      LEFT JOIN public.project_category_mapping pcm ON pi.id = pcm.project_id
+      LEFT JOIN public.project_categories pc ON pcm.category_id = pc.id
       WHERE pi.id = ${id}
+      GROUP BY pi.id, pi.name, pi.year, pi.description, pi.background_url, 
+               pi.logo_url, pi.github_url, pi.source_url
     `;
 
     if (projectResult.length === 0) {
@@ -42,15 +52,15 @@ export async function GET(
 
     // Get technology data from the join table with technology info
     const technologies = await sql`
-    SELECT 
+      SELECT 
         pti.id,
         pti.project_id,
         pti.technology_id,
         t.technology_name,
         t.technology_url
-    FROM project_technology_images pti
-    JOIN technology_images t ON pti.technology_id = t.id
-    WHERE pti.project_id = ${id}
+      FROM project_technology_images pti
+      JOIN technology_images t ON pti.technology_id = t.id
+      WHERE pti.project_id = ${id}
     `;
 
     // Add technologies to project
@@ -65,7 +75,7 @@ export async function GET(
     return NextResponse.json(
       {
         error: 'Failed to fetch project details',
-        details: JSON.stringify(error),
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

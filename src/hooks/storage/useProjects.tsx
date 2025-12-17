@@ -12,6 +12,7 @@ export function useProjects(
     loading,
     error,
   } = useDatabase<ProjectItemType>('/api/projects');
+
   const projectsProps =
     projects?.map((project) => ({
       id: project.id,
@@ -22,8 +23,7 @@ export function useProjects(
       logoUrl: project.logo_url,
       githubUrl: project.github_url,
       sourceUrl: project.source_url,
-      category: project.category,
-      categoryName: project.category_name,
+      categories: project.categories || [], // Changed from single category to array
       onSelect: () => onSelect?.(project.name),
       onDeselect: onDeselect,
     })) || [];

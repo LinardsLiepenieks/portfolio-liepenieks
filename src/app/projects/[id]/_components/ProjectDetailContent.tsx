@@ -189,10 +189,21 @@ export default function ProjectDetailContent({
 
                 <div className="flex flex-wrap gap-4 text-neutral-400">
                   <p className="text-lg">{project.year}</p>
-                  {project.category_name && (
+
+                  {/* Display multiple categories */}
+                  {project.categories && project.categories.length > 0 && (
                     <>
                       <span className="text-lg">•</span>
-                      <p className="text-lg">{project.category_name}</p>
+                      <div className="flex flex-wrap gap-2 items-center">
+                        {project.categories.map((category, index) => (
+                          <React.Fragment key={category.id}>
+                            <p className="text-lg">{category.name}</p>
+                            {index < project.categories!.length - 1 && (
+                              <span className="text-lg">,</span>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </div>
                     </>
                   )}
                 </div>

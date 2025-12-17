@@ -1,6 +1,11 @@
 // types/ProjectItemType.ts
 import { TechnologyType } from './TechnologyType';
 
+export interface CategoryType {
+  id: number;
+  name: string;
+}
+
 export interface ProjectItemType {
   id: string | number;
   name: string;
@@ -8,10 +13,8 @@ export interface ProjectItemType {
   description?: string;
   background_url?: string;
   logo_url?: string;
-  category: number;
-  category_name?: string;
-  technologies?: TechnologyType[]; // Reference to TechnologyType
-  // Only expose the specific URL fields used by the UI/hook
+  categories?: CategoryType[]; // Changed from single category to array
+  technologies?: TechnologyType[];
   github_url?: string;
   source_url?: string;
 }
@@ -23,9 +26,8 @@ export interface ProjectComponentProps {
   description?: string;
   backgroundUrl?: string;
   logoUrl?: string;
-  category: number;
-  categoryName?: string;
-  technologies?: TechnologyType[]; // Reference to TechnologyType
+  categories?: CategoryType[]; // Changed from single category to array
+  technologies?: TechnologyType[];
   className?: string;
   onClick?: () => void;
   onSelect?: () => void;

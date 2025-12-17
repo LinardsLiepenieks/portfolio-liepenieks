@@ -15,10 +15,20 @@ export async function GET() {
         pi.logo_url,
         pi.github_url,
         pi.source_url,
-        pi.category,
-        pc.category_name
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', pc.id,
+              'name', pc.category_name
+            ) ORDER BY pc.category_name
+          ) FILTER (WHERE pc.id IS NOT NULL),
+          '[]'
+        ) as categories
       FROM public.project_items pi
-      LEFT JOIN public.project_categories pc ON pi.category = pc.id
+      LEFT JOIN public.project_category_mapping pcm ON pi.id = pcm.project_id
+      LEFT JOIN public.project_categories pc ON pcm.category_id = pc.id
+      GROUP BY pi.id, pi.name, pi.year, pi.description, pi.background_url, 
+               pi.logo_url, pi.github_url, pi.source_url
       ORDER BY pi.id DESC
     `;
 
@@ -26,19 +36,20 @@ export async function GET() {
   } catch (error: unknown) {
     // Enhanced debug output
     console.error('Failed to fetch projects data:', error);
-    console.error('DATABASE_URL:', process.env.DATABASE_URL);
+    console.error('DATABASE_URL exists:', !!process.env.DATABASE_URL);
 
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error occurred';
     const errorStack = error instanceof Error ? error.stack : undefined;
 
-    // Optionally include relevant environment/config info (not secrets) for debugging
+    // In development, include more details; in production, be more cautious
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
     return NextResponse.json(
       {
         error: 'Failed to fetch projects data',
-        details: errorMessage,
-        stack: errorStack,
-        dbURL: process.env.DATABASE_URL, // REMOVE or mask in production!
+        details: isDevelopment ? errorMessage : 'Internal server error',
+        stack: isDevelopment ? errorStack : undefined,
       },
       { status: 500 }
     );

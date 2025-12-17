@@ -31,7 +31,7 @@ function ProjectsPageContent() {
     }
   };
 
-  // Projects are already ordered by updated_at/id DESC from the API
+  // Projects are already ordered by id DESC from the API
   const allProjects = projects;
 
   // Use horizontal scroll for all projects
@@ -114,7 +114,7 @@ function ProjectsPageContent() {
                   title={project.name}
                   year={project.year}
                   backgroundImage={project.backgroundUrl}
-                  categoryName={project.categoryName}
+                  categories={project.categories} // Changed: now passes array
                   onClick={() => handleProjectClick(project.id)}
                 />
               </div>
@@ -124,7 +124,7 @@ function ProjectsPageContent() {
       </div>
 
       {/* Mobile/Tablet Gallery Layout - Only show below lg */}
-      <div className="md:hidden flex flex-col items-center  py-8 mt-4">
+      <div className="md:hidden flex flex-col items-center py-8 mt-4">
         {/* Horizontal Scroll Gallery for All Projects */}
         <div
           ref={containerRef}
@@ -137,11 +137,11 @@ function ProjectsPageContent() {
                 ref={(el) => {
                   itemRefs.current[index] = el;
                 }}
-                className="min-w-full flex flex-col  "
+                className="min-w-full flex flex-col"
               >
-                <div className="touch-none flex justify-center flex-col items-center w-full px-4 ">
+                <div className="touch-none flex justify-center flex-col items-center w-full px-4">
                   {/* Project Title - Only show on mobile above the image */}
-                  <div className="md:hidden mb-4 text-left w-full  max-w-80">
+                  <div className="md:hidden mb-4 text-left w-full max-w-80">
                     <h3 className="text-pf-base font-medium text-neutral-100/88">
                       {project.name}
                     </h3>
@@ -154,7 +154,7 @@ function ProjectsPageContent() {
                     title={project.name}
                     year={project.year}
                     backgroundImage={project.backgroundUrl}
-                    categoryName={project.categoryName}
+                    categories={project.categories} // Changed: now passes array
                     onClick={() => handleProjectClick(project.id)}
                   />
                 </div>

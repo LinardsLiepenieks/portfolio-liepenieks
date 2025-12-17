@@ -1,12 +1,17 @@
 import Image from 'next/image';
 
+interface CategoryType {
+  id: number;
+  name: string;
+}
+
 interface ProjectItemProps {
   title: string;
   year: string;
   backgroundImage?: string;
   backgroundColor?: string;
   content?: React.ReactNode;
-  categoryName?: string;
+  categories?: CategoryType[]; // Changed from categoryName to categories array
   onClick?: () => void;
 }
 
@@ -15,7 +20,7 @@ export default function ProjectItem({
   year,
   backgroundImage,
   content,
-  categoryName,
+  categories,
   onClick,
 }: ProjectItemProps) {
   return (
@@ -50,10 +55,17 @@ export default function ProjectItem({
         </h4>
       </div>
 
-      {/* Category tag */}
-      {categoryName && (
-        <div className="absolute top-3 right-3 bg-neutral-900/80 backdrop-blur-sm px-3 py-1 text-xs font-medium text-neutral-300 uppercase tracking-wide border border-neutral-600 z-20">
-          {categoryName}
+      {/* Category tags - Multiple categories support */}
+      {categories && categories.length > 0 && (
+        <div className="absolute top-3 left-3 flex gap-2 z-20">
+          {categories.map((category) => (
+            <div
+              key={category.id}
+              className="bg-neutral-900/80 backdrop-blur-sm px-3 py-1 text-xs font-medium text-neutral-300 uppercase tracking-wide border border-neutral-600"
+            >
+              {category.name}
+            </div>
+          ))}
         </div>
       )}
     </div>
