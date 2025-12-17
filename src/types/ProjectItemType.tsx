@@ -17,6 +17,7 @@ export interface ProjectItemType {
   technologies?: TechnologyType[];
   github_url?: string;
   source_url?: string;
+  client_url?: string;
 }
 
 export interface ProjectComponentProps {

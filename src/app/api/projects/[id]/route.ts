@@ -27,6 +27,7 @@ export async function GET(
         pi.logo_url,
         pi.github_url,
         pi.source_url,
+        pi.client_url,
         COALESCE(
           json_agg(
             json_build_object(
@@ -41,7 +42,7 @@ export async function GET(
       LEFT JOIN public.project_categories pc ON pcm.category_id = pc.id
       WHERE pi.id = ${id}
       GROUP BY pi.id, pi.name, pi.year, pi.description, pi.background_url, 
-               pi.logo_url, pi.github_url, pi.source_url
+               pi.logo_url, pi.github_url, pi.source_url, pi.client_url
     `;
 
     if (projectResult.length === 0) {

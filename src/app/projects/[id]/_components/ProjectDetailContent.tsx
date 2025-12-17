@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState, useRef } from 'react';
-import { FiGithub, FiExternalLink } from 'react-icons/fi';
+import { FiGithub, FiExternalLink, FiUser } from 'react-icons/fi';
 import { CiGlobe } from 'react-icons/ci';
 import ContentNavbar from '@/components/ui/ContentNavbar';
 import { ProjectItemType } from '@/types/ProjectItemType';
@@ -22,6 +22,7 @@ type ExtendedProject = ProjectItemType & {
   website?: string;
   github_url?: string;
   source_url?: string;
+  client_url?: string;
 };
 
 type CandidateField =
@@ -39,43 +40,49 @@ export default function ProjectDetailContent({
   projectImages,
 }: ProjectDetailContentProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [shouldShowButton, setShouldShowButton] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // --- Dynamic Height Logic ---
+  const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const paragraphRef = useRef<HTMLParagraphElement>(null);
-  const [collapsedHeight, setCollapsedHeight] = useState(0);
-  const [expandedHeight, setExpandedHeight] = useState(0);
+  const [collapsedHeight, setCollapsedHeight] = useState<number | null>(null);
+  const [expandedHeight, setExpandedHeight] = useState<number | null>(null);
 
   // Calculate both collapsed and expanded heights once content is available
   useEffect(() => {
-    if (!project || !contentRef.current || !paragraphRef.current) return;
+    if (!project || !contentRef.current || !containerRef.current) return;
 
     const calculateHeights = () => {
-      const element = contentRef.current;
-      const paragraph = paragraphRef.current;
-      if (!element || !paragraph) return;
+      const content = contentRef.current;
+      const container = containerRef.current;
+      if (!content || !container) return;
 
-      // First, measure the collapsed height (with line-clamp-3)
-      const collapsed = element.getBoundingClientRect().height;
+      // First measure collapsed height (with line-clamp-3)
+      content.style.webkitLineClamp = '3';
+      const collapsed = content.scrollHeight;
+
+      // Then measure expanded height (without line-clamp)
+      content.style.webkitLineClamp = 'unset';
+      const expanded = content.scrollHeight;
+
+      // Reset back to collapsed state
+      content.style.webkitLineClamp = '3';
+
+      setExpandedHeight(expanded);
       setCollapsedHeight(collapsed);
+      setShouldShowButton(expanded > collapsed);
 
-      // Then remove line-clamp to measure expanded height
-      paragraph.classList.remove('line-clamp-3');
+      // Set the initial collapsed height immediately
+      container.style.height = `${collapsed}px`;
 
-      // Use requestAnimationFrame to ensure browser has repainted
-      requestAnimationFrame(() => {
-        const expanded = element.getBoundingClientRect().height;
-        setExpandedHeight(expanded);
+      setIsInitialized(true);
 
-        console.log('Heights calculated:', { collapsed, expanded });
-
-        // Restore line-clamp
-        paragraph.classList.add('line-clamp-3');
-      });
+      console.log('Heights calculated:', { collapsed, expanded });
     };
 
-    // Initial calculation
-    const timer = setTimeout(calculateHeights, 100);
+    // Initial calculation with a small delay to ensure content is rendered
+    const timer = setTimeout(calculateHeights, 50);
 
     // Recalculate on window resize
     window.addEventListener('resize', calculateHeights);
@@ -86,9 +93,60 @@ export default function ProjectDetailContent({
     };
   }, [project]);
 
-  const currentMaxHeight = isDescriptionExpanded
-    ? expandedHeight
-    : collapsedHeight;
+  // Handle smooth height animation with JavaScript
+  const toggleDescription = () => {
+    if (
+      !containerRef.current ||
+      collapsedHeight === null ||
+      expandedHeight === null
+    )
+      return;
+
+    const container = containerRef.current;
+    const startHeight = isDescriptionExpanded
+      ? expandedHeight
+      : collapsedHeight;
+    const endHeight = isDescriptionExpanded ? collapsedHeight : expandedHeight;
+
+    // Set starting height
+    container.style.height = `${startHeight}px`;
+
+    // Force reflow
+    container.offsetHeight;
+
+    // Add transition
+    container.style.transition = 'height 400ms cubic-bezier(0.4, 0, 0.2, 1)';
+
+    // Set end height
+    requestAnimationFrame(() => {
+      container.style.height = `${endHeight}px`;
+    });
+
+    // Update line-clamp on content
+    if (contentRef.current) {
+      if (isDescriptionExpanded) {
+        contentRef.current.style.webkitLineClamp = '3';
+      } else {
+        contentRef.current.style.webkitLineClamp = 'unset';
+      }
+    }
+
+    // Toggle state
+    setIsDescriptionExpanded(!isDescriptionExpanded);
+
+    // Clean up transition after animation completes
+    const cleanup = setTimeout(() => {
+      if (container) {
+        container.style.transition = '';
+        // Only set to 'auto' if expanded, keep fixed height if collapsed
+        if (!isDescriptionExpanded) {
+          container.style.height = 'auto';
+        }
+      }
+    }, 400);
+
+    return () => clearTimeout(cleanup);
+  };
 
   const pdata = project as ExtendedProject;
 
@@ -122,6 +180,11 @@ export default function ProjectDetailContent({
     'Live demo',
     pdata?.source_url,
     pdata?.source_url ? <CiGlobe /> : undefined
+  );
+  pushLink(
+    'Client',
+    pdata?.client_url,
+    pdata?.client_url ? <FiUser /> : undefined
   );
 
   // Process links array
@@ -209,49 +272,42 @@ export default function ProjectDetailContent({
                 </div>
               </div>
 
-              <div className="mb-4 max-w-3xl sm:mb-8">
+              <div className="mb-4 max-w-3xl sm:mb-12">
                 <h2 className="text-2xl sm:text-3xl xl:text-pf-lg lg:font-medium text-neutral-200 mb-1 sm:mb-3 lg:mb-3">
                   Description
                 </h2>
                 <div className="relative">
                   <div className="2xl:hidden">
                     <div
+                      ref={containerRef}
                       style={{
-                        maxHeight: `${currentMaxHeight}px`,
+                        overflow: 'hidden',
                       }}
-                      className="overflow-hidden transition-[max-height] duration-500 ease-in-out"
                     >
-                      <div ref={contentRef}>
-                        <p
-                          ref={paragraphRef}
-                          className={`text-gray-300 text-base leading-relaxed text-base ${
-                            !isDescriptionExpanded ? 'line-clamp-3' : ''
-                          }`}
-                        >
-                          {project.description}
-                        </p>
-                      </div>
+                      <p
+                        ref={contentRef}
+                        style={{
+                          display: '-webkit-box',
+                          WebkitBoxOrient: 'vertical',
+                          WebkitLineClamp: 3,
+                          overflow: 'hidden',
+                        }}
+                        className="text-gray-300 text-base leading-relaxed"
+                      >
+                        {project.description}
+                      </p>
                     </div>
 
-                    <div className="mt-2">
-                      {!isDescriptionExpanded &&
-                      expandedHeight > collapsedHeight ? (
+                    {shouldShowButton && (
+                      <div className="mt-2">
                         <button
-                          onClick={() => setIsDescriptionExpanded(true)}
+                          onClick={toggleDescription}
                           className="text-neutral-400 hover:text-neutral-200 text-sm underline transition-colors"
                         >
-                          Read more
+                          {isDescriptionExpanded ? 'Close' : 'Read more'}
                         </button>
-                      ) : isDescriptionExpanded &&
-                        expandedHeight > collapsedHeight ? (
-                        <button
-                          onClick={() => setIsDescriptionExpanded(false)}
-                          className="text-neutral-400 hover:text-neutral-200 text-sm underline transition-colors"
-                        >
-                          Close
-                        </button>
-                      ) : null}
-                    </div>
+                      </div>
+                    )}
                   </div>
                   <div className="hidden 2xl:block">
                     <p className="text-gray-300 leading-relaxed text-base">
@@ -261,15 +317,15 @@ export default function ProjectDetailContent({
                 </div>
               </div>
 
-              <div className="max-w-md mb-6">
-                <div className="flex flex-col space-y-3">
+              <div className="max-w-md mb-12">
+                <div className="flex flex-col space-y-4">
                   {projectLinks.map((link, index) => (
                     <a
                       key={index}
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center text-neutral-100 lg:text-neutral-300 hover:text-white transition-colors py-3 group text-pf-base"
+                      className="flex items-center text-neutral-100 lg:text-neutral-300 hover:text-white transition-colors group text-pf-base"
                     >
                       <span className="mr-3">{link.icon}</span>
                       <span className="group-hover:underline">{link.name}</span>
