@@ -118,7 +118,7 @@ function ProjectsPageContent() {
   };
 
   return (
-    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis pt-8 lg:pt-4 min-h-screen px-8 lg:px-0 ">
+    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis pt-8 lg:pt-4 min-h-screen px-2 lg:px-0 ">
       <ContentNavbar />
       <div className="max-w-page w-full mx-auto">
         <div className="">
