@@ -26,7 +26,7 @@ export default function ProjectItem({
   return (
     <div
       className="
-        w-full max-w-80 md:w-80 md:h-80 aspect-square
+        2xl:max-w-96 w-full sm:w-96 sm:h-96 md:w-100 md:h-100 xl:w-72 xl:h-48 2xl:w-96 2xl:h-80 aspect-square
         border-neutral-500 border-4 relative group hover:cursor-pointer
         bg-neutral-900 shadow-inner
       "

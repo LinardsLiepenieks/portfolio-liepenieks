@@ -29,7 +29,7 @@ export async function GET() {
       LEFT JOIN public.project_categories pc ON pcm.category_id = pc.id
       GROUP BY pi.id, pi.name, pi.year, pi.description, pi.background_url, 
                pi.logo_url, pi.github_url, pi.source_url
-      ORDER BY pi.id DESC
+      ORDER BY pi.year DESC, pi.id DESC
     `;
 
     return NextResponse.json(projects);
