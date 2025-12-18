@@ -80,32 +80,45 @@ function ProjectsPageContent() {
     setCurrentItem(nextIndex);
   };
 
-  // Handle touch swipe gestures
+  // Handle touch swipe gestures with drag feedback
   const [touchStart, setTouchStart] = useState<number>(0);
   const [touchEnd, setTouchEnd] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [dragOffset, setDragOffset] = useState<number>(0);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
+    setTouchEnd(e.targetTouches[0].clientX);
+    setIsDragging(true);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    if (!isDragging) return;
+    const currentTouch = e.targetTouches[0].clientX;
+    setTouchEnd(currentTouch);
+    setDragOffset(currentTouch - touchStart);
   };
 
   const handleTouchEnd = () => {
-    if (touchStart - touchEnd > 75) {
-      // Swiped left
-      handleNextClick();
+    const swipeDistance = touchStart - touchEnd;
+    const minSwipeDistance = 30; // Reduced threshold for better responsiveness
+
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0 && currentItem < allProjects.length - 1) {
+        // Swiped left - go to next
+        setCurrentItem(currentItem + 1);
+      } else if (swipeDistance < 0 && currentItem > 0) {
+        // Swiped right - go to previous
+        setCurrentItem(currentItem - 1);
+      }
     }
 
-    if (touchStart - touchEnd < -75) {
-      // Swiped right
-      handlePreviousClick();
-    }
+    setIsDragging(false);
+    setDragOffset(0);
   };
 
   return (
-    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis pt-8 lg:pt-4 min-h-screen px-2 lg:px-0 ">
+    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis pt-8 lg:pt-4 min-h-screen px-8 lg:px-0 ">
       <ContentNavbar />
       <div className="max-w-page w-full mx-auto">
         <div className="">
@@ -151,9 +164,12 @@ function ProjectsPageContent() {
           {/* Horizontal Gallery with Transform */}
           <div className="w-full overflow-hidden">
             <div
-              className="flex transition-transform duration-300 ease-out transform-gpu"
+              className="flex transform-gpu"
               style={{
-                transform: `translateX(-${currentItem * 100}%)`,
+                transform: `translateX(calc(-${currentItem * 100}% + ${
+                  isDragging ? dragOffset : 0
+                }px))`,
+                transition: isDragging ? 'none' : 'transform 300ms ease-out',
                 willChange: 'transform',
               }}
               onTouchStart={handleTouchStart}
