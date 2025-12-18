@@ -7,11 +7,11 @@ import ProjectItem from '@/components/projects/ProjectItem';
 import ContentNavbar from '@/components/ui/ContentNavbar';
 import AboutTitle from '@/components/sections/about_section/AboutTitle';
 import { useProjects } from '@/hooks/storage/useProjects';
-import { useHorizontalScrollContainer } from '@/hooks/scroll-container/useHorizontalScroll';
 
 function ProjectsPageContent() {
   const [displayText, setDisplayText] = useState<string>('Projects');
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [currentItem, setCurrentItem] = useState<number>(0);
   const router = useRouter();
 
   const { projects, loading } = useProjects();
@@ -35,12 +35,6 @@ function ProjectsPageContent() {
 
   // Projects are already ordered by id DESC from the API
   const allProjects = projects;
-
-  // Use horizontal scroll for all projects
-  const { currentItem, containerRef, itemRefs, scrollToItem } =
-    useHorizontalScrollContainer({
-      totalItems: allProjects.length,
-    });
 
   // Update display text when loading state changes
   useEffect(() => {
@@ -70,24 +64,48 @@ function ProjectsPageContent() {
   }, [allProjects, currentItem, isMobile, loading]);
 
   const handleProjectIndicatorClick = (index: number): void => {
-    scrollToItem(index);
+    setCurrentItem(index);
   };
 
   // Navigation arrow handlers
   const handlePreviousClick = (): void => {
     const prevIndex =
       currentItem > 0 ? currentItem - 1 : allProjects.length - 1;
-    scrollToItem(prevIndex);
+    setCurrentItem(prevIndex);
   };
 
   const handleNextClick = (): void => {
     const nextIndex =
       currentItem < allProjects.length - 1 ? currentItem + 1 : 0;
-    scrollToItem(nextIndex);
+    setCurrentItem(nextIndex);
+  };
+
+  // Handle touch swipe gestures
+  const [touchStart, setTouchStart] = useState<number>(0);
+  const [touchEnd, setTouchEnd] = useState<number>(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 75) {
+      // Swiped left
+      handleNextClick();
+    }
+
+    if (touchStart - touchEnd < -75) {
+      // Swiped right
+      handlePreviousClick();
+    }
   };
 
   return (
-    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis pt-8 lg:pt-4 min-h-screen px-8 lg:px-0 ">
+    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis pt-8 lg:pt-4 min-h-screen px-2 lg:px-0 ">
       <ContentNavbar />
       <div className="max-w-page w-full mx-auto">
         <div className="">
@@ -130,19 +148,22 @@ function ProjectsPageContent() {
 
         {/* Mobile/Tablet Gallery Layout - Only show below lg */}
         <div className="lg:hidden flex flex-col items-center py-8 mt-8 md:mt-4">
-          {/* Horizontal Scroll Gallery for All Projects */}
-          <div
-            ref={containerRef}
-            className="w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden "
-          >
-            <div className="flex">
-              {allProjects.map((project, index) => (
+          {/* Horizontal Gallery with Transform */}
+          <div className="w-full overflow-hidden">
+            <div
+              className="flex transition-transform duration-300 ease-out transform-gpu"
+              style={{
+                transform: `translateX(-${currentItem * 100}%)`,
+                willChange: 'transform',
+              }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              {allProjects.map((project) => (
                 <div
                   key={project.id}
-                  ref={(el) => {
-                    itemRefs.current[index] = el;
-                  }}
-                  className="min-w-full flex flex-col"
+                  className="min-w-full flex-shrink-0 flex flex-col"
                 >
                   <div className="touch-none flex justify-center flex-col items-center w-full px-4">
                     {/* Project Title - Only show on mobile above the image */}
