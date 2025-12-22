@@ -35,10 +35,12 @@ export default function Portfolio() {
       {/* Toggle button */}
       <button
         onClick={toggleScrollSnap}
-        className="fixed bottom-4 right-4 z-50 px-4 py-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 transition-colors"
+        className="fixed bottom-4 right-4 z-50 font-metropolis hover:cursor-pointer text-neutral-700 underline hover:text-neutral-400 italic transition-all transition-300 ease text-xs"
         aria-label="Toggle scroll snap"
       >
-        {scrollSnapEnabled ? '🔒 Snap Mode' : '📜 Free Scroll'}
+        {scrollSnapEnabled
+          ? 'Problems with scrolling?'
+          : 'Problems with scrolling? SCROLL SNAP OFF'}
       </button>
 
       <ScrollContainer ref={scrollContainerRef} routes={routes}>

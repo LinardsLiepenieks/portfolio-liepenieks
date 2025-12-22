@@ -38,13 +38,13 @@ export const useScrollContainer = ({
   });
 
   const scrollToSection = useCallback(
-    (sectionIndex: number, skipAnimation = false) => {
+    (sectionIndex: number, skipAnimation = false, force = false) => {
       if (sectionIndex < 0 || sectionIndex >= totalSections) return;
       if (!containerRef.current) return;
 
-      // Prevent scrolling to the same section
-      if (sectionIndex === currentSection) {
-        DEBUG && console.log('📍 Already at section:', sectionIndex);
+      // Prevent scrolling to the same section (unless forced)
+      if (!force && sectionIndex === currentSection) {
+        DEBUG && enabled && console.log('📍 Already at section:', sectionIndex);
         return;
       }
 
@@ -63,9 +63,9 @@ export const useScrollContainer = ({
       setCurrentSection(sectionIndex);
       updateURL(sectionIndex);
 
-      DEBUG && console.log('📍 Scrolled to section:', sectionIndex);
+      DEBUG && enabled && console.log('📍 Scrolled to section:', sectionIndex);
     },
-    [totalSections, updateURL, acceptScroll, currentSection]
+    [totalSections, updateURL, acceptScroll, currentSection, enabled]
   );
 
   const handlePopStateNavigation = useCallback(
@@ -84,10 +84,17 @@ export const useScrollContainer = ({
 
   // Wheel event handler
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      DEBUG && console.log('⚠️ Wheel handler DISABLED - not adding listener');
+      return;
+    }
+
+    DEBUG && console.log('✅ Wheel handler ENABLED - adding listener');
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
+
+      DEBUG && console.log('🎯 Wheel handler fired (snap mode)');
 
       // Gesture detection - determines if this is first event of a new gesture
       const scrollDirection = gestureCheck(e);
@@ -115,6 +122,7 @@ export const useScrollContainer = ({
     window.addEventListener('wheel', handleWheel, { passive: false });
 
     return () => {
+      DEBUG && console.log('🗑️ Wheel handler CLEANUP - removing listener');
       window.removeEventListener('wheel', handleWheel);
     };
   }, [

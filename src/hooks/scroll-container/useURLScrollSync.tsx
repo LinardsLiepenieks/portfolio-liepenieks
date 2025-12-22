@@ -12,12 +12,14 @@ interface UseURLScrollSyncProps {
     behavior?: 'smooth' | 'instant'
   ) => void;
   onPopState: (sectionIndex: number) => void;
+  enabled?: boolean; // If false, don't call scroll functions
 }
 
 export const useURLScrollSync = ({
   routes,
   onSectionChange,
   onPopState,
+  enabled = true,
 }: UseURLScrollSyncProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -35,6 +37,8 @@ export const useURLScrollSync = ({
 
   // Initialize current section based on URL
   useEffect(() => {
+    if (!enabled) return; // Don't trigger scrolls in free scroll mode
+
     const routeIndex = routes.indexOf(pathname);
     if (routeIndex !== -1) {
       // Check for instant parameter
@@ -44,11 +48,13 @@ export const useURLScrollSync = ({
       onSectionChange(routeIndex, scrollBehavior);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, enabled]);
 
   // Handle browser back/forward buttons
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
+      if (!enabled) return; // Don't trigger scrolls in free scroll mode
+
       if (event.state && typeof event.state.sectionIndex === 'number') {
         const newSection = event.state.sectionIndex;
         onPopState(newSection);
@@ -73,7 +79,7 @@ export const useURLScrollSync = ({
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [pathname, routes, onPopState]);
+  }, [pathname, routes, onPopState, enabled]);
 
   return { updateURL };
 };
