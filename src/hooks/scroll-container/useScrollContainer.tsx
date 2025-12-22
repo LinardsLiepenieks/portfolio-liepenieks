@@ -1,206 +1,181 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { useTouchpadDetection } from './useTouchpadDetection';
+import { useWheelGestureDetection } from './useWheelGestureDetection';
 import { useScrollThrottle } from './useScrollThrottle';
 
 interface UseScrollContainerProps {
   totalSections: number;
   updateURL: (sectionIndex: number) => void;
+  enabled?: boolean;
 }
 
-const DEBUG = false; // Set to true for development debugging
+const DEBUG = true;
 
 export const useScrollContainer = ({
   totalSections,
   updateURL,
+  enabled = true,
 }: UseScrollContainerProps) => {
   const [currentSection, setCurrentSection] = useState(0);
-  const isScrollingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  // Touch tracking
+  const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const touchStartYRef = useRef(0);
   const touchStartTimeRef = useRef(0);
-  const isTouchingRef = useRef(false);
 
-  // Use the extracted hooks
-  const { detectInertia, isValidDelta } = useTouchpadDetection({
-    minTimeGap: 1500,
-    minDelta: 4,
+  // Constants
+  const ANIMATION_DURATION = 500;
+  const MIN_TOUCH_DISTANCE = 50;
+  const MAX_TOUCH_TIME = 800;
+
+  // Use gesture-based detection - only accept first event of each gesture
+  const { check: gestureCheck } = useWheelGestureDetection({
     debug: DEBUG,
   });
 
-  const { isThrottled, updateThrottle, getThrottleStatus } = useScrollThrottle({
-    normalThrottle: 400,
-    momentumThrottle: 1800,
+  const { isThrottled, acceptScroll } = useScrollThrottle({
+    scrollCooldown: 50, // Very short cooldown - gesture detection does the heavy lifting
+    animationDuration: ANIMATION_DURATION,
     debug: DEBUG,
   });
-
-  // Touch constants
-  const MIN_TOUCH_DISTANCE = 50; // minimum distance for a valid swipe
-  const MAX_TOUCH_TIME = 800; // maximum time for a valid swipe (ms)
 
   const scrollToSection = useCallback(
-    (sectionIndex: number) => {
-      const targetElement = sectionRefs.current[sectionIndex];
-      if (targetElement) {
-        isScrollingRef.current = true;
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setCurrentSection(sectionIndex);
-        updateURL(sectionIndex);
-        updateThrottle(); // Update throttle when scrolling
+    (sectionIndex: number, skipAnimation = false) => {
+      if (sectionIndex < 0 || sectionIndex >= totalSections) return;
+      if (!containerRef.current) return;
+
+      // Prevent scrolling to the same section
+      if (sectionIndex === currentSection) {
+        DEBUG && console.log('📍 Already at section:', sectionIndex);
+        return;
       }
+
+      const container = containerRef.current;
+      const targetY = sectionIndex * window.innerHeight;
+
+      container.style.transition = skipAnimation
+        ? 'none'
+        : `transform ${ANIMATION_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+      container.style.transform = `translateY(-${targetY}px)`;
+
+      if (!skipAnimation) {
+        acceptScroll(); // Track animation state
+      }
+
+      setCurrentSection(sectionIndex);
+      updateURL(sectionIndex);
+
+      DEBUG && console.log('📍 Scrolled to section:', sectionIndex);
     },
-    [updateURL, updateThrottle]
+    [totalSections, updateURL, acceptScroll, currentSection]
   );
 
-  const handlePopStateNavigation = useCallback((sectionIndex: number) => {
-    const targetElement = sectionRefs.current[sectionIndex];
-    if (targetElement) {
-      targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setCurrentSection(sectionIndex);
-    }
-  }, []);
+  const handlePopStateNavigation = useCallback(
+    (sectionIndex: number) => {
+      scrollToSection(sectionIndex, false);
+    },
+    [scrollToSection]
+  );
 
   const handleURLSectionChange = useCallback(
     (sectionIndex: number, behavior: 'smooth' | 'instant' = 'smooth') => {
-      const targetElement = sectionRefs.current[sectionIndex];
-      if (targetElement) {
-        targetElement.scrollIntoView({ behavior, block: 'start' });
-        setCurrentSection(sectionIndex);
-      }
+      scrollToSection(sectionIndex, behavior === 'instant');
     },
-    []
+    [scrollToSection]
   );
 
-  // Stop scrolling animation when section comes into view
+  // Wheel event handler
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-            DEBUG &&
-              console.log(
-                '👁️ Observer: Section in view - only resetting isScrolling flag'
-              );
-            // Only reset the scrolling flag, NOT the throttle
-            // Let throttle expire naturally to prevent momentum events from triggering new scrolls
-            isScrollingRef.current = false;
-            DEBUG &&
-              console.log('✅ Set isScrolling = false (throttle still active)');
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
+    if (!enabled) return;
 
-    sectionRefs.current.forEach((section) => {
-      if (section) observer.observe(section);
-    });
-
-    return () => observer.disconnect();
-  }, [totalSections]);
-
-  // Wheel event handler - now using extracted hooks
-  useEffect(() => {
-    const throttledWheelHandler = (e: WheelEvent) => {
+    const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
 
-      // Use the extracted touchpad detection
-      const isMomentumScroll = detectInertia(e);
-      const throttleStatus = getThrottleStatus(isMomentumScroll);
+      // Gesture detection - determines if this is first event of a new gesture
+      const scrollDirection = gestureCheck(e);
 
-      if (DEBUG) {
-        console.log('🖱️ Wheel event:', {
-          deltaY: e.deltaY,
-          isMomentumScroll,
-          throttleStatus,
-          isScrolling: isScrollingRef.current,
-        });
-      }
-
-      // Dismiss wheel events with very small delta values (touchpad noise)
-      if (!isValidDelta(e.deltaY)) {
+      if (scrollDirection === false) {
+        // Not the first event of a gesture - block it
         return;
       }
 
-      // If currently scrolling, ignore
-      if (isScrollingRef.current) {
-        return;
-      }
-
-      // Check throttle using the extracted hook
-      if (isThrottled(isMomentumScroll)) {
+      // Check if we're in the middle of an animation
+      if (isThrottled()) {
         DEBUG &&
-          console.log(
-            `❌ Dismissed: Throttled - ${throttleStatus.throttleType} (${throttleStatus.effectiveThrottle}ms) blocked`
-          );
+          console.log('⛔ New gesture detected but animation in progress');
         return;
       }
 
-      const direction = e.deltaY > 0 ? 1 : -1;
-      const nextSection = currentSection + direction;
+      // This is a new gesture AND no animation running - accept it!
+      const nextSection = currentSection + scrollDirection;
 
-      DEBUG &&
-        console.log(
-          '📍 Current section:',
-          currentSection,
-          'Next:',
-          nextSection
-        );
-
-      // Check bounds
       if (nextSection >= 0 && nextSection < totalSections) {
         scrollToSection(nextSection);
-      } else {
       }
     };
 
-    window.addEventListener('wheel', throttledWheelHandler, { passive: false });
+    window.addEventListener('wheel', handleWheel, { passive: false });
 
     return () => {
-      window.removeEventListener('wheel', throttledWheelHandler);
+      window.removeEventListener('wheel', handleWheel);
     };
   }, [
+    enabled,
     currentSection,
     totalSections,
     scrollToSection,
-    detectInertia,
-    isValidDelta,
+    gestureCheck,
     isThrottled,
-    getThrottleStatus,
   ]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isThrottled()) return;
+
+      let direction = 0;
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+        direction = 1;
+      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        direction = -1;
+      } else if (e.key === 'Home') {
+        scrollToSection(0);
+        return;
+      } else if (e.key === 'End') {
+        scrollToSection(totalSections - 1);
+        return;
+      }
+
+      if (direction !== 0) {
+        e.preventDefault();
+        const nextSection = currentSection + direction;
+        if (nextSection >= 0 && nextSection < totalSections) {
+          scrollToSection(nextSection);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [enabled, currentSection, totalSections, scrollToSection, isThrottled]);
 
   // Touch event handlers
   useEffect(() => {
-    const handleTouchStart = (e: TouchEvent) => {
-      if (isScrollingRef.current) {
-        return;
-      }
+    if (!enabled) return;
 
+    const handleTouchStart = (e: TouchEvent) => {
       const touch = e.touches[0];
       touchStartYRef.current = touch.clientY;
       touchStartTimeRef.current = Date.now();
-      isTouchingRef.current = true;
 
-      DEBUG &&
-        console.log('📱🟢 Touch start:', {
-          y: touch.clientY,
-          time: touchStartTimeRef.current,
-        });
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      // Prevent default scrolling behavior during touch
-      if (isTouchingRef.current) {
-        e.preventDefault();
-      }
+      DEBUG && console.log('📱 Touch start:', touch.clientY);
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      if (!isTouchingRef.current) {
-        return;
-      }
+      if (isThrottled()) return;
 
       const touch = e.changedTouches[0];
       const touchEndY = touch.clientY;
@@ -210,72 +185,34 @@ export const useScrollContainer = ({
       const deltaTime = touchEndTime - touchStartTimeRef.current;
       const distance = Math.abs(deltaY);
 
-      isTouchingRef.current = false;
-
       DEBUG &&
-        console.log('📱🔴 Touch end:', {
-          startY: touchStartYRef.current,
-          endY: touchEndY,
+        console.log('📱 Touch end:', {
           deltaY,
           distance,
           deltaTime,
-          minDistance: MIN_TOUCH_DISTANCE,
-          maxTime: MAX_TOUCH_TIME,
         });
 
-      // Check if it's a valid swipe
-      if (distance < MIN_TOUCH_DISTANCE) {
+      // Validate swipe
+      if (distance < MIN_TOUCH_DISTANCE || deltaTime > MAX_TOUCH_TIME) {
         return;
       }
 
-      if (deltaTime > MAX_TOUCH_TIME) {
-        return;
-      }
-
-      // Check throttle using the normal throttle for touch events
-      if (isThrottled(false)) {
-        // false = not momentum scroll for touch
-        return;
-      }
-
-      // Determine direction (positive deltaY = swipe up = go to next section)
       const direction = deltaY > 0 ? 1 : -1;
       const nextSection = currentSection + direction;
 
-      DEBUG &&
-        console.log(
-          '📱📍 Current section:',
-          currentSection,
-          'Next:',
-          nextSection
-        );
-
-      // Check bounds
       if (nextSection >= 0 && nextSection < totalSections) {
         scrollToSection(nextSection);
-      } else {
       }
     };
 
-    const handleTouchCancel = () => {
-      isTouchingRef.current = false;
-    };
-
-    // Add touch event listeners
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: false });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
-    window.addEventListener('touchcancel', handleTouchCancel, {
-      passive: true,
-    });
 
     return () => {
       window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('touchcancel', handleTouchCancel);
     };
-  }, [currentSection, totalSections, scrollToSection, isThrottled]);
+  }, [enabled, currentSection, totalSections, scrollToSection, isThrottled]);
 
   return {
     currentSection,

@@ -37,7 +37,7 @@ const ContactSection = () => {
 
   return (
     <section className="flex relative flex-col bg-neutral-900 font-metropolis mx-auto">
-      <div className="max-w-page mx-auto w-full relative h-screen">
+      <div className="max-w-page mx-auto w-full relative min-h-screen">
         {/* Title Section */}
         <div className="mt-20 mb-12 2xl:mb-12 mx-8 lg:mx-16 text-neutral-100">
           <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-2 xl:mt-0 xl:mx-12 2xl:mt-8">

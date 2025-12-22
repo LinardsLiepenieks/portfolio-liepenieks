@@ -1,81 +1,86 @@
 import { useRef } from 'react';
 
 interface UseScrollThrottleProps {
-  normalThrottle?: number; // normal throttle time in ms
-  momentumThrottle?: number; // momentum throttle time in ms
-  debug?: boolean; // enable debug logging
+  scrollCooldown?: number;
+  animationDuration?: number;
+  debug?: boolean;
 }
 
 export const useScrollThrottle = ({
-  normalThrottle = 400,
-  momentumThrottle = 1800,
+  scrollCooldown = 800,
+  animationDuration = 500,
   debug = false,
 }: UseScrollThrottleProps = {}) => {
-  const lastThrottleTimeRef = useRef(0);
+  const lastScrollAcceptedRef = useRef(0);
+  const isAnimatingRef = useRef(false);
 
-  const isThrottled = (isMomentumScroll: boolean): boolean => {
+  const isThrottled = (): boolean => {
     const now = Date.now();
-    const effectiveThrottle = isMomentumScroll
-      ? momentumThrottle
-      : normalThrottle;
-    const timeSinceLastThrottle = now - lastThrottleTimeRef.current;
-    const throttled = timeSinceLastThrottle < effectiveThrottle;
+    const timeSinceLastScroll = now - lastScrollAcceptedRef.current;
 
-    if (debug && throttled) {
-      console.log('⏳ Scroll Throttled:', {
-        isMomentumScroll,
-        effectiveThrottle,
-        timeSinceLastThrottle,
-        throttleType: isMomentumScroll ? 'momentum' : 'normal',
-        waitTime: effectiveThrottle - timeSinceLastThrottle,
+    if (isAnimatingRef.current) {
+      if (debug) {
+        console.log('❌ Throttled: Animation in progress');
+      }
+      return true;
+    }
+
+    const inCooldown = timeSinceLastScroll < scrollCooldown;
+
+    if (debug && inCooldown) {
+      console.log('❌ Throttled: Cooldown active', {
+        timeSinceLastScroll,
+        remaining: scrollCooldown - timeSinceLastScroll,
       });
     }
 
-    return throttled;
+    return inCooldown;
   };
 
-  const updateThrottle = (): void => {
+  const acceptScroll = (): void => {
     const now = Date.now();
-    lastThrottleTimeRef.current = now;
+    lastScrollAcceptedRef.current = now;
+    isAnimatingRef.current = true;
+
+    setTimeout(() => {
+      isAnimatingRef.current = false;
+      if (debug) {
+        console.log('✨ Animation completed');
+      }
+    }, animationDuration);
 
     if (debug) {
-      console.log('⏰ Throttle Updated:', {
-        timestamp: now,
-        nextAvailableTime: now + normalThrottle,
+      console.log('✅ Scroll accepted at:', now, {
+        nextAvailableTime: now + scrollCooldown,
       });
     }
   };
 
-  const getThrottleStatus = (isMomentumScroll: boolean) => {
+  const getThrottleStatus = () => {
     const now = Date.now();
-    const effectiveThrottle = isMomentumScroll
-      ? momentumThrottle
-      : normalThrottle;
-    const timeSinceLastThrottle = now - lastThrottleTimeRef.current;
-    const remainingTime = Math.max(
-      0,
-      effectiveThrottle - timeSinceLastThrottle
-    );
+    const timeSinceLastScroll = now - lastScrollAcceptedRef.current;
+    const remainingCooldown = Math.max(0, scrollCooldown - timeSinceLastScroll);
 
     return {
-      isThrottled: remainingTime > 0,
-      remainingTime,
-      effectiveThrottle,
-      timeSinceLastThrottle,
-      throttleType: isMomentumScroll ? 'momentum' : 'normal',
+      isThrottled: isAnimatingRef.current || remainingCooldown > 0,
+      isAnimating: isAnimatingRef.current,
+      timeSinceLastScroll,
+      remainingCooldown,
+      scrollCooldown,
     };
   };
 
   const reset = (): void => {
-    lastThrottleTimeRef.current = 0;
+    lastScrollAcceptedRef.current = 0;
+    isAnimatingRef.current = false;
     if (debug) {
-      console.log('🔄 Throttle Reset');
+      console.log('🔄 Throttle reset');
     }
   };
 
   return {
     isThrottled,
-    updateThrottle,
+    acceptScroll,
     getThrottleStatus,
     reset,
   };

@@ -43,7 +43,8 @@ export const useURLScrollSync = ({
 
       onSectionChange(routeIndex, scrollBehavior);
     }
-  }, [pathname, routes, searchParams, onSectionChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, searchParams]);
 
   // Handle browser back/forward buttons
   useEffect(() => {

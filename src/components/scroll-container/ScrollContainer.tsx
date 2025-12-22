@@ -1,6 +1,12 @@
 'use client';
 
-import { ReactNode, forwardRef, useImperativeHandle } from 'react';
+import {
+  ReactNode,
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  useEffect,
+} from 'react';
 import { useScrollContainer } from '@/hooks/scroll-container/useScrollContainer';
 import { useURLScrollSync } from '@/hooks/scroll-container/useURLScrollSync';
 import { ScrollIndicators } from './ScrollIndicators';
@@ -12,18 +18,13 @@ interface ScrollContainerProps {
 
 export interface ScrollContainerRef {
   scrollToSection: (index: number) => void;
+  setScrollSnapEnabled: (enabled: boolean) => void;
 }
 
 const ScrollContainer = forwardRef<ScrollContainerRef, ScrollContainerProps>(
   ({ children, routes }, ref) => {
-    // Initialize URL sync first to get the updateURL function
-    const { updateURL } = useURLScrollSync({
-      routes,
-      onSectionChange: () => {},
-      onPopState: () => {},
-    });
+    const [scrollSnapEnabled, setScrollSnapEnabled] = useState(true);
 
-    // Use unified scroll container hook
     const {
       currentSection,
       containerRef,
@@ -33,40 +34,73 @@ const ScrollContainer = forwardRef<ScrollContainerRef, ScrollContainerProps>(
       handleURLSectionChange,
     } = useScrollContainer({
       totalSections: children.length,
-      updateURL,
+      updateURL: (sectionIndex: number) => {
+        const newURL = routes[sectionIndex];
+        window.history.pushState({ sectionIndex, fromScroll: true }, '', newURL);
+      },
+      enabled: scrollSnapEnabled,
     });
 
-    // Expose scrollToSection method through ref
+    // Expose methods to parent components (like Navbar)
     useImperativeHandle(ref, () => ({
       scrollToSection,
+      setScrollSnapEnabled,
     }));
 
-    // Re-initialize URL sync with proper callbacks
+    // Sync URL changes (Back/Forward buttons) with the scroll state
     useURLScrollSync({
       routes,
       onSectionChange: handleURLSectionChange,
       onPopState: handlePopStateNavigation,
     });
 
-    return (
-      <main ref={containerRef} className="h-screen overflow-hidden">
-        {children.map((child, index) => (
-          <div
-            key={index}
-            ref={(el) => {
-              sectionRefs.current[index] = el;
-            }}
-            className="h-screen w-full"
-          >
-            {child}
-          </div>
-        ))}
+    // Reset transform when switching to Free Scroll to avoid being "stuck" mid-way
+    useEffect(() => {
+      if (!scrollSnapEnabled && containerRef.current) {
+        containerRef.current.style.transform = 'none';
+      } else if (scrollSnapEnabled && containerRef.current) {
+        const targetY = currentSection * window.innerHeight;
+        containerRef.current.style.transform = `translateY(-${targetY}px)`;
+      }
+    }, [scrollSnapEnabled, currentSection]);
 
-        <ScrollIndicators
-          totalSections={children.length}
-          currentSection={currentSection}
-          onSectionClick={scrollToSection}
-        />
+    return (
+      <main
+        className={`relative w-full h-screen ${
+          scrollSnapEnabled
+            ? 'overflow-hidden'
+            : 'overflow-y-auto overflow-x-hidden'
+        }`}
+        style={{
+          // Fix for mobile address bar jumping
+          height: '100dvh',
+        }}
+      >
+        <div
+          ref={containerRef}
+          className="w-full will-change-transform"
+        >
+          {children.map((child, index) => (
+            <section
+              key={index}
+              ref={(el) => {
+                sectionRefs.current[index] = el;
+              }}
+              className="h-screen w-full flex-shrink-0"
+              style={{ height: '100dvh' }}
+            >
+              {child}
+            </section>
+          ))}
+        </div>
+
+        {scrollSnapEnabled && (
+          <ScrollIndicators
+            totalSections={children.length}
+            currentSection={currentSection}
+            onSectionClick={scrollToSection}
+          />
+        )}
       </main>
     );
   }
