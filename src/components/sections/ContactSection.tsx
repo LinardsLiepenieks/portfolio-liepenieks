@@ -36,65 +36,69 @@ const ContactSection = () => {
   };
 
   return (
-    <section className="flex relative flex-col w-full h-full bg-neutral-900 font-metropolis mx-auto max-w-[3200px]">
-      {/* Title Section */}
-      <div className="mt-20 mb-8 2xl:mb-12 mx-8 lg:mx-16 text-neutral-100">
-        <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-2 xl:mt-0 xl:mx-12 2xl:mt-8">
-          <h2 className="text-pf-xl font-bold tracking-wide font-metropolis md:text-pf-3xl xl:text-pf-3xl 2xl:text-pf-4xl">
-            Contact me!
-          </h2>
-          <div className="text-pf-sm font-light tracking-wider md:hidden">
-            <CopyLink
-              text="linardsliepenieks@gmail.com"
-              copyValue="linardsliepenieks@gmail.com"
-            />
+    <section className="flex relative flex-col bg-neutral-900 font-metropolis mx-auto">
+      <div className="max-w-page mx-auto w-full relative h-screen">
+        {/* Title Section */}
+        <div className="mt-20 mb-12 2xl:mb-12 mx-8 lg:mx-16 text-neutral-100">
+          <div className="flex items-start gap-1 mt-8 flex-col lg:flex-row lg:gap-2 xl:mt-0 xl:mx-12 2xl:mt-8">
+            <h2 className="text-pf-xl font-bold tracking-wide font-metropolis md:text-pf-3xl xl:text-pf-3xl 2xl:text-pf-4xl">
+              Contact me!
+            </h2>
+            <div className="text-pf-sm font-light tracking-wider md:hidden">
+              <CopyLink
+                text="linardsliepenieks@gmail.com"
+                copyValue="linardsliepenieks@gmail.com"
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex flex-col w-full px-8 pr-12 lg:px-16 xl:px-28 ">
-        {/* Contact Form with Action Buttons */}
-        <ContactForm
-          serviceId={EMAILJS_SERVICE_ID}
-          templateId={EMAILJS_TEMPLATE_ID}
-          publicKey={EMAILJS_PUBLIC_KEY}
-          onSuccess={handleFormSuccess}
-          onError={handleFormError}
-          actionButtons={
-            <>
-              {/* Email Link */}
-              <div className="hidden md:block text-pf-base xl:text-pf-lg">
-                <CopyLink
-                  text="- linardsliepenieks@gmail.com"
-                  copyValue="linardsliepenieks@gmail.com"
+        {/* Main Content */}
+        <div className="flex flex-col w-full px-8 pr-12 lg:px-16 xl:px-28 ">
+          {/* Contact Form with Action Buttons */}
+          <ContactForm
+            serviceId={EMAILJS_SERVICE_ID}
+            templateId={EMAILJS_TEMPLATE_ID}
+            publicKey={EMAILJS_PUBLIC_KEY}
+            onSuccess={handleFormSuccess}
+            onError={handleFormError}
+            actionButtons={
+              <>
+                {/* Email Link */}
+                <div className="hidden md:block text-pf-base xl:text-pf-lg">
+                  <CopyLink
+                    text="- linardsliepenieks@gmail.com"
+                    copyValue="linardsliepenieks@gmail.com"
+                  />
+                </div>
+
+                {/* LinkedIn Button */}
+                <SpotlightButton
+                  icon={{
+                    type: 'react-icons',
+                    component: SiLinkedin,
+                  }}
+                  text="LinkedIn"
+                  size={'md'}
+                  hideText={true}
+                  onClick={() =>
+                    window.open(
+                      'https://www.linkedin.com/in/linards-liepenieks'
+                    )
+                  }
                 />
-              </div>
-
-              {/* LinkedIn Button */}
-              <SpotlightButton
-                icon={{
-                  type: 'react-icons',
-                  component: SiLinkedin,
-                }}
-                text="LinkedIn"
-                size={'md'}
-                hideText={true}
-                onClick={() =>
-                  window.open('https://www.linkedin.com/in/linards-liepenieks')
-                }
-              />
-            </>
-          }
-        />
-      </div>
-
-      {/* Footer */}
-      <footer className="w-full flex justify-center absolute bottom-4">
-        <div className="text-neutral-500 font-light text-pf-xs">
-          Copyright 2025 © Liepenieks
+              </>
+            }
+          />
         </div>
-      </footer>
+
+        {/* Footer */}
+        <footer className="w-full flex justify-center absolute bottom-2 ">
+          <div className="text-neutral-500 font-light text-pf-xs">
+            Copyright 2025 © Liepenieks
+          </div>
+        </footer>
+      </div>
     </section>
   );
 };

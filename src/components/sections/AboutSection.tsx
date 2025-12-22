@@ -117,68 +117,70 @@ const AboutSection = () => {
   }, [isMobile, currentItem, displayText, buttons]);
 
   return (
-    <section className="flex flex-col w-full h-full bg-neutral-900 font-metropolis">
-      {/* Title Section - Now with built-in animation */}
-      <AboutTitle
-        title="About:"
-        displayText={displayText}
-        removeSpeed={20}
-        typeSpeed={30}
-        minLineWidth="min-w-40"
-      />
+    <section className="bg-neutral-900 h-screen">
+      <div className="flex flex-col w-full h-full bg-neutral-900 font-metropolis max-w-page mx-auto">
+        {/* Title Section - Now with built-in animation */}
+        <AboutTitle
+          title="About:"
+          displayText={displayText}
+          removeSpeed={20}
+          typeSpeed={30}
+          minLineWidth="min-w-40"
+        />
 
-      {/* Horizontal Scroll Gallery */}
-      <div
-        ref={containerRef}
-        className="w-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden  "
-      >
-        <div className="flex w-max md:w-full md:justify-center md:gap-4 mt-16  lg:gap-24 md:mt-28 lg:mt-24 xl:gap-32 2xl:gap-40">
-          {buttons.map((button, index) => (
-            <div
-              key={button.id}
-              ref={(el) => {
-                itemRefs.current[index] = el;
-              }}
-              className="w-screen md:w-auto flex justify-center items-center snap-center snap-always md:[scroll-snap-align:none]"
-            >
+        {/* Horizontal Scroll Gallery */}
+        <div
+          ref={containerRef}
+          className="w-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden  "
+        >
+          <div className="flex w-max md:w-full md:justify-center md:gap-4 mt-16  lg:gap-24 md:mt-28 lg:mt-24 xl:gap-32 2xl:gap-40">
+            {buttons.map((button, index) => (
               <div
-                onTouchStart={() => handleTouchStart(button.name, button.id)}
-                onTouchEnd={handleTouchEnd}
-                className="touch-none"
+                key={button.id}
+                ref={(el) => {
+                  itemRefs.current[index] = el;
+                }}
+                className="w-screen md:w-auto flex justify-center items-center snap-center snap-always md:[scroll-snap-align:none]"
               >
-                <SpotlightButton
-                  icon={{
-                    type: 'react-icons',
-                    component: button.icon,
-                  }}
-                  text={button.name}
-                  size="xxxxl"
-                  onMouseEnter={() =>
-                    handleInteractionStart(button.name, button.id)
-                  }
-                  onMouseLeave={handleInteractionEnd}
-                  onClick={() => handleButtonClick(button.id, index)}
-                />
+                <div
+                  onTouchStart={() => handleTouchStart(button.name, button.id)}
+                  onTouchEnd={handleTouchEnd}
+                  className="touch-none"
+                >
+                  <SpotlightButton
+                    icon={{
+                      type: 'react-icons',
+                      component: button.icon,
+                    }}
+                    text={button.name}
+                    size="xxxxl"
+                    onMouseEnter={() =>
+                      handleInteractionStart(button.name, button.id)
+                    }
+                    onMouseLeave={handleInteractionEnd}
+                    onClick={() => handleButtonClick(button.id, index)}
+                  />
+                </div>
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Scroll Indicators - Only show on mobile */}
+        <div className="md:hidden flex justify-center items-center gap-2 mt-5 pb-4">
+          {buttons.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => handleIndicatorClick(index)}
+              className={`h-1 transition-all duration-300 ease-out ${
+                currentItem === index
+                  ? 'w-8 bg-white'
+                  : 'w-4 bg-white/40 hover:bg-white/60'
+              }`}
+              aria-label={`Go to ${buttons[index].name}`}
+            />
           ))}
         </div>
-      </div>
-
-      {/* Scroll Indicators - Only show on mobile */}
-      <div className="md:hidden flex justify-center items-center gap-2 mt-5 pb-4">
-        {buttons.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => handleIndicatorClick(index)}
-            className={`h-1 transition-all duration-300 ease-out ${
-              currentItem === index
-                ? 'w-8 bg-white'
-                : 'w-4 bg-white/40 hover:bg-white/60'
-            }`}
-            aria-label={`Go to ${buttons[index].name}`}
-          />
-        ))}
       </div>
     </section>
   );
